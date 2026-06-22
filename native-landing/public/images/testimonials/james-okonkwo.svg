@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 480" fill="none">
+  <rect width="400" height="480" fill="#2F4F4F"/>
+  <circle cx="200" cy="170" r="72" fill="#7A9E9E"/>
+  <ellipse cx="200" cy="420" rx="120" ry="100" fill="#7A9E9E"/>
+  <text x="200" y="460" text-anchor="middle" fill="#F0EDE4" font-family="Georgia, serif" font-size="28" font-style="italic">JO</text>
+</svg>

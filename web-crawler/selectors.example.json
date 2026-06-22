@@ -1,0 +1,15 @@
+{
+  "default": {
+    "price": ".price, [itemprop='price']",
+    "author": ".author, [rel='author']"
+  },
+  "patterns": [
+    {
+      "match": "example.com/blog",
+      "fields": {
+        "publishDate": "time[datetime]",
+        "category": ".post-category"
+      }
+    }
+  ]
+}

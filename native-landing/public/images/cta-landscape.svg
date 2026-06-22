@@ -1,0 +1,86 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1920 900" preserveAspectRatio="xMidYMid slice">
+  <defs>
+    <linearGradient id="ctaSky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#DCE8F0"/>
+      <stop offset="45%" stop-color="#E4EDE6"/>
+      <stop offset="100%" stop-color="#F0EDE4"/>
+    </linearGradient>
+    <linearGradient id="ctaMeadow" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#A8BFA8" stop-opacity="0.5"/>
+      <stop offset="100%" stop-color="#D4C4A8" stop-opacity="0.4"/>
+    </linearGradient>
+    <linearGradient id="phoneGlow" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#F5E8CC"/>
+      <stop offset="100%" stop-color="#C9923A"/>
+    </linearGradient>
+    <radialGradient id="porchLight" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0%" stop-color="#FFF8EE" stop-opacity="0.55"/>
+      <stop offset="100%" stop-color="#C9923A" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="1920" height="900" fill="url(#ctaSky)"/>
+  <!-- distant hills -->
+  <path d="M0 360 L360 260 L720 330 L1080 240 L1440 310 L1920 270 L1920 900 L0 900 Z" fill="#B8C9D8" opacity="0.55"/>
+  <path d="M0 460 L420 360 L840 420 L1260 340 L1680 400 L1920 380 L1920 900 L0 900 Z" fill="#9FB4A6" opacity="0.45"/>
+  <!-- meadow -->
+  <path d="M0 580 Q480 520 960 550 T1920 570 L1920 900 L0 900 Z" fill="url(#ctaMeadow)"/>
+  <path d="M0 680 Q640 620 1280 660 T1920 680 L1920 900 L0 900 Z" fill="#C9B896" opacity="0.22"/>
+  <!-- trees -->
+  <g fill="#4A6B52" opacity="0.55">
+    <path d="M140 520 L170 420 L200 520 Z"/><rect x="165" y="520" width="10" height="35"/>
+    <path d="M1680 500 L1710 400 L1740 500 Z"/><rect x="1705" y="500" width="10" height="35"/>
+  </g>
+  <!-- cottage house -->
+  <g transform="translate(660 210)">
+    <rect x="0" y="130" width="600" height="220" fill="#E8E2D6" rx="3"/>
+    <polygon points="0,130 300,50 600,130" fill="#4A4038"/>
+    <rect x="230" y="175" width="140" height="90" fill="#F5F0E8" rx="2"/>
+    <rect x="250" y="195" width="45" height="55" fill="#D8CFC0" rx="1"/>
+    <rect x="305" y="195" width="45" height="55" fill="#D8CFC0" rx="1"/>
+    <rect x="80" y="170" width="55" height="45" fill="#F5E8CC" opacity="0.85" rx="2"/>
+    <rect x="465" y="170" width="55" height="45" fill="#F5E8CC" opacity="0.85" rx="2"/>
+    <!-- porch -->
+    <rect x="60" y="310" width="480" height="14" fill="#8B7355"/>
+    <rect x="85" y="324" width="12" height="70" fill="#C4B49A"/>
+    <rect x="503" y="324" width="12" height="70" fill="#C4B49A"/>
+    <ellipse cx="300" cy="300" rx="180" ry="60" fill="url(#porchLight)"/>
+    <!-- porch steps -->
+    <rect x="200" y="394" width="200" height="12" fill="#A89478" rx="1"/>
+    <rect x="215" y="406" width="170" height="10" fill="#9A8670" rx="1"/>
+  </g>
+  <!-- adirondack chairs -->
+  <g fill="#7A6A58" opacity="0.85">
+    <path d="M430 560 L470 500 L510 560 L500 620 L440 620 Z"/>
+    <path d="M1410 560 L1450 500 L1490 560 L1480 620 L1420 620 Z"/>
+  </g>
+  <!-- person left - head down, no face -->
+  <g transform="translate(455 500)">
+    <ellipse cx="0" cy="95" rx="38" ry="48" fill="#5C6B5A"/>
+    <rect x="-28" y="115" width="20" height="58" rx="9" fill="#4A5648"/>
+    <rect x="10" y="115" width="20" height="58" rx="9" fill="#4A5648"/>
+    <ellipse cx="28" cy="72" rx="14" ry="10" fill="#5C6B5A" transform="rotate(18 28 72)"/>
+    <rect x="34" y="58" width="24" height="38" rx="5" fill="#2A2A2A"/>
+    <rect x="36" y="62" width="20" height="28" rx="3" fill="url(#phoneGlow)" opacity="0.75"/>
+    <ellipse cx="-8" cy="28" rx="26" ry="22" fill="#4A5648"/>
+    <path d="M-32 18 Q-8 -2 18 12 Q-2 28 -8 42 Z" fill="#3D4A38"/>
+  </g>
+  <!-- person right - head down, no face -->
+  <g transform="translate(1465 500) scale(-1 1)">
+    <ellipse cx="0" cy="95" rx="38" ry="48" fill="#6B5E52"/>
+    <rect x="-28" y="115" width="20" height="58" rx="9" fill="#5A4E44"/>
+    <rect x="10" y="115" width="20" height="58" rx="9" fill="#5A4E44"/>
+    <ellipse cx="28" cy="72" rx="14" ry="10" fill="#6B5E52" transform="rotate(18 28 72)"/>
+    <rect x="34" y="58" width="24" height="38" rx="5" fill="#2A2A2A"/>
+    <rect x="36" y="62" width="20" height="28" rx="3" fill="url(#phoneGlow)" opacity="0.75"/>
+    <ellipse cx="-8" cy="28" rx="26" ry="22" fill="#5A4E44"/>
+    <path d="M-32 18 Q-8 -2 18 12 Q-2 28 -8 42 Z" fill="#4A4038"/>
+  </g>
+  <!-- wildflowers -->
+  <g opacity="0.8">
+    <circle cx="220" cy="760" r="7" fill="#F5F0E8" stroke="#D4C4A8" stroke-width="1"/>
+    <circle cx="280" cy="780" r="5" fill="#8B7EC8"/>
+    <circle cx="1640" cy="770" r="6" fill="#F5F0E8" stroke="#D4C4A8" stroke-width="1"/>
+    <circle cx="1700" cy="790" r="5" fill="#6B8F71"/>
+  </g>
+  <rect width="1920" height="900" fill="#F0EDE4" opacity="0.1"/>
+</svg>

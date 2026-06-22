@@ -1,0 +1,71 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --cream: #f0ede4;
+  --cream-dark: #e8e4d9;
+  --gold: #c9923a;
+  --near-black: #1a1a1a;
+  --gray-body: #6b6b6b;
+  --gray-label: #999999;
+  --white: #ffffff;
+  --black: #111111;
+  --card-bg: #fafaf7;
+  --panel-bg: #f5f2eb;
+  --background: var(--cream);
+  --foreground: var(--near-black);
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    color: var(--foreground);
+    background: var(--cream);
+    font-family: var(--font-inter), "Inter", sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+}
+
+@layer components {
+  .step-label {
+    font-family: var(--font-inter), "Inter", sans-serif;
+    font-size: 0.7rem;
+    letter-spacing: 0.15em;
+    font-weight: 600;
+    color: var(--gold);
+    text-transform: uppercase;
+  }
+
+  .display-heading {
+    font-family: var(--font-playfair), "Playfair Display", serif;
+    font-size: clamp(2.5rem, 5vw, 4.5rem);
+    line-height: 1.08;
+    color: var(--near-black);
+  }
+
+  .body-copy {
+    font-family: var(--font-inter), "Inter", sans-serif;
+    font-size: 1rem;
+    line-height: 1.65;
+    color: var(--gray-body);
+  }
+
+  .hide-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  .hide-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+}

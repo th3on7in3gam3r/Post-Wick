@@ -1,0 +1,36 @@
+.native-page {
+  --cream: #f0ede4;
+  --cream-dark: #e8e4d9;
+  --gold: #c9923a;
+  --near-black: #1a1a1a;
+  --gray-body: #6b6b6b;
+  --gray-label: #999999;
+  --card-bg: #fafaf7;
+  --panel-bg: #f5f2eb;
+  background: var(--cream);
+  color: var(--near-black);
+  min-height: 100vh;
+}
+
+.native-page .step-label {
+  font-size: 0.7rem;
+  letter-spacing: 0.15em;
+  font-weight: 600;
+  color: var(--gold);
+  text-transform: uppercase;
+}
+
+.native-page .body-copy {
+  font-size: 1rem;
+  line-height: 1.65;
+  color: var(--gray-body);
+}
+
+.native-page .hide-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.native-page .hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}

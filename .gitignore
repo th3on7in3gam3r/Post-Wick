@@ -1,0 +1,29 @@
+# Dependencies
+node_modules/
+.pnpm-store/
+
+# Next.js
+.next/
+out/
+build/
+
+# Env & secrets — never commit
+.env
+.env.*
+!.env.example
+
+# Local data
+native-landing/data/
+native-landing/public/generated/
+post-wick/.clerk/
+
+# Logs & OS
+*.log
+.DS_Store
+*.pem
+
+# Tooling
+.vercel
+*.tsbuildinfo
+next-env.d.ts
+coverage/

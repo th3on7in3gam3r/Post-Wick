@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Log in | Native</title>
+  <meta name="description" content="Log in to Native — social media on autopilot." />
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      width: 100vw;
+      height: 100vh;
+      overflow: hidden;
+      position: relative;
+      background-color: #f2ebd9;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    .bg-illustration {
+      position: absolute;
+      inset: 0;
+      z-index: 0;
+      width: 100%;
+      height: 100%;
+    }
+
+    .card {
+      position: absolute;
+      top: 50%;
+      left: 52%;
+      transform: translate(-50%, -50%);
+      width: 370px;
+      background: #f8f8f8;
+      border-radius: 12px;
+      box-shadow: 0 4px 24px rgba(0, 0, 0, 0.1);
+      padding: 40px 36px;
+      display: flex;
+      flex-direction: column;
+      z-index: 1;
+    }
+
+    .card h1 {
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: 26px;
+      font-weight: 400;
+      color: #1a1a1a;
+      text-align: center;
+      margin-bottom: 8px;
+    }
+
+    .card .subhead {
+      font-size: 14px;
+      color: #444444;
+      text-align: center;
+      margin-bottom: 24px;
+    }
+
+    .google-btn {
+      width: 100%;
+      height: 44px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      background: #ffffff;
+      border: 1.5px solid #cccccc;
+      border-radius: 6px;
+      font-size: 14px;
+      color: #1a1a1a;
+      cursor: pointer;
+      margin-bottom: 20px;
+      font-family: inherit;
+      text-decoration: none;
+    }
+
+    .google-btn:hover { background: #f5f5f5; }
+
+    .divider {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin: 0 0 20px 0;
+    }
+
+    .divider hr { flex: 1; border: none; border-top: 1px solid #dddddd; }
+    .divider span { font-size: 11px; color: #999; letter-spacing: 0.08em; }
+
+    .input-wrapper {
+      position: relative;
+      margin-bottom: 16px;
+    }
+
+    .input-wrapper label {
+      position: absolute;
+      top: 6px;
+      left: 12px;
+      font-size: 11px;
+      color: #666;
+    }
+
+    .input-wrapper input {
+      width: 100%;
+      height: 52px;
+      background: #eef0f8;
+      border: 1.5px solid #cccccc;
+      border-radius: 6px;
+      padding: 20px 12px 6px 12px;
+      font-size: 15px;
+      color: #1a1a1a;
+      outline: none;
+      font-family: inherit;
+    }
+
+    .input-wrapper input:focus {
+      border-color: #1a1a1a;
+    }
+
+    .signup-btn {
+      width: 100%;
+      height: 48px;
+      background: #111111;
+      color: #fff;
+      font-size: 15px;
+      font-weight: 500;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      margin-bottom: 16px;
+      font-family: inherit;
+    }
+
+    .signup-btn:hover { background: #333; }
+
+    .fine-print { font-size: 12px; color: #666; line-height: 1.5; }
+    .login-link { color: #e8a020; text-decoration: none; }
+    .login-link:hover { text-decoration: underline; }
+
+    @media (max-width: 480px) {
+      body {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow-y: auto;
+        min-height: 100vh;
+        height: auto;
+      }
+      .card {
+        position: relative;
+        top: auto;
+        left: auto;
+        transform: none;
+        width: 90vw;
+        margin: 24px 0;
+      }
+      .bg-illustration { position: fixed; }
+    }
+  </style>
+</head>
+<body>
+
+  <svg class="bg-illustration" viewBox="0 0 1440 900" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+    <defs>
+      <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="#EDE8DC"/>
+        <stop offset="55%" stop-color="#D8E4EC"/>
+        <stop offset="100%" stop-color="#C9D8C0"/>
+      </linearGradient>
+    </defs>
+    <rect width="1440" height="900" fill="url(#sky)"/>
+    <ellipse cx="400" cy="120" rx="180" ry="45" fill="#F5F2EB" opacity="0.85"/>
+    <path d="M0 520 L200 320 L420 440 L620 280 L880 400 L1100 260 L1440 380 L1440 900 L0 900 Z" fill="#A8BFCF" opacity="0.45"/>
+    <ellipse cx="900" cy="620" rx="520" ry="80" fill="#A8BFCF" opacity="0.35"/>
+    <rect x="80" y="180" width="14" height="420" fill="#EDE8DC" rx="3"/>
+    <ellipse cx="87" cy="160" rx="55" ry="70" fill="#9AAF88" opacity="0.7"/>
+    <rect x="160" y="220" width="12" height="380" fill="#F5F0E8" rx="3"/>
+    <ellipse cx="166" cy="200" rx="48" ry="62" fill="#8FA078" opacity="0.65"/>
+    <path d="M130 350 Q290 500 430 370 L450 395 Q310 525 150 375 Z" fill="#C9A96E" opacity="0.55"/>
+    <g transform="translate(220, 400)">
+      <ellipse cx="80" cy="55" rx="50" ry="18" fill="#EDE8DC" opacity="0.9"/>
+      <circle cx="80" cy="20" r="22" fill="#E8C547"/>
+      <circle cx="80" cy="20" r="18" fill="#F0D060"/>
+    </g>
+    <rect width="1440" height="900" fill="#F2EBD9" opacity="0.15"/>
+  </svg>
+
+  <div class="card">
+    <h1>Welcome back</h1>
+    <p class="subhead">Log in to your Native account.</p>
+
+    <a href="/sign-in" class="google-btn">
+      <svg width="20" height="20" viewBox="0 0 48 48" aria-hidden="true">
+        <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
+        <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.56 2.95-2.23 5.45-4.76 7.14l7.73 6.01c4.51-4.16 7.07-10.28 7.07-17.62z"/>
+        <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
+        <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6.01c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
+      </svg>
+      Continue with Google
+    </a>
+
+    <div class="divider"><hr /><span>OR</span><hr /></div>
+
+    <div class="input-wrapper">
+      <label for="email">Email address*</label>
+      <input type="email" id="email" autocomplete="email" />
+    </div>
+
+    <button type="submit" class="signup-btn">Log in with email</button>
+
+    <p class="fine-print">
+      By logging in you accept our terms of service and privacy policy.
+      <a href="signup.html" class="login-link">New here? Sign up 👉</a>
+    </p>
+  </div>
+
+</body>
+</html>

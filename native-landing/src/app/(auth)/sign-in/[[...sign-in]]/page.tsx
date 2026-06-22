@@ -1,0 +1,14 @@
+import { SignIn } from "@clerk/nextjs";
+import { clerkAppearanceAuth } from "@/lib/clerk-appearance";
+
+export default function SignInPage() {
+  return (
+    <SignIn
+      appearance={clerkAppearanceAuth}
+      routing="path"
+      path="/sign-in"
+      signUpUrl="/sign-up"
+      forceRedirectUrl="/dashboard"
+    />
+  );
+}

@@ -1,0 +1,1055 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Post-Wick | Social media on autopilot</title>
+  <meta name="description" content="Drop your URL. Post-Wick researches your business, creates social media posts, and publishes after approval." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400;1,700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --color-bg: #eeeae0;
+      --color-black: #1a1a1a;
+      --color-gold: #c8962e;
+      --color-text-muted: #888888;
+      --color-card-bg: #ffffff;
+      --font-serif: "Playfair Display", Georgia, serif;
+      --radius-pill: 999px;
+      --radius-card: 16px;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: var(--font-serif);
+      color: var(--color-black);
+      background: var(--color-bg);
+      -webkit-font-smoothing: antialiased;
+    }
+    img { display: block; max-width: 100%; }
+    a { color: inherit; text-decoration: none; }
+    button { cursor: pointer; font-family: inherit; }
+
+    .btn-primary {
+      background: var(--color-black);
+      color: #fff;
+      border-radius: var(--radius-pill);
+      padding: 10px 24px;
+      border: none;
+      font-family: var(--font-serif);
+      font-size: 15px;
+    }
+    .btn-ghost {
+      background: #fff;
+      color: var(--color-black);
+      border: 1px solid #ccc;
+      border-radius: var(--radius-pill);
+      padding: 10px 24px;
+      font-family: var(--font-serif);
+      font-size: 15px;
+    }
+    .card {
+      background: var(--color-card-bg);
+      border-radius: var(--radius-card);
+      box-shadow: 0 2px 16px rgba(0, 0, 0, 0.06);
+    }
+
+    /* NAV */
+    .nav {
+      position: fixed;
+      inset: 0 0 auto 0;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 40px;
+      background: transparent;
+    }
+    .nav-logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 22px;
+      font-weight: 700;
+    }
+    .nav-logo svg { width: 22px; height: 22px; }
+    .nav-links {
+      display: flex;
+      gap: 32px;
+      font-size: 15px;
+    }
+    .nav-actions {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .nav-actions .btn-ghost,
+    .nav-actions .btn-primary { padding: 8px 20px; font-size: 14px; }
+    .lang-btn {
+      background: none;
+      border: none;
+      font-size: 18px;
+      margin-left: 8px;
+      color: var(--color-black);
+    }
+
+    /* HERO */
+    .hero {
+      position: relative;
+      min-height: 100vh;
+      overflow: hidden;
+    }
+    .hero-bg {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .hero-overlay {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(to bottom, rgba(255,255,255,0.05), rgba(238,234,224,0.4));
+    }
+    .hero-float-shop {
+      position: absolute;
+      left: 20%;
+      top: 30%;
+      width: 150px;
+      border-radius: 16px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.15);
+      z-index: 2;
+    }
+    .hero-float-bear {
+      position: absolute;
+      left: 15%;
+      top: 55%;
+      width: 80px;
+      z-index: 2;
+    }
+    .hero-content {
+      position: absolute;
+      left: 50%;
+      top: 55%;
+      transform: translate(-50%, -50%);
+      text-align: center;
+      width: min(680px, 92vw);
+      z-index: 3;
+    }
+    .hero h1 {
+      font-size: clamp(42px, 7vw, 72px);
+      font-weight: 700;
+      line-height: 1.05;
+      color: var(--color-black);
+    }
+    .hero h1 .line2 {
+      font-style: italic;
+      font-weight: 700;
+    }
+    .hero h1 .niche { color: var(--color-gold); }
+    .hero h1 .cursor {
+      color: var(--color-gold);
+      font-weight: 300;
+      animation: blink 1s step-end infinite;
+    }
+    @keyframes blink { 50% { opacity: 0; } }
+    .hero-sub {
+      margin-top: 12px;
+      font-style: italic;
+      font-size: 20px;
+      color: #555;
+    }
+    .url-form {
+      display: flex;
+      width: min(480px, 100%);
+      margin: 40px auto 0;
+      border-radius: var(--radius-pill);
+      overflow: hidden;
+      border: 1px solid #ddd;
+      background: #fff;
+    }
+    .url-form input {
+      flex: 1;
+      border: none;
+      padding: 14px 24px;
+      font-size: 16px;
+      font-family: system-ui, sans-serif;
+      outline: none;
+      min-width: 0;
+    }
+    .url-form button {
+      background: var(--color-black);
+      color: #fff;
+      border: none;
+      padding: 14px 28px;
+      font-size: 16px;
+      font-family: var(--font-serif);
+      white-space: nowrap;
+    }
+    .hero-helper {
+      margin-top: 12px;
+      font-style: italic;
+      font-size: 14px;
+      color: #888;
+    }
+
+    /* CAROUSEL */
+    .carousel-wrap {
+      background: linear-gradient(to bottom, rgba(238,234,224,0.3), var(--color-bg));
+      overflow-x: auto;
+      display: flex;
+      gap: 20px;
+      padding: 40px 48px;
+      scrollbar-width: none;
+    }
+    .carousel-wrap::-webkit-scrollbar { display: none; }
+    .post-card {
+      flex: 0 0 300px;
+      width: 300px;
+      min-width: 300px;
+      background: #fff;
+      border-radius: 16px;
+      padding: 20px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.07);
+    }
+    .post-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 12px;
+    }
+    .post-header-left {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: 700;
+      font-size: 15px;
+    }
+    .post-header-left.gold { color: var(--color-gold); }
+    .post-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: #d4a850;
+      opacity: 0.7;
+    }
+    .post-caption {
+      font-style: italic;
+      font-size: 14px;
+      line-height: 1.5;
+      margin-bottom: 12px;
+      color: var(--color-black);
+    }
+    .post-image {
+      width: 100%;
+      aspect-ratio: 1;
+      object-fit: cover;
+      border-radius: 8px;
+      margin-bottom: 12px;
+    }
+    .post-actions {
+      display: flex;
+      gap: 16px;
+      font-size: 13px;
+      color: #888;
+      font-family: system-ui, sans-serif;
+    }
+    .icon-sm { width: 18px; height: 18px; vertical-align: middle; }
+
+    /* VIDEO */
+    .video-section {
+      max-width: 1050px;
+      margin: 0 auto;
+      padding: 48px 24px;
+    }
+    .video-thumb {
+      position: relative;
+      border-radius: 16px;
+      overflow: hidden;
+      aspect-ratio: 16/9;
+      background: #222;
+    }
+    .video-thumb img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      opacity: 0.85;
+    }
+    .video-text {
+      position: absolute;
+      right: 8%;
+      top: 50%;
+      transform: translateY(-50%);
+      color: #fff;
+      text-align: left;
+    }
+    .video-text h2 {
+      font-size: clamp(36px, 5vw, 60px);
+      font-weight: 400;
+      line-height: 1.1;
+    }
+    .video-text .with {
+      margin-top: 12px;
+      font-size: 22px;
+      color: var(--color-gold);
+    }
+    .play-btn {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      width: 56px;
+      height: 56px;
+      border-radius: 50%;
+      background: #fff;
+      border: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .play-btn::after {
+      content: "";
+      border-style: solid;
+      border-width: 10px 0 10px 16px;
+      border-color: transparent transparent transparent var(--color-black);
+      margin-left: 4px;
+    }
+
+    /* HOW IT WORKS */
+    .how {
+      background: var(--color-bg);
+      padding: 120px 48px 100px;
+    }
+    .how-intro { text-align: center; margin-bottom: 80px; }
+    .how-intro h2 {
+      font-size: 52px;
+      font-weight: 700;
+    }
+    .how-intro p {
+      margin-top: 12px;
+      font-size: 18px;
+      color: #555;
+    }
+    .step {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 64px;
+      align-items: center;
+      max-width: 1200px;
+      margin: 0 auto 100px;
+    }
+    .step.reverse .step-copy { order: 2; }
+    .step.reverse .step-diagram { order: 1; }
+    .step-label {
+      font-family: system-ui, sans-serif;
+      font-size: 12px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--color-text-muted);
+      margin-bottom: 12px;
+    }
+    .step h3 {
+      font-size: 44px;
+      font-weight: 700;
+      font-style: italic;
+      margin-bottom: 16px;
+    }
+    .step p {
+      font-size: 17px;
+      color: #444;
+      line-height: 1.7;
+      max-width: 440px;
+    }
+    .step-cta { display: flex; gap: 12px; margin-top: 24px; flex-wrap: wrap; }
+    .diagram {
+      background: #fff;
+      border-radius: 16px;
+      padding: 48px;
+      box-shadow: 0 2px 20px rgba(0,0,0,0.06);
+      max-width: 700px;
+      width: 100%;
+      justify-self: end;
+    }
+    .step.reverse .diagram { justify-self: start; }
+    .flow-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      position: relative;
+    }
+    .flow-node {
+      background: #fff;
+      border: 1px solid #eee;
+      border-radius: 12px;
+      padding: 16px;
+      box-shadow: 0 1px 8px rgba(0,0,0,0.04);
+    }
+    .flow-node .label {
+      font-family: system-ui, sans-serif;
+      font-size: 11px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--color-gold);
+      margin-bottom: 6px;
+    }
+    .flow-node .label.gray { color: var(--color-text-muted); }
+    .flow-node .value {
+      font-size: 15px;
+      font-style: italic;
+    }
+    .flow-center {
+      grid-column: 1 / -1;
+      text-align: center;
+      padding: 24px;
+      margin: 8px 0;
+    }
+    .flow-center h4 { font-size: 20px; font-weight: 700; }
+    .flow-center p { font-size: 14px; color: var(--color-text-muted); margin-top: 4px; }
+    .pipeline-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+    .pipeline-tags span {
+      font-family: system-ui, sans-serif;
+      font-size: 12px;
+      background: #f5f2eb;
+      padding: 6px 12px;
+      border-radius: 999px;
+      color: #555;
+    }
+    .mini-posts {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+    }
+    .mini-post {
+      border: 1px solid #eee;
+      border-radius: 10px;
+      padding: 12px;
+      font-size: 12px;
+    }
+    .mini-post .platform {
+      font-family: system-ui, sans-serif;
+      font-size: 10px;
+      text-transform: uppercase;
+      color: var(--color-gold);
+      margin-bottom: 6px;
+    }
+    .mini-post p { font-style: italic; line-height: 1.4; }
+    .mini-post .sub { font-style: normal; color: #888; margin-top: 4px; font-size: 11px; }
+    .refine-ui {
+      border: 1px solid #eee;
+      border-radius: 12px;
+      padding: 20px;
+    }
+    .refine-ui .meta { font-size: 13px; color: #888; margin-bottom: 8px; }
+    .refine-ui .caption { font-style: italic; margin-bottom: 16px; }
+    .refine-ui .input-box {
+      border: 1px dashed #ccc;
+      border-radius: 8px;
+      padding: 14px;
+      font-size: 14px;
+      color: #888;
+      font-family: system-ui, sans-serif;
+    }
+
+    /* PRICING */
+    .pricing {
+      background: var(--color-bg);
+      padding: 100px 48px;
+      text-align: center;
+    }
+    .pricing h2 {
+      font-size: 48px;
+      font-weight: 700;
+      margin-bottom: 48px;
+    }
+    .pricing-cards {
+      display: flex;
+      gap: 24px;
+      max-width: 900px;
+      margin: 0 auto;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+    .price-card {
+      flex: 1;
+      min-width: 280px;
+      max-width: 420px;
+      background: #fff;
+      border-radius: 16px;
+      padding: 40px;
+      text-align: left;
+      box-shadow: 0 2px 16px rgba(0,0,0,0.06);
+    }
+    .price-card.max { border: 2px solid var(--color-gold); }
+    .price-card h3 { font-size: 28px; margin-bottom: 8px; }
+    .price-card .amount { font-size: 48px; font-weight: 700; margin: 16px 0 8px; }
+    .price-card ul {
+      list-style: none;
+      margin: 20px 0 28px;
+      font-size: 15px;
+      color: #444;
+      line-height: 1.8;
+    }
+    .price-card ul li::before { content: "• "; color: var(--color-gold); }
+
+    /* COMPARISON */
+    .compare {
+      padding: 100px 48px;
+      background: var(--color-bg);
+      text-align: center;
+    }
+    .compare h2 {
+      font-size: clamp(32px, 4vw, 44px);
+      font-weight: 700;
+      line-height: 1.2;
+      margin-bottom: 48px;
+    }
+    .compare-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+      max-width: 900px;
+      margin: 0 auto;
+      text-align: left;
+    }
+    .compare-col {
+      background: #fff;
+      border-radius: 16px;
+      padding: 32px;
+      box-shadow: 0 2px 16px rgba(0,0,0,0.06);
+    }
+    .compare-col h3 { font-size: 22px; margin-bottom: 20px; }
+    .compare-col ul { list-style: none; font-size: 15px; line-height: 2; color: #444; }
+    .compare-col.before li::before { content: "✕  "; color: #aaa; }
+    .compare-col.after li::before { content: "✓  "; color: var(--color-gold); }
+
+    /* TESTIMONIAL */
+    .testimonial {
+      padding: 100px 48px;
+      background: var(--color-bg);
+      text-align: center;
+    }
+    .testimonial h2 {
+      font-size: clamp(28px, 4vw, 40px);
+      margin-bottom: 40px;
+    }
+    .testimonial-card {
+      max-width: 600px;
+      margin: 0 auto;
+      background: #fff;
+      border-radius: 16px;
+      padding: 40px;
+      box-shadow: 0 2px 16px rgba(0,0,0,0.06);
+      text-align: left;
+    }
+    .testimonial-card blockquote {
+      font-style: italic;
+      font-size: 17px;
+      line-height: 1.7;
+      color: #333;
+      margin-bottom: 20px;
+    }
+    .testimonial-card h3 { font-size: 18px; margin-bottom: 4px; }
+    .testimonial-card .role { font-size: 14px; color: #888; }
+
+    /* BLOG */
+    .blog {
+      padding: 100px 48px;
+      background: var(--color-bg);
+      text-align: center;
+    }
+    .blog > h2 {
+      font-size: 36px;
+      margin-bottom: 40px;
+    }
+    .blog-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 24px;
+      max-width: 1000px;
+      margin: 0 auto 32px;
+    }
+    .article-card {
+      background: #fff;
+      border-radius: 16px;
+      padding: 24px;
+      text-align: left;
+      box-shadow: 0 2px 16px rgba(0,0,0,0.06);
+    }
+    .article-card .tag {
+      font-family: system-ui, sans-serif;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--color-gold);
+    }
+    .article-card .date { font-size: 13px; color: #888; margin: 8px 0 12px; }
+    .article-card h3 { font-size: 18px; font-style: italic; }
+    .blog-more {
+      display: inline-block;
+      margin-top: 8px;
+      color: var(--color-gold);
+      font-size: 15px;
+    }
+
+    /* FOOTER */
+    footer {
+      background: #e4e0d6;
+      padding: 64px 48px 48px;
+    }
+    .footer-logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 22px;
+      font-weight: 700;
+      margin-bottom: 32px;
+    }
+    .footer-nav {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 24px 32px;
+      margin-bottom: 32px;
+      font-size: 15px;
+    }
+    .footer-legal {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 24px;
+      font-size: 13px;
+      color: var(--color-text-muted);
+      font-family: system-ui, sans-serif;
+    }
+
+    /* COOKIE */
+    .cookie {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      z-index: 200;
+      max-width: 320px;
+      background: #fff;
+      border-radius: 12px;
+      padding: 20px 24px;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.12);
+      font-family: system-ui, sans-serif;
+      font-size: 14px;
+      color: #555;
+    }
+    .cookie button {
+      float: right;
+      margin-top: 12px;
+      background: var(--color-black);
+      color: #fff;
+      border: none;
+      border-radius: 999px;
+      padding: 8px 18px;
+      font-size: 14px;
+    }
+
+    @media (max-width: 768px) {
+      .nav-links { display: none; }
+      .nav { padding: 16px 20px; }
+      .step { grid-template-columns: 1fr; }
+      .step.reverse .step-copy,
+      .step.reverse .step-diagram { order: unset; }
+      .diagram { justify-self: stretch !important; padding: 24px; }
+      .mini-posts { grid-template-columns: 1fr; }
+      .compare-grid, .blog-grid { grid-template-columns: 1fr; }
+      .carousel-wrap, section { padding-left: 20px; padding-right: 20px; }
+      .hero-float-shop, .hero-float-bear { display: none; }
+      .video-text { right: 5%; }
+      .url-form { flex-direction: column; border-radius: 16px; }
+      .url-form button { border-radius: 0 0 16px 16px; }
+      .url-form input { border-radius: 16px 16px 0 0; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- NAV -->
+  <nav class="nav">
+    <a href="index.html" class="nav-logo">
+      <svg viewBox="0 0 24 24" fill="#C8962E"><path d="M12 2l1.8 6.4L20 7l-4.5 4.5L22 13l-6.5 1.5L20 19l-6.2-1.4L12 24l-1.8-6.4L4 19l4.5-4.5L2 13l6.5-1.5L4 7l6.2 1.4L12 2z"/></svg>
+      Post-Wick
+    </a>
+    <div class="nav-links">
+      <a href="#how-it-works">How it works</a>
+      <a href="/about-us">About us</a>
+      <a href="#pricing">Pricing</a>
+    </div>
+    <div class="nav-actions">
+      <a href="/sign-in" class="btn-ghost">Log in</a>
+      <a href="/sign-up" class="btn-primary">Get started</a>
+      <button class="lang-btn" aria-label="Language">🌐 ▾</button>
+    </div>
+  </nav>
+
+  <!-- HERO -->
+  <section class="hero">
+    <img class="hero-bg" src="./public/images/hero-landscape.svg" alt="" />
+    <div class="hero-overlay"></div>
+    <img class="hero-float-shop" src="https://images.unsplash.com/photo-1441986300917-64674bd600d8?auto=format&fit=crop&w=300&q=80" alt="Norwegian sportswear shop interior" />
+    <svg class="hero-float-bear" viewBox="0 0 80 70" aria-hidden="true">
+      <ellipse cx="40" cy="55" rx="28" ry="12" fill="#7A6A5E" opacity="0.5"/>
+      <ellipse cx="40" cy="38" rx="22" ry="20" fill="#C4A574"/>
+      <circle cx="28" cy="22" r="10" fill="#C4A574"/>
+      <circle cx="52" cy="22" r="10" fill="#C4A574"/>
+      <circle cx="34" cy="36" r="3" fill="#1A1A1A"/>
+      <circle cx="46" cy="36" r="3" fill="#1A1A1A"/>
+      <path d="M40 8 L43 16 L51 16 L45 21 L47 29 L40 25 L33 29 L35 21 L29 16 L37 16 Z" fill="#C8962E"/>
+    </svg>
+    <div class="hero-content">
+      <h1>
+        Social media<br />
+        <span class="line2">for <span class="niche" id="typewriter">sports shops</span><span class="cursor">|</span></span>
+      </h1>
+      <p class="hero-sub">Get more customers on autopilot.</p>
+      <form class="url-form" action="signup.html" method="get">
+        <input type="text" name="url" placeholder="yourcompany.com" />
+        <button type="submit">Generate →</button>
+      </form>
+      <p class="hero-helper">Drop your URL and we'll generate 50 posts for you.</p>
+    </div>
+  </section>
+
+  <!-- CAROUSEL -->
+  <div class="carousel-wrap">
+    <article class="post-card">
+      <div class="post-header">
+        <div class="post-header-left"><svg class="icon-sm" viewBox="0 0 24 24"><defs><linearGradient id="ig1" x1="0" y1="1" x2="1" y2="0"><stop stop-color="#F58529"/><stop offset=".5" stop-color="#DD2A7B"/><stop offset="1" stop-color="#8134AF"/></linearGradient></defs><rect width="24" height="24" rx="6" fill="url(#ig1)"/></svg> Bakery</div>
+        <span class="post-dot"></span>
+      </div>
+      <p class="post-caption">"...ries and the best croissants in NYC! ...s special. Highly recommended."</p>
+      <img class="post-image" src="https://images.unsplash.com/photo-1555507036-ab1f4038808a?auto=format&fit=crop&w=400&q=80" alt="Croissants" />
+      <div class="post-actions"><span>Comment</span><span>Share</span></div>
+    </article>
+
+    <article class="post-card">
+      <div class="post-header">
+        <div class="post-header-left gold"><svg class="icon-sm" viewBox="0 0 24 24"><rect width="24" height="24" rx="6" fill="url(#ig1)"/></svg> Braid &amp; Co</div>
+        <span class="post-dot"></span>
+      </div>
+      <p class="post-caption">"Our hair ties are made to last – without damaging your hair."</p>
+      <img class="post-image" src="https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&w=400&q=80" alt="Hair ties" />
+      <div class="post-actions"><span>♡</span><span>Comment</span><span>Share</span><span>⌑</span></div>
+    </article>
+
+    <article class="post-card">
+      <div class="post-header">
+        <div class="post-header-left"><svg class="icon-sm" viewBox="0 0 24 24"><rect width="24" height="24" rx="3" fill="#0A66C2"/></svg> Recruito · 1h</div>
+        <span class="post-dot"></span>
+      </div>
+      <p class="post-caption">"Recruiting isn't rocket science. It's actually pretty simple when it's done right."</p>
+      <img class="post-image" src="https://images.unsplash.com/photo-1521737711867-e3b97306f904?auto=format&fit=crop&w=400&q=80" alt="Recruiting poster" />
+      <div class="post-actions"><span>Like</span><span>Comment</span><span>Share</span></div>
+    </article>
+
+    <article class="post-card">
+      <div class="post-header">
+        <div class="post-header-left"><svg class="icon-sm" viewBox="0 0 24 24"><rect width="24" height="24" rx="4" fill="#1877F2"/></svg> Emberwood · 2h</div>
+        <span class="post-dot"></span>
+      </div>
+      <p class="post-caption">"Our newest model is ready for delivery. Handcrafted barrel sauna in Nordic pine – designed for cold winters."</p>
+      <img class="post-image" src="https://images.unsplash.com/photo-1605647540924-852290f6b725?auto=format&fit=crop&w=400&q=80" alt="Barrel sauna" />
+      <div class="post-actions"><span>Like</span><span>Comment</span><span>Share</span></div>
+    </article>
+
+    <article class="post-card">
+      <div class="post-header">
+        <div class="post-header-left"><svg class="icon-sm" viewBox="0 0 24 24"><rect width="24" height="24" rx="6" fill="url(#ig1)"/></svg> Stillwater Stu[dio]</div>
+        <span class="post-dot"></span>
+      </div>
+      <p class="post-caption">"...view. Join our t..."</p>
+      <img class="post-image" src="https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?auto=format&fit=crop&w=400&q=80" alt="Runner" />
+      <div class="post-actions"><span>♡</span><span>Comment</span><span>Share</span></div>
+    </article>
+  </div>
+
+  <!-- VIDEO -->
+  <section class="video-section">
+    <div class="video-thumb">
+      <img src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=1200&q=80" alt="Elin Andersson at laptop" />
+      <div class="video-text">
+        <h2>How to</h2>
+        <h2>use Post-Wick</h2>
+        <p class="with">✳ With Elin Andersson</p>
+      </div>
+      <button class="play-btn" aria-label="Play video"></button>
+    </div>
+  </section>
+
+  <!-- HOW IT WORKS -->
+  <section class="how" id="how-it-works">
+    <div class="how-intro">
+      <h2>How it works</h2>
+      <p>See how Post-Wick works in four steps.</p>
+    </div>
+
+    <div class="step">
+      <div class="step-copy">
+        <p class="step-label">1. Add your website</p>
+        <h3>Add your website.</h3>
+        <p>You add your website. Post-Wick does the research on your business, your industry, and your competitors. The rest runs on autopilot.</p>
+        <div class="step-cta">
+          <a href="/sign-in" class="btn-ghost">Log in</a>
+          <a href="/sign-up" class="btn-primary">Get started →</a>
+        </div>
+      </div>
+      <div class="step-diagram">
+        <div class="diagram">
+          <div class="flow-grid">
+            <div class="flow-node">
+              <div class="label">✳ Industry</div>
+              <div class="value">Wellness. Yoga studio.</div>
+            </div>
+            <div class="flow-node">
+              <div class="label gray">Voice</div>
+              <div class="value">Soft and inviting. Welcomes everyone.</div>
+            </div>
+            <div class="flow-center">
+              <h4>You're in</h4>
+              <p>Starting the analysis</p>
+            </div>
+            <div class="flow-node" style="grid-column: 2;">
+              <div class="label">📷 First post</div>
+              <div class="value">Morning session with a fjord view.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="step reverse">
+      <div class="step-copy">
+        <p class="step-label">2. We do the work</p>
+        <h3>We do the work.</h3>
+        <p>While you wait, Post-Wick does the research on your business, your industry, and your competitors. We set up a tailored content plan and generate posts for each of your channels.</p>
+        <div class="step-cta">
+          <a href="/sign-in" class="btn-ghost">Log in</a>
+          <a href="/sign-up" class="btn-primary">Get started →</a>
+        </div>
+      </div>
+      <div class="step-diagram">
+        <div class="diagram">
+          <div class="pipeline-tags">
+            <span>Reading the site</span><span>Extracting brand DNA</span><span>Mapping competitors</span>
+            <span>Profiling audience</span><span>Drafting content plan</span>
+          </div>
+          <p style="color:var(--color-gold);font-size:14px;margin-bottom:12px;">nordlys-sea-sauna.com</p>
+          <div class="flow-node" style="margin-bottom:16px;">
+            <strong>Nordlys Sea Sauna</strong><br />
+            <span style="font-size:14px;color:#888;">A sauna by the fjord. Since 2018.</span>
+          </div>
+          <div class="pipeline-tags">
+            <span>Brand</span><span>Competitors</span><span>Audience</span><span>This week</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-copy">
+        <p class="step-label">3. Automatic publishing</p>
+        <h3>You approve. We publish.</h3>
+        <p>Post-Wick drafts the posts. You review them. Once approved, we publish to your channels automatically.</p>
+        <div class="step-cta">
+          <a href="/sign-in" class="btn-ghost">Log in</a>
+          <a href="/sign-up" class="btn-primary">Get started →</a>
+        </div>
+      </div>
+      <div class="step-diagram">
+        <div class="diagram">
+          <div class="mini-posts">
+            <div class="mini-post">
+              <div class="platform">LinkedIn · AI suggestion</div>
+              <p>Why we use three weather models, not one</p>
+              <div class="sub">The multi-source approach that turns uncertainty into confidence.</div>
+            </div>
+            <div class="mini-post">
+              <div class="platform">Instagram · AI suggestion</div>
+              <p>New kitchen, new possibilities</p>
+              <div class="sub">The dream home is finally complete. Natural materials, warm tones.</div>
+            </div>
+            <div class="mini-post">
+              <div class="platform">Facebook · AI suggestion</div>
+              <p>After a long day in the sauna</p>
+              <div class="sub">Nothing beats the fresh sea air. Experiences you'll never forget.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="step reverse">
+      <div class="step-copy">
+        <p class="step-label">4. Refine</p>
+        <h3>Tell Post-Wick what to change. It does it.</h3>
+        <p>Almost love the post, but not quite? Describe it in plain words. Post-Wick rewrites the caption, generates new image variations, and lets you pick your favorite.</p>
+        <div class="step-cta">
+          <a href="/sign-in" class="btn-ghost">Log in</a>
+          <a href="/sign-up" class="btn-primary">Get started →</a>
+        </div>
+      </div>
+      <div class="step-diagram">
+        <div class="diagram">
+          <div class="refine-ui">
+            <div class="meta">Nordlys Sea Sauna · Instagram · Today · Caption</div>
+            <p class="caption">After a long day in the sauna, nothing beats the fresh sea air.</p>
+            <div class="input-box">Describe what you'd like to change…</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PRICING -->
+  <section class="pricing" id="pricing">
+    <h2>One plan for autopilot.</h2>
+    <div class="pricing-cards">
+      <div class="price-card">
+        <h3>Pro</h3>
+        <p style="color:#888;font-size:15px;">A whole month of content, ready for your approval.</p>
+        <div class="amount">$63</div>
+        <p style="font-size:13px;color:#888;">per month, billed yearly · excl. VAT</p>
+        <ul>
+          <li>50+ posts a month, ready for approval</li>
+          <li>Tailored to your tone and industry</li>
+          <li>All your channels: Facebook, Instagram, LinkedIn and 5 more</li>
+          <li>Auto-publishing once you approve</li>
+          <li>Analytics on what's working</li>
+        </ul>
+        <a href="/sign-up" class="btn-primary">See your own posts →</a>
+      </div>
+      <div class="price-card max">
+        <h3>Max</h3>
+        <p style="color:#888;font-size:15px;">Higher AI allowance and priority support for teams running multiple brands.</p>
+        <div class="amount">$199</div>
+        <p style="font-size:13px;color:#888;">per month, billed yearly · excl. VAT</p>
+        <ul>
+          <li>Everything in Pro, plus</li>
+          <li>5× AI usage</li>
+          <li>Priority support</li>
+          <li>Early access to new features</li>
+        </ul>
+        <a href="/sign-up" class="btn-primary">Get started with Max →</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- COMPARISON -->
+  <section class="compare">
+    <h2>Traditional marketing is a full-time job<br />Post-Wick does it for you</h2>
+    <div class="compare-grid">
+      <div class="compare-col before">
+        <h3>Traditional social media</h3>
+        <ul>
+          <li>You create all content yourself</li>
+          <li>You plan and schedule every post manually</li>
+          <li>You need to master every platform's algorithm</li>
+          <li>Requires a dedicated marketing hire or agency</li>
+          <li>High cost with unpredictable results</li>
+          <li>Time-consuming and pulls focus from your business</li>
+        </ul>
+      </div>
+      <div class="compare-col after">
+        <h3>With Post-Wick</h3>
+        <ul>
+          <li>AI creates tailored content for your brand</li>
+          <li>Automatic scheduling and posting across all platforms</li>
+          <li>Platform-optimized content for maximum reach</li>
+          <li>No need for a marketing team or agency</li>
+          <li>One affordable price, consistent results</li>
+          <li>Runs on autopilot, you focus on your business</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- TESTIMONIAL -->
+  <section class="testimonial">
+    <h2>Social media without the Sunday scramble</h2>
+    <p class="subhead">Post-Wick is for owners who'd rather run their business than wrestle with captions every week.</p>
+    <div class="testimonial-card">
+      <blockquote>"Drop your URL, review the posts, approve what fits — and get back to work. That's the whole idea."</blockquote>
+      <h3><a href="https://biblefunlandstudio.com" target="_blank" rel="noopener noreferrer">Biblefunland Studios</a></h3>
+      <p class="role">Built for local shops, studios, and service businesses</p>
+    </div>
+  </section>
+
+  <!-- BLOG -->
+  <section class="blog">
+    <h2>How does Post-Wick use AI?</h2>
+    <div class="blog-grid">
+      <a href="/blog/referral" class="article-card">
+        <div class="tag">Insights</div>
+        <div class="date">May 12, 2026</div>
+        <h3>How does Post-Wick use AI?</h3>
+      </a>
+      <a href="/blog/introducing-analytics" class="article-card">
+        <div class="tag">Updates</div>
+        <div class="date">May 12, 2026</div>
+        <h3>How does Post-Wick use AI?</h3>
+      </a>
+      <a href="/blog/4-weeks-800-companies-and-a-brand-new-native" class="article-card">
+        <div class="tag">For small business</div>
+        <div class="date">May 12, 2026</div>
+        <h3>How does Post-Wick use AI?</h3>
+      </a>
+    </div>
+    <a href="https://native.no/blog" class="blog-more">More articles →</a>
+  </section>
+
+  <!-- FOOTER -->
+  <footer>
+    <div class="footer-logo">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="#C8962E"><path d="M12 2l1.8 6.4L20 7l-4.5 4.5L22 13l-6.5 1.5L20 19l-6.2-1.4L12 24l-1.8-6.4L4 19l4.5-4.5L2 13l6.5-1.5L4 7l6.2 1.4L12 2z"/></svg>
+      Post-Wick
+    </div>
+    <nav class="footer-nav">
+      <a href="/how-it-works">How Post-Wick works</a>
+      <a href="/examples">See examples</a>
+      <a href="/compare/native-vs-social-media-agency">Post-Wick vs alternatives</a>
+      <a href="/social-media-management-for-small-business">For small business</a>
+    </nav>
+    <nav class="footer-legal">
+      <a href="/contact">Contact</a>
+      <a href="/privacy-policy">Privacy</a>
+      <a href="/terms-and-conditions">Terms</a>
+      <a href="/cookies">Cookies</a>
+    </nav>
+  </footer>
+
+  <!-- COOKIE -->
+  <div class="cookie" id="cookie">
+    We use cookies to personalize content, run ads, and analyze traffic.
+    <button type="button" onclick="document.getElementById('cookie').style.display='none'">Okay</button>
+  </div>
+
+  <script>
+    (function () {
+      var words = ["sports shops", "bakeries", "yoga studios", "sauna makers", "design agencies", "coffee roasters"];
+      var el = document.getElementById("typewriter");
+      var wi = 0, ci = 0, deleting = false;
+      function tick() {
+        var word = words[wi];
+        if (!deleting) {
+          el.textContent = word.slice(0, ++ci);
+          if (ci === word.length) { deleting = true; setTimeout(tick, 1800); return; }
+        } else {
+          el.textContent = word.slice(0, --ci);
+          if (ci === 0) { deleting = false; wi = (wi + 1) % words.length; }
+        }
+        setTimeout(tick, deleting ? 40 : 80);
+      }
+      tick();
+    })();
+  </script>
+</body>
+</html>

@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sign up | Post-Wick</title>
+  <meta name="description" content="Create your Post-Wick account — social media on autopilot." />
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      width: 100vw;
+      height: 100vh;
+      overflow: hidden;
+      position: relative;
+      background-color: #f2ebd9;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    .bg-illustration {
+      position: absolute;
+      inset: 0;
+      z-index: 0;
+      width: 100%;
+      height: 100%;
+    }
+
+    .card {
+      position: absolute;
+      top: 50%;
+      left: 52%;
+      transform: translate(-50%, -50%);
+      width: 370px;
+      background: #f8f8f8;
+      border-radius: 12px;
+      box-shadow: 0 4px 24px rgba(0, 0, 0, 0.1);
+      padding: 40px 36px;
+      display: flex;
+      flex-direction: column;
+      z-index: 1;
+    }
+
+    .card h1 {
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: 26px;
+      font-weight: 400;
+      color: #1a1a1a;
+      text-align: center;
+      margin-bottom: 8px;
+      line-height: 1.25;
+    }
+
+    .card .subhead {
+      font-size: 14px;
+      color: #444444;
+      text-align: center;
+      margin-bottom: 24px;
+      line-height: 1.4;
+    }
+
+    .google-btn {
+      width: 100%;
+      height: 44px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      background: #ffffff;
+      border: 1.5px solid #cccccc;
+      border-radius: 6px;
+      font-size: 14px;
+      color: #1a1a1a;
+      cursor: pointer;
+      margin-bottom: 20px;
+      font-family: inherit;
+    }
+
+    .google-btn:hover {
+      background: #f5f5f5;
+    }
+
+    .divider {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin: 0 0 20px 0;
+    }
+
+    .divider hr {
+      flex: 1;
+      border: none;
+      border-top: 1px solid #dddddd;
+      height: 0;
+    }
+
+    .divider span {
+      font-size: 11px;
+      color: #999999;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .input-wrapper {
+      position: relative;
+      margin-bottom: 16px;
+    }
+
+    .input-wrapper label {
+      position: absolute;
+      top: 6px;
+      left: 12px;
+      font-size: 11px;
+      color: #666666;
+      pointer-events: none;
+    }
+
+    .input-wrapper input {
+      width: 100%;
+      height: 52px;
+      background: #eef0f8;
+      border: 1.5px solid #1a1a1a;
+      border-radius: 6px;
+      padding: 20px 12px 6px 12px;
+      font-size: 15px;
+      color: #1a1a1a;
+      outline: none;
+      font-family: inherit;
+    }
+
+    .input-wrapper input::placeholder {
+      color: transparent;
+    }
+
+    .signup-btn {
+      width: 100%;
+      height: 48px;
+      background: #111111;
+      color: #ffffff;
+      font-size: 15px;
+      font-weight: 500;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      margin-bottom: 16px;
+      font-family: inherit;
+    }
+
+    .signup-btn:hover {
+      background: #333333;
+    }
+
+    .fine-print {
+      font-size: 12px;
+      color: #666666;
+      line-height: 1.5;
+    }
+
+    .login-link {
+      color: #e8a020;
+      text-decoration: none;
+    }
+
+    .login-link:hover {
+      text-decoration: underline;
+    }
+
+    @media (max-width: 480px) {
+      body {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow-y: auto;
+        min-height: 100vh;
+        height: auto;
+      }
+
+      .card {
+        position: relative;
+        top: auto;
+        left: auto;
+        transform: none;
+        width: 90vw;
+        margin: 24px 0;
+      }
+
+      .bg-illustration {
+        position: fixed;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Background illustration -->
+  <svg class="bg-illustration" viewBox="0 0 1440 900" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+    <defs>
+      <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="#EDE8DC"/>
+        <stop offset="55%" stop-color="#D8E4EC"/>
+        <stop offset="100%" stop-color="#C9D8C0"/>
+      </linearGradient>
+      <linearGradient id="lake" x1="0" y1="0" x2="1" y2="0">
+        <stop offset="0%" stop-color="#A8BFCF" stop-opacity="0.5"/>
+        <stop offset="100%" stop-color="#9AAF88" stop-opacity="0.35"/>
+      </linearGradient>
+      <filter id="soft">
+        <feGaussianBlur stdDeviation="1.5"/>
+      </filter>
+    </defs>
+
+    <!-- Sky & base wash -->
+    <rect width="1440" height="900" fill="url(#sky)"/>
+
+    <!-- Clouds -->
+    <ellipse cx="400" cy="120" rx="180" ry="45" fill="#F5F2EB" opacity="0.85"/>
+    <ellipse cx="480" cy="105" rx="120" ry="35" fill="#FFFFFF" opacity="0.6"/>
+    <ellipse cx="1100" cy="90" rx="200" ry="50" fill="#EDE8DC" opacity="0.7"/>
+    <ellipse cx="900" cy="140" rx="140" ry="40" fill="#FFFFFF" opacity="0.5"/>
+
+    <!-- Distant mountains -->
+    <path d="M0 520 L200 320 L420 440 L620 280 L880 400 L1100 260 L1440 380 L1440 900 L0 900 Z" fill="#A8BFCF" opacity="0.45"/>
+    <path d="M0 580 L300 400 L560 500 L780 360 L1040 480 L1440 420 L1440 900 L0 900 Z" fill="#9AAF88" opacity="0.35"/>
+
+    <!-- Lake -->
+    <ellipse cx="900" cy="620" rx="520" ry="80" fill="url(#lake)"/>
+    <ellipse cx="900" cy="630" rx="400" ry="50" fill="#A8BFCF" opacity="0.25"/>
+
+    <!-- Birch trees (left) -->
+    <g opacity="0.9">
+      <!-- Tree 1 -->
+      <rect x="80" y="180" width="14" height="420" fill="#EDE8DC" rx="3"/>
+      <rect x="83" y="200" width="3" height="380" fill="#333" opacity="0.15"/>
+      <rect x="88" y="240" width="3" height="340" fill="#333" opacity="0.12"/>
+      <ellipse cx="87" cy="160" rx="55" ry="70" fill="#9AAF88" opacity="0.7"/>
+      <!-- Tree 2 -->
+      <rect x="160" y="220" width="12" height="380" fill="#F5F0E8" rx="3"/>
+      <rect x="163" y="240" width="2" height="340" fill="#333" opacity="0.12"/>
+      <rect x="167" y="280" width="2" height="300" fill="#333" opacity="0.1"/>
+      <ellipse cx="166" cy="200" rx="48" ry="62" fill="#8FA078" opacity="0.65"/>
+      <!-- Tree 3 -->
+      <rect x="240" y="260" width="10" height="340" fill="#EDE8DC" rx="2"/>
+      <rect x="242" y="280" width="2" height="300" fill="#333" opacity="0.1"/>
+      <ellipse cx="245" cy="240" rx="40" ry="55" fill="#9AAF88" opacity="0.6"/>
+    </g>
+
+    <!-- Hammock ropes & fabric -->
+    <path d="M120 340 Q280 520 420 380" stroke="#C9A96E" stroke-width="3" fill="none" opacity="0.8"/>
+    <path d="M180 360 Q320 540 460 400" stroke="#B89858" stroke-width="2" fill="none" opacity="0.6"/>
+    <path d="M130 350 Q290 500 430 370 L450 395 Q310 525 150 375 Z" fill="#C9A96E" opacity="0.55"/>
+    <path d="M140 358 Q300 508 440 378 L455 400 Q315 530 155 383 Z" fill="#D4B87E" opacity="0.4"/>
+
+    <!-- Character in hammock — golden sun head, relaxed body -->
+    <g transform="translate(220, 400)">
+      <!-- body -->
+      <ellipse cx="80" cy="55" rx="50" ry="18" fill="#EDE8DC" opacity="0.9"/>
+      <path d="M50 50 Q80 30 110 50" stroke="#C9A96E" stroke-width="8" fill="none" stroke-linecap="round" opacity="0.7"/>
+      <!-- legs -->
+      <path d="M60 60 L40 75 M100 60 L120 72" stroke="#C9A96E" stroke-width="5" stroke-linecap="round" opacity="0.6"/>
+      <!-- sun head -->
+      <circle cx="80" cy="20" r="22" fill="#E8C547"/>
+      <circle cx="80" cy="20" r="18" fill="#F0D060"/>
+      <!-- sun rays -->
+      <g stroke="#E8C547" stroke-width="2" opacity="0.8">
+        <line x1="80" y1="-8" x2="80" y2="-2"/>
+        <line x1="80" y1="42" x2="80" y2="48"/>
+        <line x1="52" y1="20" x2="58" y2="20"/>
+        <line x1="102" y1="20" x2="108" y2="20"/>
+        <line x1="60" y1="0" x2="64" y2="6"/>
+        <line x1="96" y1="34" x2="100" y2="40"/>
+        <line x1="100" y1="0" x2="96" y2="6"/>
+        <line x1="64" y1="34" x2="60" y2="40"/>
+      </g>
+      <!-- peaceful face -->
+      <path d="M72 22 Q80 26 88 22" stroke="#C8962E" stroke-width="1.5" fill="none" opacity="0.6"/>
+      <circle cx="73" cy="17" r="1.5" fill="#C8962E" opacity="0.5"/>
+      <circle cx="87" cy="17" r="1.5" fill="#C8962E" opacity="0.5"/>
+    </g>
+
+    <!-- Foreground grass -->
+    <path d="M0 680 Q360 640 720 670 Q1080 700 1440 660 L1440 900 L0 900 Z" fill="#9AAF88" opacity="0.3"/>
+    <path d="M0 720 Q400 690 800 710 Q1200 730 1440 700 L1440 900 L0 900 Z" fill="#8FA078" opacity="0.2"/>
+
+    <!-- Soft watercolor overlay -->
+    <rect width="1440" height="900" fill="#F2EBD9" opacity="0.15"/>
+  </svg>
+
+  <!-- Signup card -->
+  <div class="card">
+    <h1>Social media on autopilot</h1>
+    <p class="subhead">Reach more customers without lifting a finger.</p>
+
+    <a href="/sign-up" class="google-btn">
+      <svg width="20" height="20" viewBox="0 0 48 48" aria-hidden="true">
+        <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
+        <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.56 2.95-2.23 5.45-4.76 7.14l7.73 6.01c4.51-4.16 7.07-10.28 7.07-17.62z"/>
+        <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
+        <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6.01c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
+      </svg>
+      Continue with Google
+    </a>
+
+    <div class="divider">
+      <hr />
+      <span>OR</span>
+      <hr />
+    </div>
+
+    <div class="input-wrapper">
+      <label for="email">Email address*</label>
+      <input type="email" id="email" name="email" autocomplete="email" />
+    </div>
+
+    <button type="submit" class="signup-btn">Sign up with email</button>
+
+    <p class="fine-print">
+      By signing up you accept our terms of service and privacy policy.
+      <a href="/sign-in" class="login-link">Seen you before? Log in 👉</a>
+    </p>
+  </div>
+
+</body>
+</html>

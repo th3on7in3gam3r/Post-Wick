@@ -1,0 +1,12 @@
+{
+  "seedUrl": "https://example.com/",
+  "startedAt": "2026-06-22T15:12:44.180Z",
+  "strategy": "bfs",
+  "maxDepth": 1,
+  "maxPages": 3,
+  "totalPages": 1,
+  "totalErrors": 0,
+  "avgResponseTimeMs": 122,
+  "topLinkedPages": [],
+  "finishedAt": "2026-06-22T15:12:44.686Z"
+}
