@@ -77,6 +77,11 @@ export const users = pgTable("users", {
   email: text("email"),
   subscriptionTier: text("subscription_tier").notNull().default("free"),
   stripeCustomerId: text("stripe_customer_id"),
+  timezone: text("timezone").notNull().default("America/New_York"),
+  defaultPostingFrequency: integer("default_posting_frequency").notNull().default(3),
+  notifyQueue: boolean("notify_queue").notNull().default(true),
+  notifyPublish: boolean("notify_publish").notNull().default(true),
+  notifyWeeklyDigest: boolean("notify_weekly_digest").notNull().default(false),
   createdAt: timestamp("created_at", { withTimezone: true, mode: "string" })
     .notNull()
     .defaultNow(),

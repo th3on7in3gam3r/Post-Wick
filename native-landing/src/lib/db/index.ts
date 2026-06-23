@@ -60,6 +60,11 @@ export type UserRecord = {
   email: string | null;
   subscriptionTier: "free" | "pro" | "max";
   stripeCustomerId: string | null;
+  timezone: string;
+  defaultPostingFrequency: number;
+  notifyQueue: boolean;
+  notifyPublish: boolean;
+  notifyWeeklyDigest: boolean;
   createdAt: string;
   updatedAt: string;
 };
@@ -134,11 +139,18 @@ function parseConnection(row: typeof connections.$inferSelect): ConnectionRecord
 
 function parseUser(row: typeof users.$inferSelect): UserRecord {
   const tier = row.subscriptionTier;
+  const frequency = row.defaultPostingFrequency;
   return {
     id: row.id,
     email: row.email,
     subscriptionTier: tier === "pro" || tier === "max" ? tier : "free",
     stripeCustomerId: row.stripeCustomerId,
+    timezone: row.timezone ?? "America/New_York",
+    defaultPostingFrequency:
+      frequency === 5 || frequency === 7 ? frequency : 3,
+    notifyQueue: row.notifyQueue ?? true,
+    notifyPublish: row.notifyPublish ?? true,
+    notifyWeeklyDigest: row.notifyWeeklyDigest ?? false,
     createdAt: row.createdAt,
     updatedAt: row.updatedAt,
   };
@@ -182,6 +194,7 @@ export async function createBrand(input: {
   description?: string;
 }) {
   const db = await getDb();
+  const user = await getOrCreateUser(input.userId);
   const now = nowIso();
   await db.insert(brands).values({
     id: input.id,
@@ -190,7 +203,7 @@ export async function createBrand(input: {
     websiteUrl: input.websiteUrl,
     description: input.description ?? null,
     crawlStatus: "pending",
-    postingFrequency: 3,
+    postingFrequency: user.defaultPostingFrequency,
     createdAt: now,
     updatedAt: now,
   });
@@ -367,6 +380,54 @@ export async function updatePostStatus(
   await db
     .update(posts)
     .set({ status, updatedAt: now })
+    .where(eq(posts.id, postId));
+
+  const row = await db.query.posts.findFirst({ where: eq(posts.id, postId) });
+  return row ? parsePost(row) : null;
+}
+
+export async function getPendingPostForUser(postId: string, userId: string) {
+  const db = await getDb();
+  const rows = await db
+    .select({ post: posts, brand: brands })
+    .from(posts)
+    .innerJoin(brands, eq(brands.id, posts.brandId))
+    .where(
+      and(
+        eq(posts.id, postId),
+        eq(brands.userId, userId),
+        eq(posts.status, "pending"),
+      ),
+    )
+    .limit(1);
+
+  if (rows.length === 0) return null;
+
+  const row = rows[0]!;
+  return {
+    post: parsePost(row.post),
+    brand: parseBrand(row.brand),
+  };
+}
+
+export async function updatePostDraft(
+  postId: string,
+  userId: string,
+  data: { content?: string; imageUrl?: string | null },
+) {
+  const owned = await getPendingPostForUser(postId, userId);
+  if (!owned) return null;
+
+  const db = await getDb();
+  const now = nowIso();
+  await db
+    .update(posts)
+    .set({
+      content: data.content ?? owned.post.content,
+      imageUrl:
+        data.imageUrl !== undefined ? data.imageUrl : owned.post.imageUrl,
+      updatedAt: now,
+    })
     .where(eq(posts.id, postId));
 
   const row = await db.query.posts.findFirst({ where: eq(posts.id, postId) });
@@ -598,6 +659,46 @@ export async function updateUserSubscription(
     });
 
   return (await getUserById(userId))!;
+}
+
+export async function updateUserSettings(
+  userId: string,
+  data: Partial<{
+    timezone: string;
+    defaultPostingFrequency: number;
+    notifyQueue: boolean;
+    notifyPublish: boolean;
+    notifyWeeklyDigest: boolean;
+  }>,
+) {
+  const existing = await getOrCreateUser(userId);
+  const db = await getDb();
+  const now = nowIso();
+
+  await db
+    .update(users)
+    .set({
+      timezone: data.timezone ?? existing.timezone,
+      defaultPostingFrequency:
+        data.defaultPostingFrequency ?? existing.defaultPostingFrequency,
+      notifyQueue: data.notifyQueue ?? existing.notifyQueue,
+      notifyPublish: data.notifyPublish ?? existing.notifyPublish,
+      notifyWeeklyDigest:
+        data.notifyWeeklyDigest ?? existing.notifyWeeklyDigest,
+      updatedAt: now,
+    })
+    .where(eq(users.id, userId));
+
+  return (await getUserById(userId))!;
+}
+
+export async function countConnectionsByUserId(userId: string) {
+  const db = await getDb();
+  const [row] = await db
+    .select({ count: count() })
+    .from(connections)
+    .where(eq(connections.userId, userId));
+  return row?.count ?? 0;
 }
 
 export async function getDashboardStats(userId: string) {

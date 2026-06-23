@@ -6,8 +6,8 @@ import {
   CreditCard,
   History,
   LayoutDashboard,
-  Link2,
   ListChecks,
+  Plug,
   Settings,
   Sparkles,
 } from "lucide-react";
@@ -22,8 +22,8 @@ const navItems = [
   { href: "/calendar", label: "Calendar", icon: CalendarDays },
   { href: "/analytics", label: "Analytics", icon: BarChart3 },
   { href: "/history", label: "History", icon: History },
-  { href: "/settings", label: "Settings", icon: Settings },
-  { href: "/settings/connections", label: "Connections", icon: Link2 },
+  { href: "/settings", label: "Settings", icon: Settings, exact: true },
+  { href: "/settings/integrations", label: "Integrations", icon: Plug },
   { href: "/settings/billing", label: "Billing", icon: CreditCard },
 ];
 

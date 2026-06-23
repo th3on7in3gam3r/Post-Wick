@@ -20,7 +20,7 @@ export default async function QueuePage() {
     <>
       <AppHeader
         title="Approval queue"
-        description="Swipe through AI drafts and approve what feels right."
+        description="Review AI drafts, refine in plain words, and approve what feels right."
       />
       <div className="flex flex-1 flex-col p-6 md:p-8">
         {pendingPosts.length > 0 ? (

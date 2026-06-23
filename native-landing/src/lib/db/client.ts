@@ -58,9 +58,19 @@ async function ensureSchema() {
       email TEXT,
       subscription_tier TEXT NOT NULL DEFAULT 'free',
       stripe_customer_id TEXT,
+      timezone TEXT NOT NULL DEFAULT 'America/New_York',
+      default_posting_frequency INTEGER NOT NULL DEFAULT 3,
+      notify_queue BOOLEAN NOT NULL DEFAULT TRUE,
+      notify_publish BOOLEAN NOT NULL DEFAULT TRUE,
+      notify_weekly_digest BOOLEAN NOT NULL DEFAULT FALSE,
       created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
       updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
     )`;
+  await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS timezone TEXT NOT NULL DEFAULT 'America/New_York'`;
+  await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS default_posting_frequency INTEGER NOT NULL DEFAULT 3`;
+  await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS notify_queue BOOLEAN NOT NULL DEFAULT TRUE`;
+  await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS notify_publish BOOLEAN NOT NULL DEFAULT TRUE`;
+  await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS notify_weekly_digest BOOLEAN NOT NULL DEFAULT FALSE`;
   await sql`CREATE INDEX IF NOT EXISTS idx_brands_user_id ON brands(user_id)`;
   await sql`CREATE INDEX IF NOT EXISTS idx_posts_brand_id ON posts(brand_id)`;
   await sql`CREATE INDEX IF NOT EXISTS idx_posts_status ON posts(status)`;

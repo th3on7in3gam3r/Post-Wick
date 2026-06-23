@@ -1,5 +1,5 @@
-import { AppHeader } from "@/components/app/app-header";
 import { BillingClient } from "@/components/app/billing-client";
+import { SettingsShell } from "@/components/app/settings-shell";
 import { getOrCreateUser } from "@/lib/db";
 import { requireUserId } from "@/lib/server/app-data";
 import { isStripeConfigured } from "@/lib/stripe";
@@ -23,15 +23,12 @@ export default async function BillingPage({
   const user = await getOrCreateUser(userId);
 
   return (
-    <>
-      <AppHeader title="Billing" description="Plan and subscription management." />
-      <div className="flex-1 space-y-6 p-6 md:p-8">
-        <BillingClient
-          currentTier={user.subscriptionTier}
-          stripeConfigured={isStripeConfigured()}
-          flash={flashMessage(searchParams)}
-        />
-      </div>
-    </>
+    <SettingsShell title="Billing" description="Plan and subscription management.">
+      <BillingClient
+        currentTier={user.subscriptionTier}
+        stripeConfigured={isStripeConfigured()}
+        flash={flashMessage(searchParams)}
+      />
+    </SettingsShell>
   );
 }
