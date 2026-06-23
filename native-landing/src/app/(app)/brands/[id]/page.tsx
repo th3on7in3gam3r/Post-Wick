@@ -11,8 +11,10 @@ import {
 } from "lucide-react";
 import { AppHeader } from "@/components/app/app-header";
 import { BrandSitePreview } from "@/components/app/brand-site-preview";
+import { GenerateImagesButton } from "@/components/app/generate-images-button";
 import { GeneratePostsButton } from "@/components/app/generate-posts-button";
 import { PanelCard } from "@/components/app/panel-card";
+import { PostPreviewRow } from "@/components/app/post-preview-row";
 import { StatCard } from "@/components/app/stat-card";
 import { TextureButton } from "@/components/ui/texture-button";
 import { resolveBrandAssets } from "@/lib/brand-assets";
@@ -64,6 +66,7 @@ export default async function BrandPage({
   const scheduledPosts = posts
     .filter((post) => post.scheduledAt && ["approved", "published"].includes(post.status))
     .sort((a, b) => new Date(a.scheduledAt!).getTime() - new Date(b.scheduledAt!).getTime());
+  const missingImageCount = posts.filter((post) => !post.imageUrl).length;
   const assets = await resolveBrandAssets(brand.websiteUrl, research);
 
   return (
@@ -258,32 +261,34 @@ export default async function BrandPage({
         </div>
 
         <div className="grid gap-6 lg:grid-cols-2">
-          <PanelCard title="Recent drafts" description="Latest generated posts.">
+          <PanelCard
+            title="Recent drafts"
+            description="Latest generated posts."
+            action={
+              <GenerateImagesButton
+                brandId={brand.id}
+                missingCount={missingImageCount}
+              />
+            }
+          >
             {recentDrafts.length > 0 ? (
               <div className="max-h-80 space-y-2 overflow-y-auto overscroll-contain pr-1">
                 {recentDrafts.map((post) => (
-                  <article
+                  <PostPreviewRow
                     key={post.id}
-                    className="rounded-xl border border-black/[0.06] bg-cream/50 p-3.5"
-                  >
-                    <div className="flex items-center justify-between gap-3">
-                      <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-gold">
-                        {post.platform}
-                      </p>
-                      <p className="text-[11px] capitalize text-gray-label">{post.status}</p>
-                    </div>
-                    {post.imageUrl ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img
-                        src={post.imageUrl}
-                        alt=""
-                        className="mt-2 aspect-video w-full rounded-lg border border-black/[0.06] object-cover"
-                        referrerPolicy="no-referrer"
-                      />
-                    ) : null}
-                    <p className="mt-1.5 line-clamp-2 text-sm text-near-black">{post.content}</p>
-                  </article>
+                    platform={post.platform}
+                    meta={post.status}
+                    content={post.content}
+                    imageUrl={post.imageUrl}
+                  />
                 ))}
+              </div>
+            ) : posts.length > 0 ? (
+              <div className="space-y-3 text-sm text-gray-body">
+                <p>All drafts are approved — see scheduled posts.</p>
+                <TextureButton asChild variant="minimal" size="sm">
+                  <Link href="/queue">Open queue</Link>
+                </TextureButton>
               </div>
             ) : (
               <div className="flex items-center gap-3 text-sm text-gray-body">
@@ -295,22 +300,15 @@ export default async function BrandPage({
 
           <PanelCard title="Scheduled posts" description="Approved posts waiting to publish.">
             {scheduledPosts.length > 0 ? (
-              <div className="space-y-2">
-                {scheduledPosts.slice(0, 4).map((post) => (
-                  <article
+              <div className="max-h-80 space-y-2 overflow-y-auto overscroll-contain pr-1">
+                {scheduledPosts.map((post) => (
+                  <PostPreviewRow
                     key={post.id}
-                    className="rounded-xl border border-black/[0.06] bg-cream/50 p-3.5"
-                  >
-                    <div className="flex items-center justify-between gap-3">
-                      <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-gold">
-                        {post.platform}
-                      </p>
-                      <p className="text-[11px] text-gray-label">
-                        {formatDate(post.scheduledAt!)}
-                      </p>
-                    </div>
-                    <p className="mt-1.5 line-clamp-2 text-sm text-near-black">{post.content}</p>
-                  </article>
+                    platform={post.platform}
+                    meta={formatDate(post.scheduledAt!)}
+                    content={post.content}
+                    imageUrl={post.imageUrl}
+                  />
                 ))}
               </div>
             ) : (

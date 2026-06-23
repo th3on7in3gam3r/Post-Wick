@@ -436,6 +436,31 @@ export async function updatePostDraft(
   return row ? parsePost(row) : null;
 }
 
+export async function updatePostImageUrl(
+  postId: string,
+  userId: string,
+  imageUrl: string | null,
+) {
+  const db = await getDb();
+  const owned = await db
+    .select({ id: posts.id })
+    .from(posts)
+    .innerJoin(brands, eq(brands.id, posts.brandId))
+    .where(and(eq(posts.id, postId), eq(brands.userId, userId)))
+    .limit(1);
+
+  if (owned.length === 0) return null;
+
+  const now = nowIso();
+  await db
+    .update(posts)
+    .set({ imageUrl, updatedAt: now })
+    .where(eq(posts.id, postId));
+
+  const row = await db.query.posts.findFirst({ where: eq(posts.id, postId) });
+  return row ? parsePost(row) : null;
+}
+
 export async function scheduleApprovedPost(postId: string, userId: string) {
   const db = await getDb();
   const row = await db

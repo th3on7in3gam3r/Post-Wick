@@ -6,6 +6,7 @@ import { Check, Loader2, Sparkles, X } from "lucide-react";
 import { TextureButton } from "@/components/ui/texture-button";
 import { formatScheduleLabel } from "@/lib/scheduling/slots";
 import { REFINE_QUICK_PICKS } from "@/lib/ai/prompts";
+import { resolvePostImageUrl } from "@/lib/posts/image-url";
 import { cn } from "@/lib/utils";
 
 type QueuePost = {
@@ -44,6 +45,7 @@ export function QueueClient({ initialPosts }: { initialPosts: QueuePost[] }) {
     "current",
   );
   const current = posts[0];
+  const currentImageSrc = resolvePostImageUrl(current?.imageUrl);
 
   useEffect(() => {
     setPosts(initialPosts);
@@ -221,10 +223,10 @@ export function QueueClient({ initialPosts }: { initialPosts: QueuePost[] }) {
         <p className="text-xs font-semibold uppercase tracking-[0.12em] text-gold">
           {current.platform}
         </p>
-        {current.imageUrl ? (
+        {currentImageSrc ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img
-            src={current.imageUrl}
+            src={currentImageSrc}
             alt=""
             className="mt-4 aspect-square w-full rounded-xl border border-black/[0.06] object-cover"
             referrerPolicy="no-referrer"
