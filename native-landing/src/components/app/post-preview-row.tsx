@@ -17,7 +17,7 @@ export function PostPreviewRow({
   const src = resolvePostImageUrl(imageUrl);
 
   return (
-    <article className="flex gap-3 rounded-xl border border-black/[0.06] bg-cream/50 p-3">
+    <article className="relative flex gap-3 rounded-xl border border-black/[0.06] bg-cream/50 p-3">
       {src ? (
         // eslint-disable-next-line @next/next/no-img-element
         <img

@@ -10,7 +10,7 @@ export function PanelCard({
   action?: React.ReactNode;
 }) {
   return (
-    <section className="flex h-full flex-col rounded-2xl border border-black/[0.06] bg-white shadow-card">
+    <section className="flex h-full flex-col overflow-hidden rounded-2xl border border-black/[0.06] bg-white shadow-card">
       <div className="flex items-start justify-between gap-4 border-b border-black/[0.06] px-6 py-5">
         <div>
           <h2 className="font-playfair text-xl italic text-near-black">{title}</h2>

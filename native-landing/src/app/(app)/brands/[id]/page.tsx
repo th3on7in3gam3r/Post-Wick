@@ -130,7 +130,7 @@ export default async function BrandPage({
           />
         </div>
 
-        <div className="grid gap-6 xl:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)]">
+        <div className="grid items-start gap-6 xl:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)]">
           <PanelCard
             title="Brand profile"
             description="Built from your website crawl."
@@ -260,7 +260,7 @@ export default async function BrandPage({
           </div>
         </div>
 
-        <div className="grid gap-6 lg:grid-cols-2">
+        <div className="grid items-start gap-6 lg:grid-cols-2">
           <PanelCard
             title="Recent drafts"
             description="Latest generated posts."
@@ -284,14 +284,14 @@ export default async function BrandPage({
                 ))}
               </div>
             ) : posts.length > 0 ? (
-              <div className="space-y-3 text-sm text-gray-body">
+              <div className="flex min-h-32 flex-col justify-center space-y-3 text-sm text-gray-body">
                 <p>All drafts are approved — see scheduled posts.</p>
                 <TextureButton asChild variant="minimal" size="sm">
                   <Link href="/queue">Open queue</Link>
                 </TextureButton>
               </div>
             ) : (
-              <div className="flex items-center gap-3 text-sm text-gray-body">
+              <div className="flex min-h-32 items-center gap-3 text-sm text-gray-body">
                 <ListChecks className="h-4 w-4 text-gold" />
                 No posts yet.
               </div>
@@ -300,7 +300,7 @@ export default async function BrandPage({
 
           <PanelCard title="Scheduled posts" description="Approved posts waiting to publish.">
             {scheduledPosts.length > 0 ? (
-              <div className="max-h-80 space-y-2 overflow-y-auto overscroll-contain pr-1">
+              <div className="relative z-0 max-h-80 space-y-2 overflow-y-auto overscroll-contain pr-1">
                 {scheduledPosts.map((post) => (
                   <PostPreviewRow
                     key={post.id}
