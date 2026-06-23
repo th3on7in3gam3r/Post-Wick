@@ -41,14 +41,14 @@ export default async function BrandPage({
   params: { id: string };
 }) {
   const userId = await requireUserId();
-  const brand = getBrandById(params.id, userId);
+  const brand = await getBrandById(params.id, userId);
   if (!brand) notFound();
 
-  const user = getOrCreateUser(userId);
+  const user = await getOrCreateUser(userId);
   const plan = getPlanLimits(user.subscriptionTier);
 
-  const posts = getPostsByBrandId(brand.id);
-  const connections = getConnectionsByUserId(userId).filter(
+  const posts = await getPostsByBrandId(brand.id);
+  const connections = (await getConnectionsByUserId(userId)).filter(
     (connection) => connection.brandId === brand.id,
   );
   const research = brand.researchData ? JSON.parse(brand.researchData) : null;

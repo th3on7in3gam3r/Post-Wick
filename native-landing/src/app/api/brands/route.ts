@@ -17,7 +17,7 @@ export async function GET() {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const brands = getBrandsByUserId(userId).map((brand) => ({
+  const brands = (await getBrandsByUserId(userId)).map((brand) => ({
     ...brand,
     researchData: brand.researchData ? JSON.parse(brand.researchData) : null,
   }));
@@ -39,7 +39,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Invalid website URL" }, { status: 400 });
     }
 
-    const brand = createBrand({
+    const brand = await createBrand({
       id: randomUUID(),
       userId,
       name: data.name,

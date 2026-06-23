@@ -21,7 +21,7 @@ export async function createPostsWithOptionalImages(input: {
         )
       : contents.map(() => null);
 
-  return createPosts(
+  return await createPosts(
     contents.map((content, index) => ({
       id: randomUUID(),
       brandId,

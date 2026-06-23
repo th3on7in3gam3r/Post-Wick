@@ -20,14 +20,14 @@ export async function POST(
     const body = await req.json();
     const { action } = actionSchema.parse(body);
     const status = action === "approve" ? "approved" : "skipped";
-    const post = updatePostStatus(params.postId, userId, status);
+    const post = await updatePostStatus(params.postId, userId, status);
 
     if (!post) {
       return NextResponse.json({ error: "Not found" }, { status: 404 });
     }
 
     if (action === "approve") {
-      const scheduled = scheduleApprovedPost(params.postId, userId);
+      const scheduled = await scheduleApprovedPost(params.postId, userId);
       return NextResponse.json(scheduled ?? post);
     }
 

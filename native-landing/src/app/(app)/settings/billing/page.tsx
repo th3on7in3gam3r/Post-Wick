@@ -20,7 +20,7 @@ export default async function BillingPage({
   searchParams: { success?: string; canceled?: string };
 }) {
   const userId = await requireUserId();
-  const user = getOrCreateUser(userId);
+  const user = await getOrCreateUser(userId);
 
   return (
     <>

@@ -9,7 +9,7 @@ import { requireUserId } from "@/lib/server/app-data";
 
 export default async function AnalyticsPage() {
   const userId = await requireUserId();
-  const analytics = getAnalyticsSummary(userId);
+  const analytics = await getAnalyticsSummary(userId);
 
   return (
     <>

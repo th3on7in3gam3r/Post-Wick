@@ -36,7 +36,7 @@ export async function POST(req: Request) {
       const userId = session.metadata?.clerkUserId;
       const plan = session.metadata?.plan;
       if (userId) {
-        updateUserSubscription(userId, {
+        await updateUserSubscription(userId, {
           subscriptionTier: plan === "max" ? "max" : plan === "pro" ? "pro" : "free",
           stripeCustomerId:
             typeof session.customer === "string" ? session.customer : session.customer?.id,
@@ -52,7 +52,7 @@ export async function POST(req: Request) {
 
       const priceId = subscription.items.data[0]?.price.id;
       const active = subscription.status === "active" || subscription.status === "trialing";
-      updateUserSubscription(userId, {
+      await updateUserSubscription(userId, {
         subscriptionTier: active ? tierFromPriceId(priceId) : "free",
         stripeCustomerId:
           typeof subscription.customer === "string"

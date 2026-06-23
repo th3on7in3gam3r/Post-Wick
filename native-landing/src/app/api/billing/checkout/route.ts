@@ -24,7 +24,7 @@ export async function POST(req: Request) {
   try {
     const body = await req.json();
     const { plan } = checkoutSchema.parse(body);
-    const user = getOrCreateUser(userId);
+    const user = await getOrCreateUser(userId);
     const stripe = getStripe();
     const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
     const selected = STRIPE_PLANS[plan as PaidPlan];
@@ -36,7 +36,7 @@ export async function POST(req: Request) {
         metadata: { clerkUserId: userId },
       });
       customerId = customer.id;
-      updateUserSubscription(userId, {
+      await updateUserSubscription(userId, {
         subscriptionTier: user.subscriptionTier,
         stripeCustomerId: customerId,
       });

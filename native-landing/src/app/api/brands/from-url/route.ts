@@ -37,7 +37,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Invalid website URL" }, { status: 400 });
     }
 
-    const existing = getBrandByWebsite(userId, websiteUrl);
+    const existing = await getBrandByWebsite(userId, websiteUrl);
     if (existing) {
       return NextResponse.json({
         brand: {
@@ -51,17 +51,17 @@ export async function POST(req: Request) {
     }
 
     const brandName = name ?? formatBrandName(websiteHostname(websiteUrl));
-    const brand = createBrand({
+    const brand = await createBrand({
       id: randomUUID(),
       userId,
       name: brandName,
       websiteUrl,
     });
 
-    updateBrand(brand.id, userId, { crawlStatus: "running" });
+    await updateBrand(brand.id, userId, { crawlStatus: "running" });
 
-    getOrCreateUser(userId);
-    const user = getUserById(userId)!;
+    await getOrCreateUser(userId);
+    const user = (await getUserById(userId))!;
     const limits = getPlanLimits(user.subscriptionTier);
 
     const { pages, engine } = await crawlBrandWebsite(websiteUrl, 12);
@@ -71,7 +71,7 @@ export async function POST(req: Request) {
     };
     const generated = await generatePostsWithAI(research, limits.initialPosts);
 
-    const updatedBrand = updateBrand(brand.id, userId, {
+    const updatedBrand = await updateBrand(brand.id, userId, {
       crawlStatus: "completed",
       researchData: research,
       description: research.summary,

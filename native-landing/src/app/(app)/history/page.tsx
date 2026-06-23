@@ -24,7 +24,7 @@ export default async function HistoryPage({
     searchParams.filter === "published" || searchParams.filter === "failed"
       ? searchParams.filter
       : "all";
-  const posts = getPostHistory(userId, filter);
+  const posts = await getPostHistory(userId, filter);
 
   return (
     <>

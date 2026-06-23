@@ -21,7 +21,7 @@ export async function GET(req: Request) {
     end.setDate(end.getDate() + 13);
   }
 
-  const posts = getCalendarPostsByUserId(
+  const posts = await getCalendarPostsByUserId(
     userId,
     start.toISOString(),
     end.toISOString(),

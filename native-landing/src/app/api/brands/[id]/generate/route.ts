@@ -21,7 +21,7 @@ export async function POST(
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const brand = getBrandById(params.id, userId);
+  const brand = await getBrandById(params.id, userId);
   if (!brand) {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
@@ -29,7 +29,7 @@ export async function POST(
   try {
     const body = await req.json().catch(() => ({}));
     const data = generateSchema.parse(body);
-    const user = getOrCreateUser(userId);
+    const user = await getOrCreateUser(userId);
     const limits = getPlanLimits(user.subscriptionTier);
     const count = Math.min(data.count ?? limits.generateMax, limits.generateMax);
 

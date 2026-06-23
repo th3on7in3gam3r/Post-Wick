@@ -1,7 +1,19 @@
-import Database from "better-sqlite3";
-import { mkdirSync } from "node:fs";
-import { join } from "node:path";
+import {
+  and,
+  asc,
+  count,
+  desc,
+  eq,
+  gte,
+  inArray,
+  isNotNull,
+  lte,
+  ne,
+  sql,
+} from "drizzle-orm";
 import { getNextScheduleSlot } from "@/lib/scheduling/slots";
+import { getDb } from "./client";
+import { brands, connections, posts, users } from "./schema";
 
 export type BrandRecord = {
   id: string;
@@ -56,606 +68,6 @@ export type CalendarPost = PostRecord & {
   brandName: string;
 };
 
-let db: Database.Database | null = null;
-
-function ensureColumn(
-  database: Database.Database,
-  table: string,
-  column: string,
-  definition: string,
-) {
-  const columns = database.prepare(`PRAGMA table_info(${table})`).all() as Array<{
-    name: string;
-  }>;
-  if (!columns.some((entry) => entry.name === column)) {
-    database.exec(`ALTER TABLE ${table} ADD COLUMN ${column} ${definition}`);
-  }
-}
-
-function applyMigrations(database: Database.Database) {
-  database.exec(`
-    CREATE TABLE IF NOT EXISTS brands (
-      id TEXT PRIMARY KEY,
-      user_id TEXT NOT NULL,
-      name TEXT NOT NULL,
-      website_url TEXT NOT NULL,
-      description TEXT,
-      crawl_status TEXT NOT NULL DEFAULT 'pending',
-      research_data TEXT,
-      posting_frequency INTEGER NOT NULL DEFAULT 3,
-      created_at TEXT NOT NULL,
-      updated_at TEXT NOT NULL
-    );
-
-    CREATE TABLE IF NOT EXISTS posts (
-      id TEXT PRIMARY KEY,
-      brand_id TEXT NOT NULL,
-      platform TEXT NOT NULL,
-      content TEXT NOT NULL,
-      status TEXT NOT NULL DEFAULT 'pending',
-      created_at TEXT NOT NULL,
-      updated_at TEXT NOT NULL,
-      FOREIGN KEY (brand_id) REFERENCES brands(id) ON DELETE CASCADE
-    );
-
-    CREATE TABLE IF NOT EXISTS connections (
-      id TEXT PRIMARY KEY,
-      user_id TEXT NOT NULL,
-      brand_id TEXT NOT NULL,
-      platform TEXT NOT NULL,
-      account_name TEXT,
-      access_token TEXT,
-      is_demo INTEGER NOT NULL DEFAULT 0,
-      created_at TEXT NOT NULL,
-      updated_at TEXT NOT NULL,
-      FOREIGN KEY (brand_id) REFERENCES brands(id) ON DELETE CASCADE,
-      UNIQUE(brand_id, platform)
-    );
-
-    CREATE TABLE IF NOT EXISTS users (
-      id TEXT PRIMARY KEY,
-      email TEXT,
-      subscription_tier TEXT NOT NULL DEFAULT 'free',
-      stripe_customer_id TEXT,
-      created_at TEXT NOT NULL,
-      updated_at TEXT NOT NULL
-    );
-  `);
-
-  ensureColumn(database, "brands", "posting_frequency", "INTEGER NOT NULL DEFAULT 3");
-  ensureColumn(database, "posts", "scheduled_at", "TEXT");
-  ensureColumn(database, "posts", "published_at", "TEXT");
-  ensureColumn(database, "posts", "external_post_id", "TEXT");
-  ensureColumn(database, "posts", "publish_error", "TEXT");
-  ensureColumn(database, "posts", "image_url", "TEXT");
-
-  database.exec(`
-    CREATE INDEX IF NOT EXISTS idx_brands_user_id ON brands(user_id);
-    CREATE INDEX IF NOT EXISTS idx_posts_brand_id ON posts(brand_id);
-    CREATE INDEX IF NOT EXISTS idx_posts_status ON posts(status);
-    CREATE INDEX IF NOT EXISTS idx_posts_scheduled_at ON posts(scheduled_at);
-    CREATE INDEX IF NOT EXISTS idx_connections_user_id ON connections(user_id);
-  `);
-}
-
-function getDatabase() {
-  if (!db) {
-    const dir = join(process.cwd(), "data");
-    mkdirSync(dir, { recursive: true });
-    db = new Database(join(dir, "postwick.db"));
-    db.pragma("journal_mode = WAL");
-    db.pragma("foreign_keys = ON");
-  }
-
-  applyMigrations(db);
-  return db;
-}
-
-function parseBrand(row: Record<string, unknown>): BrandRecord {
-  return {
-    id: String(row.id),
-    userId: String(row.user_id),
-    name: String(row.name),
-    websiteUrl: String(row.website_url),
-    description: row.description ? String(row.description) : null,
-    crawlStatus: String(row.crawl_status) as BrandRecord["crawlStatus"],
-    researchData: row.research_data ? String(row.research_data) : null,
-    postingFrequency: Number(row.posting_frequency ?? 3),
-    createdAt: String(row.created_at),
-    updatedAt: String(row.updated_at),
-  };
-}
-
-function parsePost(row: Record<string, unknown>): PostRecord {
-  return {
-    id: String(row.id),
-    brandId: String(row.brand_id),
-    platform: String(row.platform),
-    content: String(row.content),
-    imageUrl: row.image_url ? String(row.image_url) : null,
-    status: String(row.status) as PostRecord["status"],
-    scheduledAt: row.scheduled_at ? String(row.scheduled_at) : null,
-    publishedAt: row.published_at ? String(row.published_at) : null,
-    externalPostId: row.external_post_id ? String(row.external_post_id) : null,
-    publishError: row.publish_error ? String(row.publish_error) : null,
-    createdAt: String(row.created_at),
-    updatedAt: String(row.updated_at),
-  };
-}
-
-function parseConnection(row: Record<string, unknown>): ConnectionRecord {
-  return {
-    id: String(row.id),
-    userId: String(row.user_id),
-    brandId: String(row.brand_id),
-    platform: String(row.platform),
-    accountName: row.account_name ? String(row.account_name) : null,
-    accessToken: row.access_token ? String(row.access_token) : null,
-    isDemo: Number(row.is_demo) === 1,
-    createdAt: String(row.created_at),
-    updatedAt: String(row.updated_at),
-  };
-}
-
-export function getBrandsByUserId(userId: string) {
-  const rows = getDatabase()
-    .prepare(
-      `SELECT * FROM brands WHERE user_id = ? ORDER BY datetime(created_at) DESC`,
-    )
-    .all(userId) as Record<string, unknown>[];
-  return rows.map(parseBrand);
-}
-
-export function getBrandById(id: string, userId: string) {
-  const row = getDatabase()
-    .prepare(`SELECT * FROM brands WHERE id = ? AND user_id = ?`)
-    .get(id, userId) as Record<string, unknown> | undefined;
-  return row ? parseBrand(row) : null;
-}
-
-export function getBrandByWebsite(userId: string, websiteUrl: string) {
-  const row = getDatabase()
-    .prepare(`SELECT * FROM brands WHERE user_id = ? AND website_url = ?`)
-    .get(userId, websiteUrl) as Record<string, unknown> | undefined;
-  return row ? parseBrand(row) : null;
-}
-
-export function createBrand(input: {
-  id: string;
-  userId: string;
-  name: string;
-  websiteUrl: string;
-  description?: string;
-}) {
-  const now = new Date().toISOString();
-  getDatabase()
-    .prepare(
-      `INSERT INTO brands (id, user_id, name, website_url, description, crawl_status, posting_frequency, created_at, updated_at)
-       VALUES (@id, @userId, @name, @websiteUrl, @description, 'pending', 3, @now, @now)`,
-    )
-    .run({
-      id: input.id,
-      userId: input.userId,
-      name: input.name,
-      websiteUrl: input.websiteUrl,
-      description: input.description ?? null,
-      now,
-    });
-
-  return getBrandById(input.id, input.userId)!;
-}
-
-export function updateBrand(
-  id: string,
-  userId: string,
-  data: Partial<{
-    name: string;
-    description: string;
-    crawlStatus: BrandRecord["crawlStatus"];
-    researchData: unknown;
-  }>,
-) {
-  const existing = getBrandById(id, userId);
-  if (!existing) return null;
-
-  const now = new Date().toISOString();
-  getDatabase()
-    .prepare(
-      `UPDATE brands SET
-        name = @name,
-        description = @description,
-        crawl_status = @crawlStatus,
-        research_data = @researchData,
-        updated_at = @now
-       WHERE id = @id AND user_id = @userId`,
-    )
-    .run({
-      id,
-      userId,
-      name: data.name ?? existing.name,
-      description: data.description ?? existing.description,
-      crawlStatus: data.crawlStatus ?? existing.crawlStatus,
-      researchData:
-        data.researchData !== undefined
-          ? JSON.stringify(data.researchData)
-          : existing.researchData,
-      now,
-    });
-
-  return getBrandById(id, userId);
-}
-
-export function deleteBrand(id: string, userId: string) {
-  const result = getDatabase()
-    .prepare(`DELETE FROM brands WHERE id = ? AND user_id = ?`)
-    .run(id, userId);
-  return result.changes > 0;
-}
-
-export function getPostsByBrandId(brandId: string) {
-  const rows = getDatabase()
-    .prepare(
-      `SELECT * FROM posts WHERE brand_id = ? ORDER BY datetime(created_at) DESC`,
-    )
-    .all(brandId) as Record<string, unknown>[];
-  return rows.map(parsePost);
-}
-
-export function getPendingPostsByUserId(userId: string) {
-  const rows = getDatabase()
-    .prepare(
-      `SELECT p.* FROM posts p
-       INNER JOIN brands b ON b.id = p.brand_id
-       WHERE b.user_id = ? AND p.status = 'pending'
-       ORDER BY datetime(p.created_at) DESC`,
-    )
-    .all(userId) as Record<string, unknown>[];
-  return rows.map(parsePost);
-}
-
-export function getScheduledPostsByUserId(userId: string, limit = 8) {
-  const rows = getDatabase()
-    .prepare(
-      `SELECT p.*, b.name as brand_name FROM posts p
-       INNER JOIN brands b ON b.id = p.brand_id
-       WHERE b.user_id = ?
-         AND p.status IN ('approved', 'published')
-         AND p.scheduled_at IS NOT NULL
-       ORDER BY datetime(p.scheduled_at) ASC
-       LIMIT ?`,
-    )
-    .all(userId, limit) as Record<string, unknown>[];
-
-  return rows.map((row) => ({
-    ...parsePost(row),
-    brandName: String(row.brand_name),
-  })) as CalendarPost[];
-}
-
-export function getCalendarPostsByUserId(userId: string, from: string, to: string) {
-  const rows = getDatabase()
-    .prepare(
-      `SELECT p.*, b.name as brand_name FROM posts p
-       INNER JOIN brands b ON b.id = p.brand_id
-       WHERE b.user_id = ?
-         AND p.scheduled_at IS NOT NULL
-         AND datetime(p.scheduled_at) >= datetime(?)
-         AND datetime(p.scheduled_at) <= datetime(?)
-       ORDER BY datetime(p.scheduled_at) ASC`,
-    )
-    .all(userId, from, to) as Record<string, unknown>[];
-
-  return rows.map((row) => ({
-    ...parsePost(row),
-    brandName: String(row.brand_name),
-  })) as CalendarPost[];
-}
-
-export function getScheduledTimesForBrand(brandId: string) {
-  const rows = getDatabase()
-    .prepare(
-      `SELECT scheduled_at FROM posts
-       WHERE brand_id = ?
-         AND scheduled_at IS NOT NULL
-         AND status IN ('approved', 'published')`,
-    )
-    .all(brandId) as Array<{ scheduled_at: string }>;
-
-  return rows.map((row) => row.scheduled_at);
-}
-
-export function createPosts(
-  items: Array<{
-    id: string;
-    brandId: string;
-    platform: string;
-    content: string;
-    imageUrl?: string | null;
-  }>,
-) {
-  const now = new Date().toISOString();
-  const insert = getDatabase().prepare(
-    `INSERT INTO posts (id, brand_id, platform, content, image_url, status, created_at, updated_at)
-     VALUES (@id, @brandId, @platform, @content, @imageUrl, 'pending', @now, @now)`,
-  );
-
-  const tx = getDatabase().transaction((rows: typeof items) => {
-    for (const row of rows) {
-      insert.run({ ...row, imageUrl: row.imageUrl ?? null, now });
-    }
-  });
-  tx(items);
-  return getPostsByBrandId(items[0]?.brandId ?? "");
-}
-
-export function updatePostStatus(
-  postId: string,
-  userId: string,
-  status: PostRecord["status"],
-) {
-  const now = new Date().toISOString();
-  const result = getDatabase()
-    .prepare(
-      `UPDATE posts SET status = @status, updated_at = @now
-       WHERE id = @postId AND brand_id IN (SELECT id FROM brands WHERE user_id = @userId)`,
-    )
-    .run({ postId, userId, status, now });
-
-  if (result.changes === 0) return null;
-
-  const row = getDatabase()
-    .prepare(`SELECT * FROM posts WHERE id = ?`)
-    .get(postId) as Record<string, unknown>;
-  return row ? parsePost(row) : null;
-}
-
-export function scheduleApprovedPost(postId: string, userId: string) {
-  const row = getDatabase()
-    .prepare(
-      `SELECT p.* FROM posts p
-       INNER JOIN brands b ON b.id = p.brand_id
-       WHERE p.id = ? AND b.user_id = ?`,
-    )
-    .get(postId, userId) as Record<string, unknown> | undefined;
-
-  if (!row) return null;
-
-  const post = parsePost(row);
-  const existing = getScheduledTimesForBrand(post.brandId);
-  const scheduledAt = getNextScheduleSlot(existing);
-  const now = new Date().toISOString();
-
-  getDatabase()
-    .prepare(
-      `UPDATE posts SET scheduled_at = @scheduledAt, updated_at = @now
-       WHERE id = @postId`,
-    )
-    .run({ postId, scheduledAt, now });
-
-  const updated = getDatabase()
-    .prepare(`SELECT * FROM posts WHERE id = ?`)
-    .get(postId) as Record<string, unknown>;
-  return updated ? parsePost(updated) : null;
-}
-
-export function getDuePosts(userId: string) {
-  const now = new Date().toISOString();
-  const rows = getDatabase()
-    .prepare(
-      `SELECT p.* FROM posts p
-       INNER JOIN brands b ON b.id = p.brand_id
-       WHERE b.user_id = ?
-         AND p.status = 'approved'
-         AND p.scheduled_at IS NOT NULL
-         AND datetime(p.scheduled_at) <= datetime(?)`,
-    )
-    .all(userId, now) as Record<string, unknown>[];
-  return rows.map(parsePost);
-}
-
-export function markPostPublished(postId: string, userId: string, externalPostId: string) {
-  const now = new Date().toISOString();
-  getDatabase()
-    .prepare(
-      `UPDATE posts SET
-        status = 'published',
-        published_at = @now,
-        external_post_id = @externalPostId,
-        publish_error = NULL,
-        updated_at = @now
-       WHERE id = @postId
-         AND brand_id IN (SELECT id FROM brands WHERE user_id = @userId)`,
-    )
-    .run({ postId, userId, externalPostId, now });
-}
-
-export function markPostFailed(postId: string, userId: string, message: string) {
-  const now = new Date().toISOString();
-  getDatabase()
-    .prepare(
-      `UPDATE posts SET
-        status = 'failed',
-        publish_error = @message,
-        updated_at = @now
-       WHERE id = @postId
-         AND brand_id IN (SELECT id FROM brands WHERE user_id = @userId)`,
-    )
-    .run({ postId, userId, message, now });
-}
-
-export function getConnectionsByUserId(userId: string) {
-  const rows = getDatabase()
-    .prepare(
-      `SELECT * FROM connections WHERE user_id = ? ORDER BY datetime(created_at) DESC`,
-    )
-    .all(userId) as Record<string, unknown>[];
-  return rows.map(parseConnection);
-}
-
-export function getConnectionForBrand(brandId: string, platform: string) {
-  const row = getDatabase()
-    .prepare(`SELECT * FROM connections WHERE brand_id = ? AND platform = ?`)
-    .get(brandId, platform.toLowerCase()) as Record<string, unknown> | undefined;
-  return row ? parseConnection(row) : null;
-}
-
-export function upsertConnection(input: {
-  id: string;
-  userId: string;
-  brandId: string;
-  platform: string;
-  accountName?: string;
-  accessToken?: string;
-  isDemo?: boolean;
-}) {
-  const now = new Date().toISOString();
-  getDatabase()
-    .prepare(
-      `INSERT INTO connections (id, user_id, brand_id, platform, account_name, access_token, is_demo, created_at, updated_at)
-       VALUES (@id, @userId, @brandId, @platform, @accountName, @accessToken, @isDemo, @now, @now)
-       ON CONFLICT(brand_id, platform) DO UPDATE SET
-         account_name = excluded.account_name,
-         access_token = excluded.access_token,
-         is_demo = excluded.is_demo,
-         updated_at = excluded.updated_at`,
-    )
-    .run({
-      id: input.id,
-      userId: input.userId,
-      brandId: input.brandId,
-      platform: input.platform.toLowerCase(),
-      accountName: input.accountName ?? null,
-      accessToken: input.accessToken ?? null,
-      isDemo: input.isDemo ? 1 : 0,
-      now,
-    });
-
-  return getConnectionForBrand(input.brandId, input.platform);
-}
-
-export function deleteConnection(connectionId: string, userId: string) {
-  const result = getDatabase()
-    .prepare(`DELETE FROM connections WHERE id = ? AND user_id = ?`)
-    .run(connectionId, userId);
-  return result.changes > 0;
-}
-
-export function userHasConnections(userId: string) {
-  const row = getDatabase()
-    .prepare(`SELECT COUNT(*) as count FROM connections WHERE user_id = ?`)
-    .get(userId) as { count: number };
-  return row.count > 0;
-}
-
-function parseUser(row: Record<string, unknown>): UserRecord {
-  const tier = String(row.subscription_tier);
-  return {
-    id: String(row.id),
-    email: row.email ? String(row.email) : null,
-    subscriptionTier:
-      tier === "pro" || tier === "max" ? tier : "free",
-    stripeCustomerId: row.stripe_customer_id ? String(row.stripe_customer_id) : null,
-    createdAt: String(row.created_at),
-    updatedAt: String(row.updated_at),
-  };
-}
-
-export function getUserById(userId: string) {
-  const row = getDatabase()
-    .prepare(`SELECT * FROM users WHERE id = ?`)
-    .get(userId) as Record<string, unknown> | undefined;
-  return row ? parseUser(row) : null;
-}
-
-export function getOrCreateUser(userId: string, email?: string | null) {
-  const existing = getUserById(userId);
-  if (existing) {
-    if (email && email !== existing.email) {
-      const now = new Date().toISOString();
-      getDatabase()
-        .prepare(`UPDATE users SET email = @email, updated_at = @now WHERE id = @userId`)
-        .run({ userId, email, now });
-      return getUserById(userId)!;
-    }
-    return existing;
-  }
-
-  const now = new Date().toISOString();
-  getDatabase()
-    .prepare(
-      `INSERT INTO users (id, email, subscription_tier, created_at, updated_at)
-       VALUES (@userId, @email, 'free', @now, @now)`,
-    )
-    .run({ userId, email: email ?? null, now });
-
-  return getUserById(userId)!;
-}
-
-export function updateUserSubscription(
-  userId: string,
-  data: {
-    subscriptionTier: UserRecord["subscriptionTier"];
-    stripeCustomerId?: string | null;
-  },
-) {
-  const now = new Date().toISOString();
-  const existing = getUserById(userId);
-  getDatabase()
-    .prepare(
-      `INSERT INTO users (id, email, subscription_tier, stripe_customer_id, created_at, updated_at)
-       VALUES (@userId, NULL, @subscriptionTier, @stripeCustomerId, @now, @now)
-       ON CONFLICT(id) DO UPDATE SET
-         subscription_tier = excluded.subscription_tier,
-         stripe_customer_id = COALESCE(excluded.stripe_customer_id, users.stripe_customer_id),
-         updated_at = excluded.updated_at`,
-    )
-    .run({
-      userId,
-      subscriptionTier: data.subscriptionTier,
-      stripeCustomerId: data.stripeCustomerId ?? existing?.stripeCustomerId ?? null,
-      now,
-    });
-
-  return getUserById(userId)!;
-}
-
-export function getDashboardStats(userId: string) {
-  const scheduled = getDatabase()
-    .prepare(
-      `SELECT COUNT(*) as count FROM posts p
-       INNER JOIN brands b ON b.id = p.brand_id
-       WHERE b.user_id = ? AND p.status = 'approved' AND p.scheduled_at IS NOT NULL`,
-    )
-    .get(userId) as { count: number };
-
-  const pending = getDatabase()
-    .prepare(
-      `SELECT COUNT(*) as count FROM posts p
-       INNER JOIN brands b ON b.id = p.brand_id
-       WHERE b.user_id = ? AND p.status = 'pending'`,
-    )
-    .get(userId) as { count: number };
-
-  const brands = getDatabase()
-    .prepare(`SELECT COUNT(*) as count FROM brands WHERE user_id = ?`)
-    .get(userId) as { count: number };
-
-  const published = getDatabase()
-    .prepare(
-      `SELECT COUNT(*) as count FROM posts p
-       INNER JOIN brands b ON b.id = p.brand_id
-       WHERE b.user_id = ? AND p.status = 'published'`,
-    )
-    .get(userId) as { count: number };
-
-  return {
-    scheduled: scheduled.count,
-    pending: pending.count,
-    brands: brands.count,
-    published: published.count,
-  };
-}
-
 export type AnalyticsSummary = {
   totalPosts: number;
   pending: number;
@@ -674,17 +86,569 @@ export type ActivityItem = CalendarPost & {
   action: "published" | "scheduled" | "skipped" | "failed" | "generated";
 };
 
-export function getAnalyticsSummary(userId: string): AnalyticsSummary {
-  const db = getDatabase();
+function parseBrand(row: typeof brands.$inferSelect): BrandRecord {
+  return {
+    id: row.id,
+    userId: row.userId,
+    name: row.name,
+    websiteUrl: row.websiteUrl,
+    description: row.description,
+    crawlStatus: row.crawlStatus as BrandRecord["crawlStatus"],
+    researchData: row.researchData,
+    postingFrequency: row.postingFrequency,
+    createdAt: row.createdAt,
+    updatedAt: row.updatedAt,
+  };
+}
 
-  const counts = db
-    .prepare(
-      `SELECT p.status, COUNT(*) as count FROM posts p
-       INNER JOIN brands b ON b.id = p.brand_id
-       WHERE b.user_id = ?
-       GROUP BY p.status`,
+function parsePost(row: typeof posts.$inferSelect): PostRecord {
+  return {
+    id: row.id,
+    brandId: row.brandId,
+    platform: row.platform,
+    content: row.content,
+    imageUrl: row.imageUrl,
+    status: row.status as PostRecord["status"],
+    scheduledAt: row.scheduledAt,
+    publishedAt: row.publishedAt,
+    externalPostId: row.externalPostId,
+    publishError: row.publishError,
+    createdAt: row.createdAt,
+    updatedAt: row.updatedAt,
+  };
+}
+
+function parseConnection(row: typeof connections.$inferSelect): ConnectionRecord {
+  return {
+    id: row.id,
+    userId: row.userId,
+    brandId: row.brandId,
+    platform: row.platform,
+    accountName: row.accountName,
+    accessToken: row.accessToken,
+    isDemo: row.isDemo,
+    createdAt: row.createdAt,
+    updatedAt: row.updatedAt,
+  };
+}
+
+function parseUser(row: typeof users.$inferSelect): UserRecord {
+  const tier = row.subscriptionTier;
+  return {
+    id: row.id,
+    email: row.email,
+    subscriptionTier: tier === "pro" || tier === "max" ? tier : "free",
+    stripeCustomerId: row.stripeCustomerId,
+    createdAt: row.createdAt,
+    updatedAt: row.updatedAt,
+  };
+}
+
+function nowIso() {
+  return new Date().toISOString();
+}
+
+export async function getBrandsByUserId(userId: string) {
+  const db = await getDb();
+  const rows = await db
+    .select()
+    .from(brands)
+    .where(eq(brands.userId, userId))
+    .orderBy(desc(brands.createdAt));
+  return rows.map(parseBrand);
+}
+
+export async function getBrandById(id: string, userId: string) {
+  const db = await getDb();
+  const row = await db.query.brands.findFirst({
+    where: and(eq(brands.id, id), eq(brands.userId, userId)),
+  });
+  return row ? parseBrand(row) : null;
+}
+
+export async function getBrandByWebsite(userId: string, websiteUrl: string) {
+  const db = await getDb();
+  const row = await db.query.brands.findFirst({
+    where: and(eq(brands.userId, userId), eq(brands.websiteUrl, websiteUrl)),
+  });
+  return row ? parseBrand(row) : null;
+}
+
+export async function createBrand(input: {
+  id: string;
+  userId: string;
+  name: string;
+  websiteUrl: string;
+  description?: string;
+}) {
+  const db = await getDb();
+  const now = nowIso();
+  await db.insert(brands).values({
+    id: input.id,
+    userId: input.userId,
+    name: input.name,
+    websiteUrl: input.websiteUrl,
+    description: input.description ?? null,
+    crawlStatus: "pending",
+    postingFrequency: 3,
+    createdAt: now,
+    updatedAt: now,
+  });
+  return (await getBrandById(input.id, input.userId))!;
+}
+
+export async function updateBrand(
+  id: string,
+  userId: string,
+  data: Partial<{
+    name: string;
+    description: string;
+    crawlStatus: BrandRecord["crawlStatus"];
+    researchData: unknown;
+  }>,
+) {
+  const existing = await getBrandById(id, userId);
+  if (!existing) return null;
+
+  const db = await getDb();
+  await db
+    .update(brands)
+    .set({
+      name: data.name ?? existing.name,
+      description: data.description ?? existing.description,
+      crawlStatus: data.crawlStatus ?? existing.crawlStatus,
+      researchData:
+        data.researchData !== undefined
+          ? JSON.stringify(data.researchData)
+          : existing.researchData,
+      updatedAt: nowIso(),
+    })
+    .where(and(eq(brands.id, id), eq(brands.userId, userId)));
+
+  return getBrandById(id, userId);
+}
+
+export async function deleteBrand(id: string, userId: string) {
+  const db = await getDb();
+  const result = await db
+    .delete(brands)
+    .where(and(eq(brands.id, id), eq(brands.userId, userId)))
+    .returning({ id: brands.id });
+  return result.length > 0;
+}
+
+export async function getPostsByBrandId(brandId: string) {
+  const db = await getDb();
+  const rows = await db
+    .select()
+    .from(posts)
+    .where(eq(posts.brandId, brandId))
+    .orderBy(desc(posts.createdAt));
+  return rows.map(parsePost);
+}
+
+export async function getPendingPostsByUserId(userId: string) {
+  const db = await getDb();
+  const rows = await db
+    .select({ post: posts })
+    .from(posts)
+    .innerJoin(brands, eq(brands.id, posts.brandId))
+    .where(and(eq(brands.userId, userId), eq(posts.status, "pending")))
+    .orderBy(desc(posts.createdAt));
+  return rows.map((row) => parsePost(row.post));
+}
+
+export async function getScheduledPostsByUserId(userId: string, limit = 8) {
+  const db = await getDb();
+  const rows = await db
+    .select({ post: posts, brandName: brands.name })
+    .from(posts)
+    .innerJoin(brands, eq(brands.id, posts.brandId))
+    .where(
+      and(
+        eq(brands.userId, userId),
+        inArray(posts.status, ["approved", "published"]),
+        isNotNull(posts.scheduledAt),
+      ),
     )
-    .all(userId) as Array<{ status: string; count: number }>;
+    .orderBy(asc(posts.scheduledAt))
+    .limit(limit);
+
+  return rows.map((row) => ({
+    ...parsePost(row.post),
+    brandName: row.brandName,
+  })) as CalendarPost[];
+}
+
+export async function getCalendarPostsByUserId(userId: string, from: string, to: string) {
+  const db = await getDb();
+  const rows = await db
+    .select({ post: posts, brandName: brands.name })
+    .from(posts)
+    .innerJoin(brands, eq(brands.id, posts.brandId))
+    .where(
+      and(
+        eq(brands.userId, userId),
+        isNotNull(posts.scheduledAt),
+        gte(posts.scheduledAt, from),
+        lte(posts.scheduledAt, to),
+      ),
+    )
+    .orderBy(asc(posts.scheduledAt));
+
+  return rows.map((row) => ({
+    ...parsePost(row.post),
+    brandName: row.brandName,
+  })) as CalendarPost[];
+}
+
+export async function getScheduledTimesForBrand(brandId: string) {
+  const db = await getDb();
+  const rows = await db
+    .select({ scheduledAt: posts.scheduledAt })
+    .from(posts)
+    .where(
+      and(
+        eq(posts.brandId, brandId),
+        isNotNull(posts.scheduledAt),
+        inArray(posts.status, ["approved", "published"]),
+      ),
+    );
+  return rows
+    .map((row) => row.scheduledAt)
+    .filter((value): value is string => Boolean(value));
+}
+
+export async function createPosts(
+  items: Array<{
+    id: string;
+    brandId: string;
+    platform: string;
+    content: string;
+    imageUrl?: string | null;
+  }>,
+) {
+  if (items.length === 0) return [];
+
+  const db = await getDb();
+  const now = nowIso();
+  await db.insert(posts).values(
+    items.map((item) => ({
+      id: item.id,
+      brandId: item.brandId,
+      platform: item.platform,
+      content: item.content,
+      imageUrl: item.imageUrl ?? null,
+      status: "pending",
+      createdAt: now,
+      updatedAt: now,
+    })),
+  );
+
+  return getPostsByBrandId(items[0]!.brandId);
+}
+
+export async function updatePostStatus(
+  postId: string,
+  userId: string,
+  status: PostRecord["status"],
+) {
+  const db = await getDb();
+  const owned = await db
+    .select({ id: posts.id })
+    .from(posts)
+    .innerJoin(brands, eq(brands.id, posts.brandId))
+    .where(and(eq(posts.id, postId), eq(brands.userId, userId)))
+    .limit(1);
+
+  if (owned.length === 0) return null;
+
+  const now = nowIso();
+  await db
+    .update(posts)
+    .set({ status, updatedAt: now })
+    .where(eq(posts.id, postId));
+
+  const row = await db.query.posts.findFirst({ where: eq(posts.id, postId) });
+  return row ? parsePost(row) : null;
+}
+
+export async function scheduleApprovedPost(postId: string, userId: string) {
+  const db = await getDb();
+  const row = await db
+    .select({ post: posts })
+    .from(posts)
+    .innerJoin(brands, eq(brands.id, posts.brandId))
+    .where(and(eq(posts.id, postId), eq(brands.userId, userId)))
+    .limit(1);
+
+  if (row.length === 0) return null;
+
+  const post = parsePost(row[0]!.post);
+  const existing = await getScheduledTimesForBrand(post.brandId);
+  const scheduledAt = getNextScheduleSlot(existing);
+  const now = nowIso();
+
+  await db
+    .update(posts)
+    .set({ scheduledAt, updatedAt: now })
+    .where(eq(posts.id, postId));
+
+  const updated = await db.query.posts.findFirst({ where: eq(posts.id, postId) });
+  return updated ? parsePost(updated) : null;
+}
+
+export async function getDuePosts(userId: string) {
+  const db = await getDb();
+  const now = nowIso();
+  const rows = await db
+    .select({ post: posts })
+    .from(posts)
+    .innerJoin(brands, eq(brands.id, posts.brandId))
+    .where(
+      and(
+        eq(brands.userId, userId),
+        eq(posts.status, "approved"),
+        isNotNull(posts.scheduledAt),
+        lte(posts.scheduledAt, now),
+      ),
+    );
+  return rows.map((row) => parsePost(row.post));
+}
+
+export async function markPostPublished(
+  postId: string,
+  userId: string,
+  externalPostId: string,
+) {
+  const db = await getDb();
+  const now = nowIso();
+  await db
+    .update(posts)
+    .set({
+      status: "published",
+      publishedAt: now,
+      externalPostId,
+      publishError: null,
+      updatedAt: now,
+    })
+    .where(
+      sql`${posts.id} = ${postId} AND ${posts.brandId} IN (
+        SELECT id FROM brands WHERE user_id = ${userId}
+      )`,
+    );
+}
+
+export async function markPostFailed(postId: string, userId: string, message: string) {
+  const db = await getDb();
+  const now = nowIso();
+  await db
+    .update(posts)
+    .set({
+      status: "failed",
+      publishError: message,
+      updatedAt: now,
+    })
+    .where(
+      sql`${posts.id} = ${postId} AND ${posts.brandId} IN (
+        SELECT id FROM brands WHERE user_id = ${userId}
+      )`,
+    );
+}
+
+export async function getConnectionsByUserId(userId: string) {
+  const db = await getDb();
+  const rows = await db
+    .select()
+    .from(connections)
+    .where(eq(connections.userId, userId))
+    .orderBy(desc(connections.createdAt));
+  return rows.map(parseConnection);
+}
+
+export async function getConnectionForBrand(brandId: string, platform: string) {
+  const db = await getDb();
+  const row = await db.query.connections.findFirst({
+    where: and(
+      eq(connections.brandId, brandId),
+      eq(connections.platform, platform.toLowerCase()),
+    ),
+  });
+  return row ? parseConnection(row) : null;
+}
+
+export async function upsertConnection(input: {
+  id: string;
+  userId: string;
+  brandId: string;
+  platform: string;
+  accountName?: string;
+  accessToken?: string;
+  isDemo?: boolean;
+}) {
+  const db = await getDb();
+  const now = nowIso();
+  const platform = input.platform.toLowerCase();
+
+  await db
+    .insert(connections)
+    .values({
+      id: input.id,
+      userId: input.userId,
+      brandId: input.brandId,
+      platform,
+      accountName: input.accountName ?? null,
+      accessToken: input.accessToken ?? null,
+      isDemo: input.isDemo ?? false,
+      createdAt: now,
+      updatedAt: now,
+    })
+    .onConflictDoUpdate({
+      target: [connections.brandId, connections.platform],
+      set: {
+        accountName: input.accountName ?? null,
+        accessToken: input.accessToken ?? null,
+        isDemo: input.isDemo ?? false,
+        updatedAt: now,
+      },
+    });
+
+  return getConnectionForBrand(input.brandId, platform);
+}
+
+export async function deleteConnection(connectionId: string, userId: string) {
+  const db = await getDb();
+  const result = await db
+    .delete(connections)
+    .where(and(eq(connections.id, connectionId), eq(connections.userId, userId)))
+    .returning({ id: connections.id });
+  return result.length > 0;
+}
+
+export async function userHasConnections(userId: string) {
+  const db = await getDb();
+  const [row] = await db
+    .select({ count: count() })
+    .from(connections)
+    .where(eq(connections.userId, userId));
+  return (row?.count ?? 0) > 0;
+}
+
+export async function getUserById(userId: string) {
+  const db = await getDb();
+  const row = await db.query.users.findFirst({ where: eq(users.id, userId) });
+  return row ? parseUser(row) : null;
+}
+
+export async function getOrCreateUser(userId: string, email?: string | null) {
+  const existing = await getUserById(userId);
+  if (existing) {
+    if (email && email !== existing.email) {
+      const db = await getDb();
+      await db
+        .update(users)
+        .set({ email, updatedAt: nowIso() })
+        .where(eq(users.id, userId));
+      return (await getUserById(userId))!;
+    }
+    return existing;
+  }
+
+  const db = await getDb();
+  const now = nowIso();
+  await db.insert(users).values({
+    id: userId,
+    email: email ?? null,
+    subscriptionTier: "free",
+    createdAt: now,
+    updatedAt: now,
+  });
+
+  return (await getUserById(userId))!;
+}
+
+export async function updateUserSubscription(
+  userId: string,
+  data: {
+    subscriptionTier: UserRecord["subscriptionTier"];
+    stripeCustomerId?: string | null;
+  },
+) {
+  const db = await getDb();
+  const now = nowIso();
+  const existing = await getUserById(userId);
+
+  await db
+    .insert(users)
+    .values({
+      id: userId,
+      email: existing?.email ?? null,
+      subscriptionTier: data.subscriptionTier,
+      stripeCustomerId: data.stripeCustomerId ?? existing?.stripeCustomerId ?? null,
+      createdAt: now,
+      updatedAt: now,
+    })
+    .onConflictDoUpdate({
+      target: users.id,
+      set: {
+        subscriptionTier: data.subscriptionTier,
+        stripeCustomerId: data.stripeCustomerId ?? existing?.stripeCustomerId ?? null,
+        updatedAt: now,
+      },
+    });
+
+  return (await getUserById(userId))!;
+}
+
+export async function getDashboardStats(userId: string) {
+  const db = await getDb();
+
+  const [scheduledRow] = await db
+    .select({ count: count() })
+    .from(posts)
+    .innerJoin(brands, eq(brands.id, posts.brandId))
+    .where(
+      and(
+        eq(brands.userId, userId),
+        eq(posts.status, "approved"),
+        isNotNull(posts.scheduledAt),
+      ),
+    );
+
+  const [pendingRow] = await db
+    .select({ count: count() })
+    .from(posts)
+    .innerJoin(brands, eq(brands.id, posts.brandId))
+    .where(and(eq(brands.userId, userId), eq(posts.status, "pending")));
+
+  const [brandsRow] = await db
+    .select({ count: count() })
+    .from(brands)
+    .where(eq(brands.userId, userId));
+
+  const [publishedRow] = await db
+    .select({ count: count() })
+    .from(posts)
+    .innerJoin(brands, eq(brands.id, posts.brandId))
+    .where(and(eq(brands.userId, userId), eq(posts.status, "published")));
+
+  return {
+    scheduled: scheduledRow?.count ?? 0,
+    pending: pendingRow?.count ?? 0,
+    brands: brandsRow?.count ?? 0,
+    published: publishedRow?.count ?? 0,
+  };
+}
+
+export async function getAnalyticsSummary(userId: string): Promise<AnalyticsSummary> {
+  const db = await getDb();
+
+  const counts = await db
+    .select({ status: posts.status, count: count() })
+    .from(posts)
+    .innerJoin(brands, eq(brands.id, posts.brandId))
+    .where(eq(brands.userId, userId))
+    .groupBy(posts.status);
 
   const countByStatus = Object.fromEntries(
     counts.map((row) => [row.status, row.count]),
@@ -699,36 +663,40 @@ export function getAnalyticsSummary(userId: string): AnalyticsSummary {
   const approvalRate =
     reviewed > 0 ? Math.round(((scheduled + published + failed) / reviewed) * 100) : 0;
 
-  const publishedThisWeek = (
-    db
-      .prepare(
-        `SELECT COUNT(*) as count FROM posts p
-         INNER JOIN brands b ON b.id = p.brand_id
-         WHERE b.user_id = ? AND p.status = 'published'
-           AND datetime(p.published_at) >= datetime('now', '-7 days')`,
-      )
-      .get(userId) as { count: number }
-  ).count;
+  const [weekRow] = await db
+    .select({ count: count() })
+    .from(posts)
+    .innerJoin(brands, eq(brands.id, posts.brandId))
+    .where(
+      and(
+        eq(brands.userId, userId),
+        eq(posts.status, "published"),
+        gte(posts.publishedAt, sql`NOW() - INTERVAL '7 days'`),
+      ),
+    );
 
-  const publishedThisMonth = (
-    db
-      .prepare(
-        `SELECT COUNT(*) as count FROM posts p
-         INNER JOIN brands b ON b.id = p.brand_id
-         WHERE b.user_id = ? AND p.status = 'published'
-           AND datetime(p.published_at) >= datetime('now', '-30 days')`,
-      )
-      .get(userId) as { count: number }
-  ).count;
+  const [monthRow] = await db
+    .select({ count: count() })
+    .from(posts)
+    .innerJoin(brands, eq(brands.id, posts.brandId))
+    .where(
+      and(
+        eq(brands.userId, userId),
+        eq(posts.status, "published"),
+        gte(posts.publishedAt, sql`NOW() - INTERVAL '30 days'`),
+      ),
+    );
 
-  const platformRows = db
-    .prepare(
-      `SELECT p.platform, p.status, COUNT(*) as count FROM posts p
-       INNER JOIN brands b ON b.id = p.brand_id
-       WHERE b.user_id = ?
-       GROUP BY p.platform, p.status`,
-    )
-    .all(userId) as Array<{ platform: string; status: string; count: number }>;
+  const platformRows = await db
+    .select({
+      platform: posts.platform,
+      status: posts.status,
+      count: count(),
+    })
+    .from(posts)
+    .innerJoin(brands, eq(brands.id, posts.brandId))
+    .where(eq(brands.userId, userId))
+    .groupBy(posts.platform, posts.status);
 
   const platformMap = new Map<string, { total: number; published: number }>();
   for (const row of platformRows) {
@@ -740,26 +708,25 @@ export function getAnalyticsSummary(userId: string): AnalyticsSummary {
     platformMap.set(row.platform, current);
   }
 
-  const weeklyRows = db
-    .prepare(
-      `SELECT strftime('%Y-%W', p.published_at) as week_key,
-              MIN(date(p.published_at)) as week_start,
-              COUNT(*) as count
-       FROM posts p
-       INNER JOIN brands b ON b.id = p.brand_id
-       WHERE b.user_id = ? AND p.status = 'published' AND p.published_at IS NOT NULL
-         AND datetime(p.published_at) >= datetime('now', '-56 days')
-       GROUP BY week_key
-       ORDER BY week_key ASC`,
-    )
-    .all(userId) as Array<{ week_key: string; week_start: string; count: number }>;
+  const weeklyRows = await db.execute(sql`
+    SELECT
+      TO_CHAR(MIN(p.published_at), 'Mon DD') AS week_start,
+      COUNT(*)::int AS count
+    FROM posts p
+    INNER JOIN brands b ON b.id = p.brand_id
+    WHERE b.user_id = ${userId}
+      AND p.status = 'published'
+      AND p.published_at IS NOT NULL
+      AND p.published_at >= NOW() - INTERVAL '56 days'
+    GROUP BY DATE_TRUNC('week', p.published_at)
+    ORDER BY DATE_TRUNC('week', p.published_at) ASC
+  `);
 
-  const weeklyPublished = weeklyRows.map((row) => ({
-    label: new Date(`${row.week_start}T12:00:00`).toLocaleDateString(undefined, {
-      month: "short",
-      day: "numeric",
-    }),
-    count: row.count,
+  const weeklyPublished = (
+    weeklyRows.rows as Array<{ week_start: string; count: number }>
+  ).map((row) => ({
+    label: row.week_start,
+    count: Number(row.count),
   }));
 
   return {
@@ -770,8 +737,8 @@ export function getAnalyticsSummary(userId: string): AnalyticsSummary {
     failed,
     skipped,
     approvalRate,
-    publishedThisWeek,
-    publishedThisMonth,
+    publishedThisWeek: weekRow?.count ?? 0,
+    publishedThisMonth: monthRow?.count ?? 0,
     byPlatform: Array.from(platformMap.entries()).map(([platform, stats]) => ({
       platform,
       total: stats.total,
@@ -781,45 +748,45 @@ export function getAnalyticsSummary(userId: string): AnalyticsSummary {
   };
 }
 
-export function getPostHistory(
+export async function getPostHistory(
   userId: string,
   filter: "all" | "published" | "failed" = "all",
   limit = 50,
 ) {
-  const statusClause =
+  const db = await getDb();
+  const statusFilter =
     filter === "all"
-      ? `p.status IN ('published', 'failed')`
-      : `p.status = '${filter}'`;
+      ? inArray(posts.status, ["published", "failed"])
+      : eq(posts.status, filter);
 
-  const rows = getDatabase()
-    .prepare(
-      `SELECT p.*, b.name as brand_name FROM posts p
-       INNER JOIN brands b ON b.id = p.brand_id
-       WHERE b.user_id = ? AND ${statusClause}
-       ORDER BY datetime(COALESCE(p.published_at, p.scheduled_at, p.updated_at)) DESC
-       LIMIT ?`,
+  const rows = await db
+    .select({ post: posts, brandName: brands.name })
+    .from(posts)
+    .innerJoin(brands, eq(brands.id, posts.brandId))
+    .where(and(eq(brands.userId, userId), statusFilter))
+    .orderBy(
+      desc(sql`COALESCE(${posts.publishedAt}, ${posts.scheduledAt}, ${posts.updatedAt})`),
     )
-    .all(userId, limit) as Record<string, unknown>[];
+    .limit(limit);
 
   return rows.map((row) => ({
-    ...parsePost(row),
-    brandName: String(row.brand_name),
+    ...parsePost(row.post),
+    brandName: row.brandName,
   })) as CalendarPost[];
 }
 
-export function getRecentActivity(userId: string, limit = 12): ActivityItem[] {
-  const rows = getDatabase()
-    .prepare(
-      `SELECT p.*, b.name as brand_name FROM posts p
-       INNER JOIN brands b ON b.id = p.brand_id
-       WHERE b.user_id = ? AND p.status != 'pending'
-       ORDER BY datetime(p.updated_at) DESC
-       LIMIT ?`,
-    )
-    .all(userId, limit) as Record<string, unknown>[];
+export async function getRecentActivity(userId: string, limit = 12): Promise<ActivityItem[]> {
+  const db = await getDb();
+  const rows = await db
+    .select({ post: posts, brandName: brands.name })
+    .from(posts)
+    .innerJoin(brands, eq(brands.id, posts.brandId))
+    .where(and(eq(brands.userId, userId), ne(posts.status, "pending")))
+    .orderBy(desc(posts.updatedAt))
+    .limit(limit);
 
   return rows.map((row) => {
-    const post = parsePost(row);
+    const post = parsePost(row.post);
     let action: ActivityItem["action"] = "generated";
 
     if (post.status === "published") action = "published";
@@ -829,7 +796,7 @@ export function getRecentActivity(userId: string, limit = 12): ActivityItem[] {
 
     return {
       ...post,
-      brandName: String(row.brand_name),
+      brandName: row.brandName,
       action,
     };
   });

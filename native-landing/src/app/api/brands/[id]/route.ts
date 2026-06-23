@@ -11,12 +11,12 @@ export async function GET(
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const brand = getBrandById(params.id, userId);
+  const brand = await getBrandById(params.id, userId);
   if (!brand) {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
 
-  const posts = getPostsByBrandId(brand.id);
+  const posts = await getPostsByBrandId(brand.id);
 
   return NextResponse.json({
     brand: {
@@ -36,7 +36,7 @@ export async function DELETE(
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const removed = deleteBrand(params.id, userId);
+  const removed = await deleteBrand(params.id, userId);
   if (!removed) {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }

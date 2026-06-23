@@ -10,7 +10,7 @@ export async function GET() {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  return NextResponse.json(getConnectionsByUserId(userId));
+  return NextResponse.json(await getConnectionsByUserId(userId));
 }
 
 const demoSchema = z.object({
@@ -28,14 +28,14 @@ export async function POST(req: Request) {
   try {
     const body = await req.json();
     const data = demoSchema.parse(body);
-    const brand = getBrandById(data.brandId, userId);
+    const brand = await getBrandById(data.brandId, userId);
 
     if (!brand) {
       return NextResponse.json({ error: "Brand not found" }, { status: 404 });
     }
 
     const platform = data.platform.toLowerCase();
-    const connection = upsertConnection({
+    const connection = await upsertConnection({
       id: randomUUID(),
       userId,
       brandId: data.brandId,
@@ -65,7 +65,7 @@ export async function DELETE(req: Request) {
     return NextResponse.json({ error: "Connection id required" }, { status: 400 });
   }
 
-  const removed = deleteConnection(connectionId, userId);
+  const removed = await deleteConnection(connectionId, userId);
   if (!removed) {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }

@@ -28,22 +28,22 @@ export async function getAppContext(urlParam?: string) {
   await processDuePostsForUser(userId);
 
   const clerkUser = await currentUser();
-  const dbUser = getOrCreateUser(
+  const dbUser = await getOrCreateUser(
     userId,
     clerkUser?.emailAddresses[0]?.emailAddress ?? null,
   );
   const plan = getPlanLimits(dbUser.subscriptionTier);
 
   const websiteUrl = urlParam ? normalizeWebsiteUrl(urlParam) : null;
-  const brands = getBrandsByUserId(userId);
-  const stats = getDashboardStats(userId);
-  const pendingPosts = getPendingPostsByUserId(userId).slice(0, 5);
-  const scheduledPosts = getScheduledPostsByUserId(userId, 5);
-  const recentActivity = getRecentActivity(userId, 6);
-  const analytics = getAnalyticsSummary(userId);
-  const hasConnections = userHasConnections(userId);
+  const brands = await getBrandsByUserId(userId);
+  const stats = await getDashboardStats(userId);
+  const pendingPosts = (await getPendingPostsByUserId(userId)).slice(0, 5);
+  const scheduledPosts = await getScheduledPostsByUserId(userId, 5);
+  const recentActivity = await getRecentActivity(userId, 6);
+  const analytics = await getAnalyticsSummary(userId);
+  const hasConnections = await userHasConnections(userId);
   const primaryBrand =
-    (websiteUrl ? getBrandByWebsite(userId, websiteUrl) : null) ?? brands[0] ?? null;
+    (websiteUrl ? await getBrandByWebsite(userId, websiteUrl) : null) ?? brands[0] ?? null;
 
   return {
     userId,

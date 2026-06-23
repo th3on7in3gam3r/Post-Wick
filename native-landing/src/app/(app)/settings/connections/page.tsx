@@ -27,8 +27,8 @@ export default async function ConnectionsPage({
   searchParams: { connected?: string; error?: string };
 }) {
   const userId = await requireUserId();
-  const brands = getBrandsByUserId(userId);
-  const connections = getConnectionsByUserId(userId);
+  const brands = await getBrandsByUserId(userId);
+  const connections = await getConnectionsByUserId(userId);
   const linkedInConfigured = Boolean(process.env.LINKEDIN_CLIENT_ID);
 
   return (

@@ -15,7 +15,7 @@ export async function GET(req: Request) {
     return NextResponse.json({ error: "brandId required" }, { status: 400 });
   }
 
-  const brand = getBrandById(brandId, userId);
+  const brand = await getBrandById(brandId, userId);
   if (!brand) {
     return NextResponse.json({ error: "Brand not found" }, { status: 404 });
   }

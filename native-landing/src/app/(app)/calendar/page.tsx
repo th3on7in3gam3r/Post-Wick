@@ -16,7 +16,7 @@ export default async function CalendarPage() {
   const end = new Date(start);
   end.setDate(end.getDate() + 13);
 
-  const posts = getCalendarPostsByUserId(userId, start.toISOString(), end.toISOString());
+  const posts = await getCalendarPostsByUserId(userId, start.toISOString(), end.toISOString());
 
   return (
     <>

@@ -18,14 +18,14 @@ export async function GET(req: Request) {
     return NextResponse.redirect("/settings/connections?error=invalid_callback");
   }
 
-  const brand = getBrandById(brandId, userId);
+  const brand = await getBrandById(brandId, userId);
   if (!brand) {
     return NextResponse.redirect("/settings/connections?error=brand_not_found");
   }
 
   try {
     const token = await exchangeLinkedInCode(code);
-    upsertConnection({
+    await upsertConnection({
       id: randomUUID(),
       userId,
       brandId,

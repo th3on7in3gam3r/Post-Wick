@@ -17,9 +17,9 @@ export async function GET(req: Request) {
         ? searchParams.get("filter")
         : "all";
     return NextResponse.json(
-      getPostHistory(userId, filter as "all" | "published" | "failed"),
+      await getPostHistory(userId, filter as "all" | "published" | "failed"),
     );
   }
 
-  return NextResponse.json(getAnalyticsSummary(userId));
+  return NextResponse.json(await getAnalyticsSummary(userId));
 }

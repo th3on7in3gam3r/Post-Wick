@@ -11,10 +11,10 @@ export async function GET(
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const brand = getBrandById(params.id, userId);
+  const brand = await getBrandById(params.id, userId);
   if (!brand) {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
 
-  return NextResponse.json(getPostsByBrandId(params.id));
+  return NextResponse.json(await getPostsByBrandId(params.id));
 }

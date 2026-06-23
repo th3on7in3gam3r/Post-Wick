@@ -13,7 +13,7 @@ export async function POST() {
     return NextResponse.json({ error: "Stripe is not configured" }, { status: 503 });
   }
 
-  const user = getOrCreateUser(userId);
+  const user = await getOrCreateUser(userId);
   if (!user.stripeCustomerId) {
     return NextResponse.json({ error: "No billing account yet" }, { status: 400 });
   }
