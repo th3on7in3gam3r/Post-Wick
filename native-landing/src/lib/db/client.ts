@@ -73,6 +73,7 @@ async function ensureSchema() {
   await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS notify_publish BOOLEAN NOT NULL DEFAULT TRUE`;
   await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS notify_weekly_digest BOOLEAN NOT NULL DEFAULT FALSE`;
   await sql`ALTER TABLE connections ADD COLUMN IF NOT EXISTS metadata TEXT`;
+  await sql`CREATE INDEX IF NOT EXISTS idx_brands_user_id ON brands(user_id)`;
   await sql`CREATE INDEX IF NOT EXISTS idx_posts_brand_id ON posts(brand_id)`;
   await sql`CREATE INDEX IF NOT EXISTS idx_posts_status ON posts(status)`;
   await sql`CREATE INDEX IF NOT EXISTS idx_posts_scheduled_at ON posts(scheduled_at)`;

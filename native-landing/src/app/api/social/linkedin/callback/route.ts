@@ -4,27 +4,46 @@ import { NextResponse } from "next/server";
 import { getBrandById, upsertConnection } from "@/lib/db";
 import { exchangeLinkedInCode } from "@/lib/social/linkedin";
 
+function integrationsUrl(req: Request, query: string) {
+  return new URL(`/settings/integrations?${query}`, req.url);
+}
+
 export async function GET(req: Request) {
-  const { userId } = await auth();
-  if (!userId) {
-    return NextResponse.redirect("/sign-in");
-  }
-
-  const { searchParams } = new URL(req.url);
-  const code = searchParams.get("code");
-  const brandId = searchParams.get("state");
-
-  if (!code || !brandId) {
-    return NextResponse.redirect("/settings/integrations?error=invalid_callback");
-  }
-
-  const brand = await getBrandById(brandId, userId);
-  if (!brand) {
-    return NextResponse.redirect("/settings/integrations?error=brand_not_found");
-  }
-
   try {
+    const { userId } = await auth();
+    if (!userId) {
+      return NextResponse.redirect(
+        new URL("/sign-in?redirect_url=/settings/integrations", req.url),
+      );
+    }
+
+    const { searchParams } = new URL(req.url);
+    const code = searchParams.get("code");
+    const brandId = searchParams.get("state");
+    const oauthError = searchParams.get("error");
+
+    if (oauthError) {
+      return NextResponse.redirect(
+        integrationsUrl(req, `error=${encodeURIComponent(oauthError)}`),
+      );
+    }
+
+    if (!code || !brandId) {
+      return NextResponse.redirect(integrationsUrl(req, "error=invalid_callback"));
+    }
+
+    const brand = await getBrandById(brandId, userId);
+    if (!brand) {
+      return NextResponse.redirect(integrationsUrl(req, "error=brand_not_found"));
+    }
+
     const token = await exchangeLinkedInCode(code);
+    if (!token.access_token) {
+      return NextResponse.redirect(
+        integrationsUrl(req, "error=linkedin_exchange_failed"),
+      );
+    }
+
     await upsertConnection({
       id: randomUUID(),
       userId,
@@ -35,8 +54,9 @@ export async function GET(req: Request) {
       isDemo: false,
     });
 
-    return NextResponse.redirect("/settings/integrations?connected=linkedin");
-  } catch {
-    return NextResponse.redirect("/settings/integrations?error=linkedin_exchange_failed");
+    return NextResponse.redirect(integrationsUrl(req, "connected=linkedin"));
+  } catch (error) {
+    console.error("[linkedin-callback]", error);
+    return NextResponse.redirect(integrationsUrl(req, "error=linkedin_exchange_failed"));
   }
 }

@@ -13,6 +13,9 @@ const isPublicRoute = createRouteMatcher([
   "/signup.html",
   "/api/health",
   "/api/health/images",
+  "/api/health/linkedin",
+  "/api/social/linkedin/callback",
+  "/api/social/meta/callback",
 ]);
 
 export default clerkMiddleware(async (auth, req) => {

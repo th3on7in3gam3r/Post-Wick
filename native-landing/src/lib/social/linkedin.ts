@@ -50,7 +50,9 @@ export async function exchangeLinkedInCode(code: string) {
   });
 
   if (!response.ok) {
-    throw new Error("Failed to exchange LinkedIn authorization code");
+    const detail = await response.text();
+    console.error("[linkedin-token]", response.status, detail.slice(0, 240));
+    throw new Error(`Failed to exchange LinkedIn authorization code (${response.status})`);
   }
 
   return (await response.json()) as {
