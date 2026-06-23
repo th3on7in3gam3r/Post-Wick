@@ -5,6 +5,7 @@ import { AnimatePresence, motion, useAnimationControls } from "framer-motion";
 import { useCallback, useEffect, useState, type FormEvent } from "react";
 import { TextureButton } from "@/components/ui/texture-button";
 import { normalizeWebsiteUrl } from "@/lib/website-url";
+import { SITE_TAGLINE } from "@/lib/brand";
 import {
   type ImagePlacement,
   type Industry,
@@ -158,8 +159,8 @@ export function HeroContent() {
           <TypingIndustry onIndustryChange={handleIndustryChange} />
         </h1>
 
-        <p className="mt-4 font-playfair text-[1.3rem] italic text-[#555555]">
-          Get more customers on autopilot.
+        <p className="mt-4 font-playfair text-[clamp(1.1rem,2.5vw,1.3rem)] italic text-[#555555]">
+          {SITE_TAGLINE}
         </p>
 
         <form
