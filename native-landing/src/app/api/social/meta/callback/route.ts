@@ -3,7 +3,9 @@ import { auth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 import { getBrandById, upsertConnection } from "@/lib/db";
 import {
+  exchangeInstagramCode,
   exchangeMetaCode,
+  resolveInstagramConnection,
   resolveMetaConnection,
   type MetaPlatform,
 } from "@/lib/social/meta";
@@ -47,8 +49,14 @@ export async function GET(req: Request) {
       return NextResponse.redirect(integrationsUrl(req, "error=brand_not_found"));
     }
 
-    const userAccessToken = await exchangeMetaCode(code);
-    const resolved = await resolveMetaConnection(userAccessToken, platform);
+    const userAccessToken =
+      platform === "instagram"
+        ? await exchangeInstagramCode(code)
+        : await exchangeMetaCode(code);
+    const resolved =
+      platform === "instagram"
+        ? await resolveInstagramConnection(userAccessToken)
+        : await resolveMetaConnection(userAccessToken, platform);
 
     await upsertConnection({
       id: randomUUID(),

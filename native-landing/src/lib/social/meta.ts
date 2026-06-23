@@ -8,10 +8,16 @@ export type MetaConnectionDetails = {
     pageName: string;
     instagramAccountId?: string;
     instagramUsername?: string;
+    authFlow?: "instagram_login" | "facebook_login";
   };
 };
 
 const GRAPH_VERSION = "v21.0";
+
+const INSTAGRAM_SCOPES = [
+  "instagram_business_basic",
+  "instagram_business_content_publish",
+] as const;
 
 function appBaseUrl() {
   return (process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000").replace(
@@ -30,22 +36,29 @@ export function isMetaConfigured() {
   );
 }
 
+export function instagramOAuthScopes() {
+  return [...INSTAGRAM_SCOPES];
+}
+
 export function getMetaAuthUrl(brandId: string, platform: MetaPlatform) {
   const appId = process.env.META_APP_ID;
   if (!appId) {
     throw new Error("Meta OAuth is not configured");
   }
 
-  const scopes =
-    platform === "instagram"
-      ? [
-          "instagram_basic",
-          "instagram_content_publish",
-          "pages_show_list",
-          "pages_read_engagement",
-        ]
-      : ["pages_show_list", "pages_manage_posts", "pages_read_engagement"];
+  if (platform === "instagram") {
+    const params = new URLSearchParams({
+      client_id: appId,
+      redirect_uri: metaRedirectUri(),
+      state: `${brandId}:instagram`,
+      scope: INSTAGRAM_SCOPES.join(","),
+      response_type: "code",
+    });
 
+    return `https://www.instagram.com/oauth/authorize?${params}`;
+  }
+
+  const scopes = ["pages_show_list", "pages_manage_posts", "pages_read_engagement"];
   const params = new URLSearchParams({
     client_id: appId,
     redirect_uri: metaRedirectUri(),
@@ -78,6 +91,53 @@ async function graphGet<T>(path: string, accessToken: string) {
     throw new Error(`Meta Graph API request failed (${response.status}): ${detail}`);
   }
   return (await response.json()) as T;
+}
+
+export async function exchangeInstagramCode(code: string) {
+  const appId = process.env.META_APP_ID;
+  const appSecret = process.env.META_APP_SECRET;
+  if (!appId || !appSecret) {
+    throw new Error("Meta OAuth is not configured");
+  }
+
+  const response = await fetch("https://api.instagram.com/oauth/access_token", {
+    method: "POST",
+    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    body: new URLSearchParams({
+      client_id: appId,
+      client_secret: appSecret,
+      grant_type: "authorization_code",
+      redirect_uri: metaRedirectUri(),
+      code,
+    }),
+  });
+
+  if (!response.ok) {
+    const detail = await readGraphError(response);
+    console.error("[instagram-token]", response.status, detail);
+    throw new Error(`Failed to exchange Instagram authorization code (${response.status})`);
+  }
+
+  const shortLived = (await response.json()) as { access_token: string };
+
+  const longParams = new URLSearchParams({
+    grant_type: "ig_exchange_token",
+    client_secret: appSecret,
+    access_token: shortLived.access_token,
+  });
+  const longResponse = await fetch(
+    `https://graph.instagram.com/access_token?${longParams}`,
+  );
+  if (!longResponse.ok) {
+    const detail = await readGraphError(longResponse);
+    console.error("[instagram-long-token]", longResponse.status, detail);
+    throw new Error(
+      `Failed to exchange Instagram token for long-lived access (${longResponse.status})`,
+    );
+  }
+
+  const longLived = (await longResponse.json()) as { access_token: string };
+  return longLived.access_token;
 }
 
 export async function exchangeMetaCode(code: string) {
@@ -122,6 +182,41 @@ export async function exchangeMetaCode(code: string) {
 
   const longLived = (await longResponse.json()) as { access_token: string };
   return longLived.access_token;
+}
+
+type InstagramProfile = {
+  id: string;
+  username?: string;
+  name?: string;
+};
+
+export async function resolveInstagramConnection(
+  accessToken: string,
+): Promise<MetaConnectionDetails> {
+  const url = new URL("https://graph.instagram.com/me");
+  url.searchParams.set("fields", "id,username,name");
+  url.searchParams.set("access_token", accessToken);
+
+  const response = await fetch(url);
+  if (!response.ok) {
+    const detail = await readGraphError(response);
+    throw new Error(`Failed to load Instagram profile (${response.status}): ${detail}`);
+  }
+
+  const profile = (await response.json()) as InstagramProfile;
+  const username = profile.username ?? profile.name ?? profile.id;
+
+  return {
+    accountName: `@${username}`,
+    accessToken,
+    metadata: {
+      pageId: profile.id,
+      pageName: profile.name ?? username,
+      instagramAccountId: profile.id,
+      instagramUsername: username,
+      authFlow: "instagram_login",
+    },
+  };
 }
 
 type MetaPage = {
@@ -171,6 +266,7 @@ export async function resolveMetaConnection(
         pageName: page.name,
         instagramAccountId,
         instagramUsername: username,
+        authFlow: "facebook_login",
       },
     };
   }
@@ -181,6 +277,7 @@ export async function resolveMetaConnection(
     metadata: {
       pageId: page.id,
       pageName: page.name,
+      authFlow: "facebook_login",
     },
   };
 }
@@ -216,12 +313,13 @@ function sleep(ms: number) {
 }
 
 async function waitForInstagramContainer(
+  graphBase: string,
   pageAccessToken: string,
   containerId: string,
 ) {
   for (let attempt = 0; attempt < 12; attempt += 1) {
     const response = await fetch(
-      `https://graph.facebook.com/${GRAPH_VERSION}/${containerId}?fields=status_code&access_token=${pageAccessToken}`,
+      `${graphBase}/${containerId}?fields=status_code&access_token=${pageAccessToken}`,
     );
 
     if (!response.ok) {
@@ -246,19 +344,22 @@ export async function publishToInstagram(
   instagramAccountId: string,
   content: string,
   imageUrl: string,
+  options?: { authFlow?: MetaConnectionDetails["metadata"]["authFlow"] },
 ) {
-  const container = await fetch(
-    `https://graph.facebook.com/${GRAPH_VERSION}/${instagramAccountId}/media`,
-    {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        image_url: imageUrl,
-        caption: content,
-        access_token: pageAccessToken,
-      }),
-    },
-  );
+  const graphBase =
+    options?.authFlow === "instagram_login"
+      ? "https://graph.instagram.com"
+      : `https://graph.facebook.com/${GRAPH_VERSION}`;
+
+  const container = await fetch(`${graphBase}/${instagramAccountId}/media`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      image_url: imageUrl,
+      caption: content,
+      access_token: pageAccessToken,
+    }),
+  });
 
   if (!container.ok) {
     const detail = await readGraphError(container);
@@ -270,19 +371,16 @@ export async function publishToInstagram(
     throw new Error("Instagram media container missing id");
   }
 
-  await waitForInstagramContainer(pageAccessToken, containerPayload.id);
+  await waitForInstagramContainer(graphBase, pageAccessToken, containerPayload.id);
 
-  const publish = await fetch(
-    `https://graph.facebook.com/${GRAPH_VERSION}/${instagramAccountId}/media_publish`,
-    {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        creation_id: containerPayload.id,
-        access_token: pageAccessToken,
-      }),
-    },
-  );
+  const publish = await fetch(`${graphBase}/${instagramAccountId}/media_publish`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      creation_id: containerPayload.id,
+      access_token: pageAccessToken,
+    }),
+  });
 
   if (!publish.ok) {
     const detail = await readGraphError(publish);

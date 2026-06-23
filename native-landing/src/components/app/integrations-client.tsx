@@ -76,14 +76,12 @@ export function IntegrationsClient({
   brands,
   initialConnections,
   runtimeConfig,
-  providers,
   metaSetup,
   flashParams,
 }: {
   brands: Brand[];
   initialConnections: Connection[];
   runtimeConfig: PlatformRuntimeConfig[];
-  providers: { linkedin: boolean; meta: boolean };
   metaSetup: MetaSetupInfo;
   flashParams?: { connected?: string; error?: string };
 }) {
@@ -156,25 +154,8 @@ export function IntegrationsClient({
     }
   }
 
-  function handleLiveConnect(platform: IntegrationPlatformId) {
-    const runtime = configById.get(platform);
-    const usesOAuth =
-      platform === "linkedin" || platform === "instagram" || platform === "facebook";
-
-    if (usesOAuth && runtime?.connectionMode !== "oauth") {
-      if (platform === "instagram" || platform === "facebook") {
-        document
-          .getElementById("meta-setup-guide")
-          ?.scrollIntoView({ behavior: "smooth", block: "start" });
-      } else {
-        document
-          .getElementById("oauth-setup-banner")
-          ?.scrollIntoView({ behavior: "smooth", block: "start" });
-      }
-      return;
-    }
-
-    connectOAuth(platform);
+  function oauthReady(platform: IntegrationPlatformId) {
+    return configById.get(platform)?.connectionMode === "oauth";
   }
 
   const grouped = (Object.keys(INTEGRATION_CATEGORIES) as IntegrationCategory[]).map(
@@ -231,7 +212,7 @@ export function IntegrationsClient({
           <p className="mt-2 font-playfair text-3xl italic text-near-black">
             {liveOAuthCount}
           </p>
-          <p className="mt-1 text-sm text-gray-body">providers configured in env</p>
+          <p className="mt-1 text-sm text-gray-body">channels ready to connect</p>
         </div>
         <div className="rounded-2xl border border-black/[0.06] bg-white p-5 shadow-card">
           <p className="text-xs font-semibold uppercase tracking-[0.12em] text-gray-label">
@@ -283,24 +264,6 @@ export function IntegrationsClient({
           </div>
         </div>
       </PanelCard>
-
-      {!providers.linkedin || !providers.meta ? (
-        <div
-          id="oauth-setup-banner"
-          className="rounded-xl border border-black/[0.06] bg-cream/40 px-4 py-3 text-sm text-gray-body"
-        >
-          <p className="font-medium text-near-black">OAuth setup</p>
-          <p className="mt-1">
-            {!providers.linkedin
-              ? "Add LINKEDIN_CLIENT_ID and LINKEDIN_CLIENT_SECRET for live LinkedIn publishing. "
-              : null}
-            {!providers.meta
-              ? "Add META_APP_ID and META_APP_SECRET for Instagram and Facebook. Check /api/health/meta for redirect URI and setup steps. "
-              : null}
-            Demo mode works without these keys.
-          </p>
-        </div>
-      ) : null}
 
       {grouped.map(({ category, platforms }) => (
         <section key={category} className="space-y-4">
@@ -368,7 +331,7 @@ export function IntegrationsClient({
 
                   {platform.id === "instagram" && !connection ? (
                     <p className="mt-3 text-xs text-gray-body">
-                      Requires Instagram Business/Creator linked to a Facebook Page.
+                      Requires an Instagram Business or Creator account.
                     </p>
                   ) : null}
 
@@ -407,17 +370,17 @@ export function IntegrationsClient({
                             type="button"
                             variant="primary"
                             size="sm"
-                            disabled={isLoading}
-                            onClick={() => handleLiveConnect(platform.id)}
+                            disabled={isLoading || !oauthReady(platform.id)}
+                            onClick={() => connectOAuth(platform.id)}
                           >
                             <Link2 className="mr-2 h-4 w-4" />
                             Connect {platform.name}
                           </TextureButton>
-                          {runtime?.connectionMode !== "oauth" &&
-                          (platform.id === "instagram" || platform.id === "facebook") ? (
+                          {!oauthReady(platform.id) ? (
                             <p className="text-xs text-gray-body">
-                              Add META_APP_ID and META_APP_SECRET on Vercel, redeploy, then
-                              tap Connect again.
+                              {platform.id === "instagram" || platform.id === "facebook"
+                                ? "Live connect isn't enabled yet. Use demo mode below to preview."
+                                : "Live connect isn't enabled yet. Use demo mode below to preview."}
                             </p>
                           ) : null}
                         </>

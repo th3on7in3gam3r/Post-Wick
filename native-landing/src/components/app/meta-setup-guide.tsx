@@ -11,18 +11,26 @@ export type MetaSetupInfo = {
   appUrl: string;
 };
 
-const SETUP_STEPS = [
-  "Create an app at developers.facebook.com (Business type).",
+const USER_STEPS = [
+  "Use an Instagram Business or Creator account.",
+  "Click Connect Instagram and sign in with your Instagram account.",
+  "Approve Post-Wick when Meta asks for permissions.",
+];
+
+const ADMIN_STEPS = [
+  "Create one Meta app for Post-Wick at developers.facebook.com (Business type).",
   "Add use cases: Facebook Login + Instagram (Content management).",
   "Facebook Login → Settings → paste the redirect URI below.",
   "App settings → Basic → copy App ID and App Secret.",
   "Add META_APP_ID and META_APP_SECRET to Vercel, then redeploy.",
-  "Link Instagram Business to your Facebook Page in Meta Business Suite.",
 ];
 
 export function MetaSetupGuide({ setup }: { setup: MetaSetupInfo }) {
   const [copied, setCopied] = useState(false);
-  const [open, setOpen] = useState(!setup.configured);
+
+  if (setup.configured) {
+    return null;
+  }
 
   async function copyRedirectUri() {
     await navigator.clipboard.writeText(setup.redirectUri);
@@ -31,29 +39,39 @@ export function MetaSetupGuide({ setup }: { setup: MetaSetupInfo }) {
   }
 
   return (
-    <div id="meta-setup-guide" className="rounded-xl border border-black/[0.06] bg-cream/40">
-      <button
-        type="button"
-        onClick={() => setOpen((value) => !value)}
-        className="flex w-full items-center justify-between gap-4 px-4 py-3 text-left"
-      >
-        <div>
-          <p className="text-sm font-medium text-near-black">
-            Instagram &amp; Facebook setup guide
-          </p>
-          <p className="mt-0.5 text-xs text-gray-body">
-            {setup.configured
-              ? "Meta keys detected on the server. Complete Meta app settings if connect fails."
-              : "Add META_APP_ID and META_APP_SECRET on Vercel to enable live connect."}
-          </p>
-        </div>
-        <span className="text-xs text-gray-label">{open ? "Hide" : "Show"}</span>
-      </button>
+    <div className="space-y-4">
+      <div className="rounded-xl border border-black/[0.06] bg-white px-4 py-4">
+        <p className="text-sm font-medium text-near-black">How to connect Instagram</p>
+        <p className="mt-1 text-sm text-gray-body">
+          You do <span className="font-medium text-near-black">not</span> create a Meta
+          developer app. Post-Wick handles that — you only connect your account.
+        </p>
+        <ol className="mt-4 space-y-2 text-sm text-gray-body">
+          {USER_STEPS.map((step, index) => (
+            <li key={step} className="flex gap-2">
+              <span className="font-medium text-gold">{index + 1}.</span>
+              <span>{step}</span>
+            </li>
+          ))}
+        </ol>
+        <p className="mt-4 text-sm text-gray-body">
+          Live Instagram connect is not enabled on this workspace yet. Use{" "}
+          <span className="font-medium text-near-black">Try demo mode</span> on the card
+          below to preview publishing.
+        </p>
+      </div>
 
-      {open ? (
+      <details className="rounded-xl border border-black/[0.06] bg-cream/40">
+        <summary className="cursor-pointer px-4 py-3 text-sm font-medium text-gray-body">
+          Platform setup (Post-Wick administrators only)
+        </summary>
         <div className="space-y-4 border-t border-black/[0.06] px-4 py-4">
+          <p className="text-xs text-gray-body">
+            One-time setup for the Post-Wick team — not for customers connecting their
+            accounts.
+          </p>
           <ol className="space-y-2 text-sm text-gray-body">
-            {SETUP_STEPS.map((step, index) => (
+            {ADMIN_STEPS.map((step, index) => (
               <li key={step} className="flex gap-2">
                 <span className="font-medium text-gold">{index + 1}.</span>
                 <span>{step}</span>
@@ -90,7 +108,7 @@ export function MetaSetupGuide({ setup }: { setup: MetaSetupInfo }) {
             <StatusPill ok={Boolean(setup.appUrl)} label="NEXT_PUBLIC_APP_URL set" />
           </div>
         </div>
-      ) : null}
+      </details>
     </div>
   );
 }

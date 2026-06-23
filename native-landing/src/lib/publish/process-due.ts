@@ -15,6 +15,7 @@ import { resolvePostImageUrl } from "@/lib/posts/image-url";
 type MetaMetadata = {
   pageId?: string;
   instagramAccountId?: string;
+  authFlow?: "instagram_login" | "facebook_login";
 };
 
 function parseMetadata(connection: ConnectionRecord): MetaMetadata | null {
@@ -62,6 +63,7 @@ async function publishLivePost(
       metadata.instagramAccountId,
       post.content,
       imageUrl,
+      { authFlow: metadata.authFlow },
     );
   }
 
