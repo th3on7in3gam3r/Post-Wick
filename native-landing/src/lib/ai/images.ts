@@ -143,19 +143,19 @@ async function generateWithOpenAI(prompt: string) {
 }
 
 export async function generatePostImage(prompt: string): Promise<string | null> {
-  if (process.env.IDEOGRAM_API_KEY?.trim()) {
-    try {
-      return await generateWithIdeogram(prompt);
-    } catch (error) {
-      setImageError(formatAxiosError("Ideogram", error));
-    }
-  }
-
   if (process.env.OPENAI_API_KEY?.trim()) {
     try {
       return await generateWithOpenAI(prompt);
     } catch (error) {
       setImageError(formatAxiosError("OpenAI", error));
+    }
+  }
+
+  if (process.env.IDEOGRAM_API_KEY?.trim()) {
+    try {
+      return await generateWithIdeogram(prompt);
+    } catch (error) {
+      setImageError(formatAxiosError("Ideogram", error));
       return null;
     }
   }
@@ -207,8 +207,8 @@ export function imageGenerationHint(options: {
 
   if (!configured) {
     return isVercel
-      ? "Add IDEOGRAM_API_KEY (and optionally OPENAI_API_KEY) in Vercel → Settings → Environment Variables, then redeploy."
-      : "Add IDEOGRAM_API_KEY or OPENAI_API_KEY to native-landing/.env.local and restart the dev server.";
+      ? "Add OPENAI_API_KEY (and optionally IDEOGRAM_API_KEY as fallback) in Vercel → Settings → Environment Variables, then redeploy."
+      : "Add OPENAI_API_KEY or IDEOGRAM_API_KEY to native-landing/.env.local and restart the dev server.";
   }
 
   if (generated > 0) {
@@ -220,6 +220,6 @@ export function imageGenerationHint(options: {
   }
 
   return isVercel
-    ? "No images were created — verify IDEOGRAM_API_KEY in Vercel env vars and check deployment logs."
-    : "No images were created — check IDEOGRAM_API_KEY or OPENAI_API_KEY in native-landing/.env.local.";
+    ? "No images were created — check OPENAI_API_KEY on Vercel (and BLOB_READ_WRITE_TOKEN if using OpenAI), or IDEOGRAM_API_KEY as fallback."
+    : "No images were created — check OPENAI_API_KEY or IDEOGRAM_API_KEY in native-landing/.env.local.";
 }
