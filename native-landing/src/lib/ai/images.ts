@@ -21,6 +21,9 @@ function formatAxiosError(provider: string, error: unknown) {
       typeof error.response?.data === "string"
         ? error.response.data
         : JSON.stringify(error.response?.data ?? error.message);
+    if (status === 401) {
+      return `${provider} API key is invalid or expired — create a new key in the provider dashboard and update Vercel env vars.`;
+    }
     return `${provider} failed (${status ?? "network"}): ${detail.slice(0, 240)}`;
   }
   if (error instanceof Error) {
@@ -58,6 +61,42 @@ export function buildImagePrompt(content: string, research: Research) {
   ].join(" ");
 }
 
+async function persistImageBuffer(buffer: Buffer): Promise<string> {
+  const filename = `${randomUUID()}.png`;
+
+  if (process.env.BLOB_READ_WRITE_TOKEN?.trim()) {
+    const blob = await put(`generated/${filename}`, buffer, {
+      access: "public",
+      contentType: "image/png",
+      token: process.env.BLOB_READ_WRITE_TOKEN.trim(),
+    });
+    return blob.url;
+  }
+
+  if (process.env.VERCEL) {
+    throw new Error(
+      "BLOB_READ_WRITE_TOKEN is required on Vercel to store generated images",
+    );
+  }
+
+  const dir = join(process.cwd(), "public", "generated");
+  mkdirSync(dir, { recursive: true });
+  writeFileSync(join(dir, filename), buffer);
+  return `/generated/${filename}`;
+}
+
+async function persistRemoteImageUrl(url: string) {
+  if (url.startsWith("/generated/") || url.includes("blob.vercel-storage.com")) {
+    return url;
+  }
+
+  const response = await axios.get<ArrayBuffer>(url, {
+    responseType: "arraybuffer",
+    timeout: 60_000,
+  });
+  return persistImageBuffer(Buffer.from(response.data));
+}
+
 async function generateWithIdeogram(prompt: string) {
   const response = await axios.post<{
     data?: Array<{ url?: string; is_image_safe?: boolean }>;
@@ -83,32 +122,12 @@ async function generateWithIdeogram(prompt: string) {
   if (!image?.url) {
     throw new Error("Ideogram returned no image URL");
   }
-  return image.url;
+  return persistRemoteImageUrl(image.url);
 }
 
 async function saveBase64Image(b64: string) {
   const buffer = Buffer.from(b64, "base64");
-  const filename = `${randomUUID()}.png`;
-
-  if (process.env.BLOB_READ_WRITE_TOKEN?.trim()) {
-    const blob = await put(`generated/${filename}`, buffer, {
-      access: "public",
-      contentType: "image/png",
-      token: process.env.BLOB_READ_WRITE_TOKEN.trim(),
-    });
-    return blob.url;
-  }
-
-  if (process.env.VERCEL) {
-    throw new Error(
-      "OpenAI returned base64 image data but BLOB_READ_WRITE_TOKEN is not set on Vercel",
-    );
-  }
-
-  const dir = join(process.cwd(), "public", "generated");
-  mkdirSync(dir, { recursive: true });
-  writeFileSync(join(dir, filename), buffer);
-  return `/generated/${filename}`;
+  return persistImageBuffer(buffer);
 }
 
 async function generateWithOpenAI(prompt: string) {
@@ -134,7 +153,7 @@ async function generateWithOpenAI(prompt: string) {
 
   const image = response.data.data?.[0];
   if (image?.url) {
-    return image.url;
+    return persistRemoteImageUrl(image.url);
   }
   if (image?.b64_json) {
     return saveBase64Image(image.b64_json);
@@ -195,6 +214,86 @@ export async function generateImagesForPosts(
   }
 
   return imageUrls;
+}
+
+export async function probeImageProviders() {
+  const probePrompt = "warm abstract social media background, no text, no logos";
+  const results: {
+    ideogram: { configured: boolean; ok: boolean; status: number; message: string } | null;
+    openai: { configured: boolean; ok: boolean; status: number; message: string } | null;
+  } = { ideogram: null, openai: null };
+
+  if (process.env.IDEOGRAM_API_KEY?.trim()) {
+    try {
+      const response = await axios.post(
+        "https://api.ideogram.ai/v1/ideogram-v3/generate",
+        {
+          prompt: probePrompt,
+          aspect_ratio: "1x1",
+          rendering_speed: "TURBO",
+          style_type: "GENERAL",
+        },
+        {
+          timeout: 30_000,
+          headers: {
+            "Api-Key": process.env.IDEOGRAM_API_KEY.trim(),
+            "Content-Type": "application/json",
+          },
+          validateStatus: () => true,
+        },
+      );
+      results.ideogram = {
+        configured: true,
+        ok: response.status >= 200 && response.status < 300,
+        status: response.status,
+        message:
+          response.status === 401
+            ? "API key invalid or expired"
+            : response.status >= 200 && response.status < 300
+              ? "ok"
+              : JSON.stringify(response.data).slice(0, 120),
+      };
+    } catch (error) {
+      results.ideogram = {
+        configured: true,
+        ok: false,
+        status: 0,
+        message: error instanceof Error ? error.message : "request failed",
+      };
+    }
+  }
+
+  if (process.env.OPENAI_API_KEY?.trim()) {
+    try {
+      const response = await axios.get("https://api.openai.com/v1/models", {
+        timeout: 15_000,
+        headers: {
+          Authorization: `Bearer ${process.env.OPENAI_API_KEY.trim()}`,
+        },
+        validateStatus: () => true,
+      });
+      results.openai = {
+        configured: true,
+        ok: response.status >= 200 && response.status < 300,
+        status: response.status,
+        message:
+          response.status === 401
+            ? "API key invalid or expired"
+            : response.status >= 200 && response.status < 300
+              ? "ok"
+              : JSON.stringify(response.data).slice(0, 120),
+      };
+    } catch (error) {
+      results.openai = {
+        configured: true,
+        ok: false,
+        status: 0,
+        message: error instanceof Error ? error.message : "request failed",
+      };
+    }
+  }
+
+  return results;
 }
 
 export function imageGenerationHint(options: {
