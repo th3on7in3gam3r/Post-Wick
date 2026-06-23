@@ -74,7 +74,7 @@ export function CookiePreferencesModal() {
 
   return (
     <div
-      className="fixed inset-0 z-[70] flex items-center justify-center bg-black/40 p-4 backdrop-blur-sm"
+      className="fixed inset-0 z-[110] flex items-center justify-center bg-black/40 p-4 backdrop-blur-sm"
       role="presentation"
       onClick={closePreferences}
     >
@@ -96,13 +96,27 @@ export function CookiePreferencesModal() {
 
         <h2
           id="cookie-preferences-title"
-          className="pr-8 font-playfair text-2xl italic text-near-black"
+          className="pr-8 font-playfair text-2xl font-semibold not-italic text-near-black"
         >
-          Cookie preferences
+          We value your privacy
         </h2>
         <p className="body-copy mt-3 text-sm">
           Choose which optional cookies you allow. Essential cookies are always
-          active because the site cannot work without them.
+          active because the site cannot work without them. Read our{" "}
+          <a
+            href="/privacy"
+            className="font-medium text-near-black underline decoration-black/30 underline-offset-2"
+          >
+            Privacy Policy
+          </a>{" "}
+          and{" "}
+          <a
+            href="/cookies"
+            className="font-medium text-near-black underline decoration-black/30 underline-offset-2"
+          >
+            Cookie Policy
+          </a>{" "}
+          for full details.
         </p>
 
         <div className="mt-6 space-y-5">
@@ -182,11 +196,8 @@ export function CookiePreferencesModal() {
         </div>
 
         <p className="mt-4 text-xs text-gray-label">
-          Read our{" "}
-          <a href="/cookies" className="text-gold underline underline-offset-2">
-            Cookie Policy
-          </a>{" "}
-          for full details.
+          You can change these settings anytime from the site footer or your
+          account sign-in page.
         </p>
       </div>
     </div>

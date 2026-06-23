@@ -7,7 +7,17 @@ import type { buildResearchFromCrawl } from "@/lib/crawl/website";
 
 type Research = ReturnType<typeof buildResearchFromCrawl>;
 
+const DEFAULT_GEMINI_IMAGE_MODEL = "gemini-2.5-flash-image";
+
 let lastImageGenerationError: string | null = null;
+
+function getGeminiApiKey() {
+  return process.env.GEMINI_API_KEY?.trim() || process.env.GOOGLE_API_KEY?.trim();
+}
+
+function getGeminiImageModel() {
+  return process.env.GEMINI_IMAGE_MODEL?.trim() || DEFAULT_GEMINI_IMAGE_MODEL;
+}
 
 function setImageError(message: string) {
   lastImageGenerationError = message;
@@ -33,13 +43,18 @@ function formatAxiosError(provider: string, error: unknown) {
 }
 
 export function isImageGenerationConfigured() {
-  return Boolean(process.env.IDEOGRAM_API_KEY?.trim() || process.env.OPENAI_API_KEY?.trim());
+  return Boolean(
+    process.env.OPENAI_API_KEY?.trim() ||
+      getGeminiApiKey() ||
+      process.env.IDEOGRAM_API_KEY?.trim(),
+  );
 }
 
 export function getImageGenerationProviders() {
   return {
-    ideogram: Boolean(process.env.IDEOGRAM_API_KEY?.trim()),
     openai: Boolean(process.env.OPENAI_API_KEY?.trim()),
+    gemini: Boolean(getGeminiApiKey()),
+    ideogram: Boolean(process.env.IDEOGRAM_API_KEY?.trim()),
     blob: Boolean(process.env.BLOB_READ_WRITE_TOKEN?.trim()),
   };
 }
@@ -161,18 +176,79 @@ async function generateWithOpenAI(prompt: string) {
   throw new Error("OpenAI returned no image data");
 }
 
+type GeminiGenerateResponse = {
+  candidates?: Array<{
+    content?: {
+      parts?: Array<{
+        inlineData?: { mimeType?: string; data?: string };
+        inline_data?: { mime_type?: string; data?: string };
+      }>;
+    };
+  }>;
+};
+
+async function generateWithGemini(prompt: string) {
+  const apiKey = getGeminiApiKey();
+  if (!apiKey) {
+    throw new Error("Gemini API key is not set");
+  }
+
+  const model = getGeminiImageModel();
+  const response = await axios.post<GeminiGenerateResponse>(
+    `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`,
+    {
+      contents: [{ parts: [{ text: prompt }] }],
+      generationConfig: {
+        responseModalities: ["IMAGE"],
+      },
+    },
+    {
+      timeout: 120_000,
+      headers: {
+        "x-goog-api-key": apiKey,
+        "Content-Type": "application/json",
+      },
+      validateStatus: (status) => status >= 200 && status < 300,
+    },
+  );
+
+  const parts = response.data.candidates?.[0]?.content?.parts ?? [];
+  for (const part of parts) {
+    const inline = part.inlineData ?? part.inline_data;
+    if (inline?.data) {
+      return saveBase64Image(inline.data);
+    }
+  }
+
+  throw new Error("Gemini returned no image data");
+}
+
 export async function generatePostImage(prompt: string): Promise<string | null> {
   if (process.env.OPENAI_API_KEY?.trim()) {
     try {
-      return await generateWithOpenAI(prompt);
+      const url = await generateWithOpenAI(prompt);
+      lastImageGenerationError = null;
+      return url;
     } catch (error) {
       setImageError(formatAxiosError("OpenAI", error));
     }
   }
 
+  if (getGeminiApiKey()) {
+    try {
+      const url = await generateWithGemini(prompt);
+      lastImageGenerationError = null;
+      return url;
+    } catch (error) {
+      setImageError(formatAxiosError("Gemini", error));
+    }
+  }
+
   if (process.env.IDEOGRAM_API_KEY?.trim()) {
     try {
-      return await generateWithIdeogram(prompt);
+      const url = await generateWithIdeogram(prompt);
+      lastImageGenerationError = null;
+      return url;
     } catch (error) {
       setImageError(formatAxiosError("Ideogram", error));
       return null;
@@ -219,9 +295,75 @@ export async function generateImagesForPosts(
 export async function probeImageProviders() {
   const probePrompt = "warm abstract social media background, no text, no logos";
   const results: {
-    ideogram: { configured: boolean; ok: boolean; status: number; message: string } | null;
     openai: { configured: boolean; ok: boolean; status: number; message: string } | null;
-  } = { ideogram: null, openai: null };
+    gemini: { configured: boolean; ok: boolean; status: number; message: string } | null;
+    ideogram: { configured: boolean; ok: boolean; status: number; message: string } | null;
+  } = { openai: null, gemini: null, ideogram: null };
+
+  if (process.env.OPENAI_API_KEY?.trim()) {
+    try {
+      const response = await axios.get("https://api.openai.com/v1/models", {
+        timeout: 15_000,
+        headers: {
+          Authorization: `Bearer ${process.env.OPENAI_API_KEY.trim()}`,
+        },
+        validateStatus: () => true,
+      });
+      results.openai = {
+        configured: true,
+        ok: response.status >= 200 && response.status < 300,
+        status: response.status,
+        message:
+          response.status === 401
+            ? "API key invalid or expired"
+            : response.status >= 200 && response.status < 300
+              ? "ok"
+              : JSON.stringify(response.data).slice(0, 120),
+      };
+    } catch (error) {
+      results.openai = {
+        configured: true,
+        ok: false,
+        status: 0,
+        message: error instanceof Error ? error.message : "request failed",
+      };
+    }
+  }
+
+  const geminiApiKey = getGeminiApiKey();
+  if (geminiApiKey) {
+    const model = getGeminiImageModel();
+    try {
+      const response = await axios.get(
+        `https://generativelanguage.googleapis.com/v1beta/models/${model}`,
+        {
+          timeout: 15_000,
+          headers: {
+            "x-goog-api-key": geminiApiKey,
+          },
+          validateStatus: () => true,
+        },
+      );
+      results.gemini = {
+        configured: true,
+        ok: response.status >= 200 && response.status < 300,
+        status: response.status,
+        message:
+          response.status === 401 || response.status === 403
+            ? "API key invalid or expired"
+            : response.status >= 200 && response.status < 300
+              ? "ok"
+              : JSON.stringify(response.data).slice(0, 120),
+      };
+    } catch (error) {
+      results.gemini = {
+        configured: true,
+        ok: false,
+        status: 0,
+        message: error instanceof Error ? error.message : "request failed",
+      };
+    }
+  }
 
   if (process.env.IDEOGRAM_API_KEY?.trim()) {
     try {
@@ -263,36 +405,6 @@ export async function probeImageProviders() {
     }
   }
 
-  if (process.env.OPENAI_API_KEY?.trim()) {
-    try {
-      const response = await axios.get("https://api.openai.com/v1/models", {
-        timeout: 15_000,
-        headers: {
-          Authorization: `Bearer ${process.env.OPENAI_API_KEY.trim()}`,
-        },
-        validateStatus: () => true,
-      });
-      results.openai = {
-        configured: true,
-        ok: response.status >= 200 && response.status < 300,
-        status: response.status,
-        message:
-          response.status === 401
-            ? "API key invalid or expired"
-            : response.status >= 200 && response.status < 300
-              ? "ok"
-              : JSON.stringify(response.data).slice(0, 120),
-      };
-    } catch (error) {
-      results.openai = {
-        configured: true,
-        ok: false,
-        status: 0,
-        message: error instanceof Error ? error.message : "request failed",
-      };
-    }
-  }
-
   return results;
 }
 
@@ -306,8 +418,8 @@ export function imageGenerationHint(options: {
 
   if (!configured) {
     return isVercel
-      ? "Add OPENAI_API_KEY (and optionally IDEOGRAM_API_KEY as fallback) in Vercel → Settings → Environment Variables, then redeploy."
-      : "Add OPENAI_API_KEY or IDEOGRAM_API_KEY to native-landing/.env.local and restart the dev server.";
+      ? "Add OPENAI_API_KEY (with GEMINI_API_KEY and/or IDEOGRAM_API_KEY as fallbacks) in Vercel → Settings → Environment Variables, then redeploy."
+      : "Add OPENAI_API_KEY, GEMINI_API_KEY, or IDEOGRAM_API_KEY to native-landing/.env.local and restart the dev server.";
   }
 
   if (generated > 0) {
@@ -319,6 +431,6 @@ export function imageGenerationHint(options: {
   }
 
   return isVercel
-    ? "No images were created — check OPENAI_API_KEY on Vercel (and BLOB_READ_WRITE_TOKEN if using OpenAI), or IDEOGRAM_API_KEY as fallback."
-    : "No images were created — check OPENAI_API_KEY or IDEOGRAM_API_KEY in native-landing/.env.local.";
+    ? "No images were created — check OPENAI_API_KEY on Vercel (and BLOB_READ_WRITE_TOKEN), or GEMINI_API_KEY / IDEOGRAM_API_KEY as fallbacks."
+    : "No images were created — check OPENAI_API_KEY, GEMINI_API_KEY, or IDEOGRAM_API_KEY in native-landing/.env.local.";
 }

@@ -3,6 +3,7 @@ import { BrandLogo } from "@/components/brand-logo";
 
 type AuthPageShellProps = {
   children: React.ReactNode;
+  footer?: React.ReactNode;
   backgroundImage: string;
   imagePosition?: string;
   imageLabel: string;
@@ -13,6 +14,7 @@ type AuthPageShellProps = {
 
 export function AuthPageShell({
   children,
+  footer,
   backgroundImage,
   imagePosition = "bg-center",
   imageLabel,
@@ -89,6 +91,7 @@ export function AuthPageShell({
           <div className="hidden lg:block" aria-hidden />
         </div>
       )}
+      {footer}
     </div>
   );
 }

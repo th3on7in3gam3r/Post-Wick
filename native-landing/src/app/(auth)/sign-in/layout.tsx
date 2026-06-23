@@ -1,4 +1,5 @@
 import { AuthPageShell } from "@/components/auth-page-shell";
+import { AuthPrivacyFooter } from "@/components/auth-privacy-footer";
 import { AuthScrollLock } from "@/components/auth-scroll-lock";
 
 export default function SignInLayout({
@@ -15,6 +16,7 @@ export default function SignInLayout({
         backgroundImage="/images/sign-in-forest-hammock.png"
         imagePosition="bg-[50%_42%]"
         imageLabel="A person relaxing in a forest hammock beside a stream, with mountains in the distance"
+        footer={<AuthPrivacyFooter />}
       >
         {children}
       </AuthPageShell>
