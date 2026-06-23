@@ -708,7 +708,7 @@ export async function getAnalyticsSummary(userId: string): Promise<AnalyticsSumm
     platformMap.set(row.platform, current);
   }
 
-  const weeklyRows = await db.execute(sql`
+  const weeklyResult = await db.execute(sql`
     SELECT
       TO_CHAR(MIN(p.published_at), 'Mon DD') AS week_start,
       COUNT(*)::int AS count
@@ -722,9 +722,13 @@ export async function getAnalyticsSummary(userId: string): Promise<AnalyticsSumm
     ORDER BY DATE_TRUNC('week', p.published_at) ASC
   `);
 
-  const weeklyPublished = (
-    weeklyRows.rows as Array<{ week_start: string; count: number }>
-  ).map((row) => ({
+  const weeklyRowList = (
+    Array.isArray(weeklyResult)
+      ? weeklyResult
+      : (weeklyResult as { rows?: Record<string, unknown>[] }).rows ?? []
+  ) as Array<{ week_start: string; count: number }>;
+
+  const weeklyPublished = weeklyRowList.map((row) => ({
     label: row.week_start,
     count: Number(row.count),
   }));
