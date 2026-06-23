@@ -103,7 +103,7 @@ function HeroIndustryImage({
           rotate: `${placement.rotate}deg`,
         }}
       >
-        <div className="rounded-[4px] bg-white p-2.5 shadow-polaroid">
+        <div className="rounded-[4px] bg-[#FDFBF7] p-2.5 shadow-[0_8px_28px_rgba(61,90,69,0.12),0_2px_8px_rgba(0,0,0,0.06)]">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={image.src}
