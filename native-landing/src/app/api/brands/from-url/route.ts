@@ -71,7 +71,14 @@ export async function POST(req: Request) {
       ...buildResearchFromCrawl(websiteUrl, brandName, pages),
       source: engine === "pro" ? "web-crawler" : "website-crawl",
     };
-    const generated = await generatePostsWithAI(research, limits.initialPosts);
+    const linkedinCount = Math.max(1, Math.ceil(limits.initialPosts * 0.6));
+    const instagramCount = Math.max(0, limits.initialPosts - linkedinCount);
+
+    const linkedinGenerated = await generatePostsWithAI(
+      research,
+      linkedinCount,
+      "linkedin",
+    );
 
     const updatedBrand = await updateBrand(brand.id, userId, {
       crawlStatus: "completed",
@@ -80,13 +87,31 @@ export async function POST(req: Request) {
       name: research.companyName || brandName,
     });
 
-    const { posts, imageError } = await createPostsWithOptionalImages({
+    const linkedinBatch = await createPostsWithOptionalImages({
       brandId: brand.id,
       platform: "linkedin",
-      contents: generated.posts,
+      contents: linkedinGenerated.posts,
       research,
     });
 
+    let instagramBatch = { posts: [] as typeof linkedinBatch.posts, imageError: null as string | null };
+    if (instagramCount >= 2) {
+      const instagramGenerated = await generatePostsWithAI(
+        research,
+        instagramCount,
+        "instagram",
+      );
+      instagramBatch = await createPostsWithOptionalImages({
+        brandId: brand.id,
+        platform: "instagram",
+        contents: instagramGenerated.posts,
+        research,
+        withImages: true,
+      });
+    }
+
+    const posts = [...linkedinBatch.posts, ...instagramBatch.posts];
+    const imageError = linkedinBatch.imageError ?? instagramBatch.imageError;
     const imagesGenerated = countPostsWithImages(posts);
     const imagesConfigured = isImageGenerationConfigured();
 
@@ -100,7 +125,8 @@ export async function POST(req: Request) {
         created: true,
         crawledPages: pages.length,
         crawlEngine: engine,
-        generationSource: generated.source,
+        generationSource: linkedinGenerated.source,
+        instagramPosts: instagramBatch.posts.length,
         imagesGenerated,
         imagesConfigured,
         imageProviders: getImageGenerationProviders(),

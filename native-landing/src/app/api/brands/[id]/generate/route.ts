@@ -6,9 +6,10 @@ import { getImageGenerationProviders, imageGenerationHint, isImageGenerationConf
 import { generatePostsWithAI } from "@/lib/ai/generate";
 import { getBrandById, getOrCreateUser } from "@/lib/db";
 import { getPlanLimits } from "@/lib/plans";
+import { GENERATE_PLATFORMS } from "@/lib/platforms";
 
 const generateSchema = z.object({
-  platform: z.string().default("linkedin"),
+  platform: z.enum(GENERATE_PLATFORMS).default("linkedin"),
   count: z.number().int().min(1).max(50).optional(),
 });
 

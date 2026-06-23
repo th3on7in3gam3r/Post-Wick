@@ -170,7 +170,7 @@ Global rules:
 - Max ${charLimit} characters each
 - Professional, approachable tone matching the brand
 - Each post must clearly fit its assigned pillar (SEO, GEO, or Money)
-- No hashtag spam, no emoji overload
+${platform === "instagram" ? "- Instagram: visual-first captions, 1-3 relevant hashtags max, conversational tone\n" : ""}- No hashtag spam, no emoji overload
 - Return ONLY a JSON array of ${count} strings in the assignment order above`;
 }
 

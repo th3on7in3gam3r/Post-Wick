@@ -4,6 +4,7 @@ import {
   type buildResearchFromCrawl,
 } from "@/lib/crawl/website";
 import { buildGenerationPrompt, normalizeBrandResearch } from "@/lib/ai/prompts";
+import { charLimitForPlatform } from "@/lib/platforms";
 
 let client: Anthropic | null = null;
 
@@ -32,7 +33,7 @@ export async function generatePostsWithAI(
   }
 
   try {
-    const charLimit = platform === "linkedin" ? 3000 : 280;
+    const charLimit = charLimitForPlatform(platform);
     const message = await getAnthropic().messages.create({
       model: "claude-sonnet-4-20250514",
       max_tokens: 8192,

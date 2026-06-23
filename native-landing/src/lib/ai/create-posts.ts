@@ -17,11 +17,13 @@ export async function createPostsWithOptionalImages(input: {
   withImages?: boolean;
 }) {
   const { brandId, platform, contents, research, withImages = true } = input;
+  const forceImages = withImages || platform.toLowerCase() === "instagram";
   const imageUrls =
-    withImages && isImageGenerationConfigured()
+    forceImages && isImageGenerationConfigured()
       ? await generateImagesForPosts(
           contents.map((content) => ({ content })),
           research,
+          platform,
         )
       : contents.map(() => null);
 

@@ -65,14 +65,23 @@ export function consumeLastImageGenerationError() {
   return error;
 }
 
-export function buildImagePrompt(content: string, research: Research) {
+export function buildImagePrompt(
+  content: string,
+  research: Research,
+  platform = "linkedin",
+) {
   const topic = research.keyTopics?.[0] ?? research.companyName;
+  const isInstagram = platform.toLowerCase() === "instagram";
+
   return [
     `Professional social media graphic for ${research.companyName}.`,
     `Industry: ${research.industry}.`,
     `Theme: ${topic}.`,
     `Inspired by this post: ${content.slice(0, 220)}.`,
-    "Clean composition, warm lighting, no text, no logos, no watermarks.",
+    isInstagram
+      ? "Square 1:1 Instagram feed image, bold visual hook, mobile-first, vibrant but on-brand."
+      : "Clean composition, warm lighting, no text, no logos, no watermarks.",
+    "No text, no logos, no watermarks.",
   ].join(" ");
 }
 
@@ -262,6 +271,7 @@ export async function generatePostImage(prompt: string): Promise<string | null> 
 export async function generateImagesForPosts(
   posts: Array<{ content: string }>,
   research: Research,
+  platform = "linkedin",
 ) {
   if (!isImageGenerationConfigured()) {
     return posts.map(() => null);
@@ -271,7 +281,9 @@ export async function generateImagesForPosts(
   const imageUrls: Array<string | null> = [];
 
   if (posts.length > 0) {
-    const probeUrl = await generatePostImage(buildImagePrompt(posts[0]!.content, research));
+    const probeUrl = await generatePostImage(
+      buildImagePrompt(posts[0]!.content, research, platform),
+    );
     if (!probeUrl && lastImageGenerationError) {
       return posts.map(() => null);
     }
@@ -282,7 +294,7 @@ export async function generateImagesForPosts(
     const batch = posts.slice(index, index + 2);
     const batchUrls = await Promise.all(
       batch.map(async (post) => {
-        const prompt = buildImagePrompt(post.content, research);
+        const prompt = buildImagePrompt(post.content, research, platform);
         return generatePostImage(prompt);
       }),
     );

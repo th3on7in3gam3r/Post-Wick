@@ -10,6 +10,7 @@ import {
   publishToFacebookPage,
   publishToInstagram,
 } from "@/lib/social/meta";
+import { resolvePostImageUrl } from "@/lib/posts/image-url";
 
 type MetaMetadata = {
   pageId?: string;
@@ -52,11 +53,15 @@ async function publishLivePost(
     if (!post.imageUrl) {
       throw new Error("Instagram posts require an image. Refine this post with an image first.");
     }
+    const imageUrl = resolvePostImageUrl(post.imageUrl);
+    if (!imageUrl) {
+      throw new Error("Instagram image URL is invalid.");
+    }
     return publishToInstagram(
       connection.accessToken,
       metadata.instagramAccountId,
       post.content,
-      post.imageUrl,
+      imageUrl,
     );
   }
 

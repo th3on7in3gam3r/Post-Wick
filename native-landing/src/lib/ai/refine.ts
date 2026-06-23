@@ -1,5 +1,6 @@
 import Anthropic from "@anthropic-ai/sdk";
 import type { buildResearchFromCrawl } from "@/lib/crawl/website";
+import { charLimitForPlatform } from "@/lib/platforms";
 
 type Research = ReturnType<typeof buildResearchFromCrawl>;
 
@@ -13,10 +14,6 @@ function getAnthropic() {
     client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
   }
   return client;
-}
-
-function charLimitForPlatform(platform: string) {
-  return platform === "linkedin" ? 3000 : 280;
 }
 
 function templateRefine(

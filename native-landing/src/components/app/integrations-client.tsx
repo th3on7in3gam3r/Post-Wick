@@ -263,7 +263,7 @@ export function IntegrationsClient({
               ? "Add LINKEDIN_CLIENT_ID and LINKEDIN_CLIENT_SECRET for live LinkedIn publishing. "
               : null}
             {!providers.meta
-              ? "Add META_APP_ID and META_APP_SECRET for Instagram and Facebook OAuth. "
+              ? "Add META_APP_ID and META_APP_SECRET for Instagram and Facebook. Check /api/health/meta for redirect URI and setup steps. "
               : null}
             Demo mode works without these keys.
           </p>
@@ -333,6 +333,12 @@ export function IntegrationsClient({
                           : "Unavailable"}
                     </span>
                   </div>
+
+                  {platform.id === "instagram" && !connection ? (
+                    <p className="mt-3 text-xs text-gray-body">
+                      Requires Instagram Business/Creator linked to a Facebook Page.
+                    </p>
+                  ) : null}
 
                   {connection ? (
                     <div className="mt-5 flex flex-1 flex-col justify-end space-y-3">
