@@ -58,6 +58,9 @@ export default async function BrandPage({
   const scheduledCount = posts.filter(
     (post) => post.scheduledAt && ["approved", "published"].includes(post.status),
   ).length;
+  const recentDrafts = posts
+    .filter((post) => post.status === "pending")
+    .slice(0, 12);
   const scheduledPosts = posts
     .filter((post) => post.scheduledAt && ["approved", "published"].includes(post.status))
     .sort((a, b) => new Date(a.scheduledAt!).getTime() - new Date(b.scheduledAt!).getTime());
@@ -256,9 +259,9 @@ export default async function BrandPage({
 
         <div className="grid gap-6 lg:grid-cols-2">
           <PanelCard title="Recent drafts" description="Latest generated posts.">
-            {posts.length > 0 ? (
-              <div className="space-y-2">
-                {posts.slice(0, 4).map((post) => (
+            {recentDrafts.length > 0 ? (
+              <div className="max-h-80 space-y-2 overflow-y-auto overscroll-contain pr-1">
+                {recentDrafts.map((post) => (
                   <article
                     key={post.id}
                     className="rounded-xl border border-black/[0.06] bg-cream/50 p-3.5"
