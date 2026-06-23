@@ -1,5 +1,9 @@
 import { randomUUID } from "node:crypto";
-import { generateImagesForPosts, isImageGenerationConfigured } from "@/lib/ai/images";
+import {
+  consumeLastImageGenerationError,
+  generateImagesForPosts,
+  isImageGenerationConfigured,
+} from "@/lib/ai/images";
 import type { buildResearchFromCrawl } from "@/lib/crawl/website";
 import { createPosts } from "@/lib/db";
 
@@ -21,7 +25,7 @@ export async function createPostsWithOptionalImages(input: {
         )
       : contents.map(() => null);
 
-  return await createPosts(
+  const posts = await createPosts(
     contents.map((content, index) => ({
       id: randomUUID(),
       brandId,
@@ -30,6 +34,11 @@ export async function createPostsWithOptionalImages(input: {
       imageUrl: imageUrls[index],
     })),
   );
+
+  return {
+    posts,
+    imageError: consumeLastImageGenerationError(),
+  };
 }
 
 export function countPostsWithImages(

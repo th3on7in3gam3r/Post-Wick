@@ -2,12 +2,49 @@ import axios from "axios";
 import { mkdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { randomUUID } from "node:crypto";
+import { put } from "@vercel/blob";
 import type { buildResearchFromCrawl } from "@/lib/crawl/website";
 
 type Research = ReturnType<typeof buildResearchFromCrawl>;
 
+let lastImageGenerationError: string | null = null;
+
+function setImageError(message: string) {
+  lastImageGenerationError = message;
+  console.error("[image-generation]", message);
+}
+
+function formatAxiosError(provider: string, error: unknown) {
+  if (axios.isAxiosError(error)) {
+    const status = error.response?.status;
+    const detail =
+      typeof error.response?.data === "string"
+        ? error.response.data
+        : JSON.stringify(error.response?.data ?? error.message);
+    return `${provider} failed (${status ?? "network"}): ${detail.slice(0, 240)}`;
+  }
+  if (error instanceof Error) {
+    return `${provider} failed: ${error.message}`;
+  }
+  return `${provider} failed`;
+}
+
 export function isImageGenerationConfigured() {
-  return Boolean(process.env.IDEOGRAM_API_KEY || process.env.OPENAI_API_KEY);
+  return Boolean(process.env.IDEOGRAM_API_KEY?.trim() || process.env.OPENAI_API_KEY?.trim());
+}
+
+export function getImageGenerationProviders() {
+  return {
+    ideogram: Boolean(process.env.IDEOGRAM_API_KEY?.trim()),
+    openai: Boolean(process.env.OPENAI_API_KEY?.trim()),
+    blob: Boolean(process.env.BLOB_READ_WRITE_TOKEN?.trim()),
+  };
+}
+
+export function consumeLastImageGenerationError() {
+  const error = lastImageGenerationError;
+  lastImageGenerationError = null;
+  return error;
 }
 
 export function buildImagePrompt(content: string, research: Research) {
@@ -35,7 +72,7 @@ async function generateWithIdeogram(prompt: string) {
     {
       timeout: 90_000,
       headers: {
-        "Api-Key": process.env.IDEOGRAM_API_KEY!,
+        "Api-Key": process.env.IDEOGRAM_API_KEY!.trim(),
         "Content-Type": "application/json",
       },
       validateStatus: (status) => status >= 200 && status < 300,
@@ -52,6 +89,22 @@ async function generateWithIdeogram(prompt: string) {
 async function saveBase64Image(b64: string) {
   const buffer = Buffer.from(b64, "base64");
   const filename = `${randomUUID()}.png`;
+
+  if (process.env.BLOB_READ_WRITE_TOKEN?.trim()) {
+    const blob = await put(`generated/${filename}`, buffer, {
+      access: "public",
+      contentType: "image/png",
+      token: process.env.BLOB_READ_WRITE_TOKEN.trim(),
+    });
+    return blob.url;
+  }
+
+  if (process.env.VERCEL) {
+    throw new Error(
+      "OpenAI returned base64 image data but BLOB_READ_WRITE_TOKEN is not set on Vercel",
+    );
+  }
+
   const dir = join(process.cwd(), "public", "generated");
   mkdirSync(dir, { recursive: true });
   writeFileSync(join(dir, filename), buffer);
@@ -72,7 +125,7 @@ async function generateWithOpenAI(prompt: string) {
     {
       timeout: 120_000,
       headers: {
-        Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
+        Authorization: `Bearer ${process.env.OPENAI_API_KEY!.trim()}`,
         "Content-Type": "application/json",
       },
       validateStatus: (status) => status >= 200 && status < 300,
@@ -90,22 +143,24 @@ async function generateWithOpenAI(prompt: string) {
 }
 
 export async function generatePostImage(prompt: string): Promise<string | null> {
-  if (process.env.IDEOGRAM_API_KEY) {
+  if (process.env.IDEOGRAM_API_KEY?.trim()) {
     try {
       return await generateWithIdeogram(prompt);
-    } catch {
-      // fall through to OpenAI
+    } catch (error) {
+      setImageError(formatAxiosError("Ideogram", error));
     }
   }
 
-  if (process.env.OPENAI_API_KEY) {
+  if (process.env.OPENAI_API_KEY?.trim()) {
     try {
       return await generateWithOpenAI(prompt);
-    } catch {
+    } catch (error) {
+      setImageError(formatAxiosError("OpenAI", error));
       return null;
     }
   }
 
+  setImageError("No image provider API keys are configured");
   return null;
 }
 
@@ -117,6 +172,7 @@ export async function generateImagesForPosts(
     return posts.map(() => null);
   }
 
+  lastImageGenerationError = null;
   const imageUrls: Array<string | null> = [];
 
   for (let index = 0; index < posts.length; index += 2) {
@@ -131,4 +187,31 @@ export async function generateImagesForPosts(
   }
 
   return imageUrls;
+}
+
+export function imageGenerationHint(options: {
+  configured: boolean;
+  generated: number;
+  error?: string | null;
+  isVercel?: boolean;
+}) {
+  const { configured, generated, error, isVercel } = options;
+
+  if (!configured) {
+    return isVercel
+      ? "Add IDEOGRAM_API_KEY (and optionally OPENAI_API_KEY) in Vercel → Settings → Environment Variables, then redeploy."
+      : "Add IDEOGRAM_API_KEY or OPENAI_API_KEY to native-landing/.env.local and restart the dev server.";
+  }
+
+  if (generated > 0) {
+    return null;
+  }
+
+  if (error) {
+    return `No images were created — ${error}`;
+  }
+
+  return isVercel
+    ? "No images were created — verify IDEOGRAM_API_KEY in Vercel env vars and check deployment logs."
+    : "No images were created — check IDEOGRAM_API_KEY or OPENAI_API_KEY in native-landing/.env.local.";
 }

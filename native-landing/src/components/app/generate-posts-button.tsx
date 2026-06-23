@@ -36,16 +36,17 @@ export function GeneratePostsButton({
         );
       }
 
-      setMessage(
-        [
-          `Generated ${data.count} posts${data.source === "ai" ? " with AI" : ""}.`,
-          data.imagesConfigured
-            ? data.imagesGenerated > 0
-              ? `${data.imagesGenerated} include images.`
-              : "No images were created — check IDEOGRAM_API_KEY or OPENAI_API_KEY in native-landing/.env.local and restart the dev server."
-            : "Add IDEOGRAM_API_KEY or OPENAI_API_KEY to native-landing/.env.local for images.",
-        ].join(" "),
-      );
+      const parts = [
+        `Generated ${data.count} posts${data.source === "ai" ? " with AI" : ""}.`,
+      ];
+
+      if (data.imagesGenerated > 0) {
+        parts.push(`${data.imagesGenerated} include images.`);
+      } else if (data.imageHint) {
+        parts.push(data.imageHint);
+      }
+
+      setMessage(parts.join(" "));
       router.refresh();
     } catch (error) {
       setMessage(error instanceof Error ? error.message : "Something went wrong");

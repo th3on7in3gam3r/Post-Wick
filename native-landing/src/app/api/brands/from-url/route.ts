@@ -3,7 +3,7 @@ import { auth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { createPostsWithOptionalImages, countPostsWithImages } from "@/lib/ai/create-posts";
-import { isImageGenerationConfigured } from "@/lib/ai/images";
+import { getImageGenerationProviders, imageGenerationHint, isImageGenerationConfigured } from "@/lib/ai/images";
 import { generatePostsWithAI } from "@/lib/ai/generate";
 import { crawlBrandWebsite } from "@/lib/crawl";
 import { buildResearchFromCrawl } from "@/lib/crawl/website";
@@ -21,6 +21,8 @@ const fromUrlSchema = z.object({
   websiteUrl: z.string().min(1),
   name: z.string().min(1).max(255).optional(),
 });
+
+export const maxDuration = 300;
 
 export async function POST(req: Request) {
   const { userId } = await auth();
@@ -78,12 +80,15 @@ export async function POST(req: Request) {
       name: research.companyName || brandName,
     });
 
-    const posts = await createPostsWithOptionalImages({
+    const { posts, imageError } = await createPostsWithOptionalImages({
       brandId: brand.id,
       platform: "linkedin",
       contents: generated.posts,
       research,
     });
+
+    const imagesGenerated = countPostsWithImages(posts);
+    const imagesConfigured = isImageGenerationConfigured();
 
     return NextResponse.json(
       {
@@ -96,8 +101,15 @@ export async function POST(req: Request) {
         crawledPages: pages.length,
         crawlEngine: engine,
         generationSource: generated.source,
-        imagesGenerated: countPostsWithImages(posts),
-        imagesConfigured: isImageGenerationConfigured(),
+        imagesGenerated,
+        imagesConfigured,
+        imageProviders: getImageGenerationProviders(),
+        imageHint: imageGenerationHint({
+          configured: imagesConfigured,
+          generated: imagesGenerated,
+          error: imageError,
+          isVercel: Boolean(process.env.VERCEL),
+        }),
       },
       { status: 201 },
     );
