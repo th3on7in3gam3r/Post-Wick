@@ -30,10 +30,20 @@ export function metaRedirectUri() {
   return `${appBaseUrl()}/api/social/meta/callback`;
 }
 
+export function instagramAppCredentials() {
+  return {
+    appId:
+      process.env.INSTAGRAM_APP_ID?.trim() || process.env.META_APP_ID?.trim() || "",
+    appSecret:
+      process.env.INSTAGRAM_APP_SECRET?.trim() ||
+      process.env.META_APP_SECRET?.trim() ||
+      "",
+  };
+}
+
 export function isMetaConfigured() {
-  return Boolean(
-    process.env.META_APP_ID?.trim() && process.env.META_APP_SECRET?.trim(),
-  );
+  const { appId, appSecret } = instagramAppCredentials();
+  return Boolean(appId && appSecret);
 }
 
 export function instagramOAuthScopes() {
@@ -41,13 +51,14 @@ export function instagramOAuthScopes() {
 }
 
 export function getMetaAuthUrl(brandId: string, platform: MetaPlatform) {
-  const appId = process.env.META_APP_ID;
-  if (!appId) {
-    throw new Error("Meta OAuth is not configured");
-  }
-
   if (platform === "instagram") {
+    const { appId } = instagramAppCredentials();
+    if (!appId) {
+      throw new Error("Instagram OAuth is not configured");
+    }
+
     const params = new URLSearchParams({
+      enable_fb_login: "0",
       client_id: appId,
       redirect_uri: metaRedirectUri(),
       state: `${brandId}:instagram`,
@@ -56,6 +67,11 @@ export function getMetaAuthUrl(brandId: string, platform: MetaPlatform) {
     });
 
     return `https://www.instagram.com/oauth/authorize?${params}`;
+  }
+
+  const appId = process.env.META_APP_ID;
+  if (!appId) {
+    throw new Error("Meta OAuth is not configured");
   }
 
   const scopes = ["pages_show_list", "pages_manage_posts", "pages_read_engagement"];
@@ -94,10 +110,9 @@ async function graphGet<T>(path: string, accessToken: string) {
 }
 
 export async function exchangeInstagramCode(code: string) {
-  const appId = process.env.META_APP_ID;
-  const appSecret = process.env.META_APP_SECRET;
+  const { appId, appSecret } = instagramAppCredentials();
   if (!appId || !appSecret) {
-    throw new Error("Meta OAuth is not configured");
+    throw new Error("Instagram OAuth is not configured");
   }
 
   const response = await fetch("https://api.instagram.com/oauth/access_token", {

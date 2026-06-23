@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import {
+  instagramAppCredentials,
   instagramOAuthScopes,
   isMetaConfigured,
   metaRedirectUri,
@@ -8,24 +9,25 @@ import { siteUrl } from "@/lib/brand";
 
 export async function GET() {
   const redirectUri = metaRedirectUri();
-  const appId = process.env.META_APP_ID?.trim() ?? null;
+  const { appId } = instagramAppCredentials();
   const appUrl = siteUrl();
 
   return NextResponse.json({
     ok: isMetaConfigured(),
     appIdConfigured: Boolean(appId),
-    secretConfigured: Boolean(process.env.META_APP_SECRET?.trim()),
+    secretConfigured: Boolean(instagramAppCredentials().appSecret),
+    usesInstagramAppId: Boolean(process.env.INSTAGRAM_APP_ID?.trim()),
     appUrl,
     redirectUri,
     instagramOAuth: "instagram_login",
     instagramScopes: instagramOAuthScopes(),
     instructions: [
-      "Create a Meta app with use case: Manage messaging & content on Instagram.",
-      `Instagram → API setup with Instagram login → OAuth redirect URIs — add EXACTLY: ${redirectUri}`,
-      "Use App ID + App Secret from App settings → Basic as META_APP_ID and META_APP_SECRET on Vercel.",
-      "Your Instagram account must be Business or Creator.",
-      "Redeploy Vercel after updating env vars, then connect from Settings → Integrations → Instagram.",
-      "Instagram posts require an image — use Add images on your brand page or refine with a new image.",
+      "In Meta: Use cases → Manage messaging & content on Instagram → API setup with Instagram login.",
+      "Open step 3 (Set up Instagram business login) → Business login settings → OAuth redirect URIs.",
+      `Add EXACTLY: ${redirectUri}`,
+      "Copy the Instagram App ID + Secret from that same Instagram login setup page into Vercel (META_APP_ID / META_APP_SECRET).",
+      "App settings → Basic → App domains: post-wick.vercel.app",
+      "Redeploy Vercel, then Connect Instagram in Post-Wick.",
     ],
   });
 }
