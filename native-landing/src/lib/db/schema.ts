@@ -56,6 +56,7 @@ export const connections = pgTable(
     platform: text("platform").notNull(),
     accountName: text("account_name"),
     accessToken: text("access_token"),
+    metadata: text("metadata"),
     isDemo: boolean("is_demo").notNull().default(false),
     createdAt: timestamp("created_at", { withTimezone: true, mode: "string" })
       .notNull()

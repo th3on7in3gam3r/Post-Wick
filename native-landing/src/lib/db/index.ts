@@ -50,6 +50,7 @@ export type ConnectionRecord = {
   platform: string;
   accountName: string | null;
   accessToken: string | null;
+  metadata: string | null;
   isDemo: boolean;
   createdAt: string;
   updatedAt: string;
@@ -131,6 +132,7 @@ function parseConnection(row: typeof connections.$inferSelect): ConnectionRecord
     platform: row.platform,
     accountName: row.accountName,
     accessToken: row.accessToken,
+    metadata: row.metadata,
     isDemo: row.isDemo,
     createdAt: row.createdAt,
     updatedAt: row.updatedAt,
@@ -545,11 +547,18 @@ export async function upsertConnection(input: {
   platform: string;
   accountName?: string;
   accessToken?: string;
+  metadata?: string | Record<string, unknown> | null;
   isDemo?: boolean;
 }) {
   const db = await getDb();
   const now = nowIso();
   const platform = input.platform.toLowerCase();
+  const metadata =
+    typeof input.metadata === "string"
+      ? input.metadata
+      : input.metadata
+        ? JSON.stringify(input.metadata)
+        : null;
 
   await db
     .insert(connections)
@@ -560,6 +569,7 @@ export async function upsertConnection(input: {
       platform,
       accountName: input.accountName ?? null,
       accessToken: input.accessToken ?? null,
+      metadata,
       isDemo: input.isDemo ?? false,
       createdAt: now,
       updatedAt: now,
@@ -569,6 +579,7 @@ export async function upsertConnection(input: {
       set: {
         accountName: input.accountName ?? null,
         accessToken: input.accessToken ?? null,
+        metadata,
         isDemo: input.isDemo ?? false,
         updatedAt: now,
       },

@@ -3,8 +3,65 @@ import {
   getDuePosts,
   markPostFailed,
   markPostPublished,
+  type ConnectionRecord,
 } from "@/lib/db";
 import { publishToLinkedIn } from "@/lib/social/linkedin";
+import {
+  publishToFacebookPage,
+  publishToInstagram,
+} from "@/lib/social/meta";
+
+type MetaMetadata = {
+  pageId?: string;
+  instagramAccountId?: string;
+};
+
+function parseMetadata(connection: ConnectionRecord): MetaMetadata | null {
+  if (!connection.metadata) return null;
+  try {
+    return JSON.parse(connection.metadata) as MetaMetadata;
+  } catch {
+    return null;
+  }
+}
+
+async function publishLivePost(
+  post: { id: string; brandId: string; platform: string; content: string; imageUrl: string | null },
+  connection: ConnectionRecord,
+) {
+  const platform = post.platform.toLowerCase();
+
+  if (platform === "linkedin" && connection.accessToken) {
+    const externalId = await publishToLinkedIn(connection.accessToken, post.content);
+    return externalId;
+  }
+
+  if (platform === "facebook" && connection.accessToken) {
+    const metadata = parseMetadata(connection);
+    if (!metadata?.pageId) {
+      throw new Error("Facebook Page metadata is missing for this connection");
+    }
+    return publishToFacebookPage(connection.accessToken, metadata.pageId, post.content);
+  }
+
+  if (platform === "instagram" && connection.accessToken) {
+    const metadata = parseMetadata(connection);
+    if (!metadata?.instagramAccountId) {
+      throw new Error("Instagram Business account metadata is missing");
+    }
+    if (!post.imageUrl) {
+      throw new Error("Instagram posts require an image. Refine this post with an image first.");
+    }
+    return publishToInstagram(
+      connection.accessToken,
+      metadata.instagramAccountId,
+      post.content,
+      post.imageUrl,
+    );
+  }
+
+  throw new Error(`Live publishing for ${post.platform} is not available yet`);
+}
 
 export async function processDuePostsForUser(userId: string) {
   const duePosts = await getDuePosts(userId);
@@ -26,15 +83,9 @@ export async function processDuePostsForUser(userId: string) {
         continue;
       }
 
-      if (post.platform.toLowerCase() === "linkedin" && connection.accessToken) {
-        const externalId = await publishToLinkedIn(connection.accessToken, post.content);
-        await markPostPublished(post.id, userId, externalId);
-        results.push({ postId: post.id, status: "published" });
-        continue;
-      }
-
-      await markPostFailed(post.id, userId, `Publishing for ${post.platform} is not configured yet`);
-      results.push({ postId: post.id, status: "failed" });
+      const externalId = await publishLivePost(post, connection);
+      await markPostPublished(post.id, userId, externalId);
+      results.push({ postId: post.id, status: "published" });
     } catch (error) {
       const message = error instanceof Error ? error.message : "Publish failed";
       await markPostFailed(post.id, userId, message);

@@ -216,7 +216,7 @@ export default async function DashboardPage({
                 <Link href="/queue">Review posts</Link>
               </TextureButton>
               <TextureButton asChild variant="secondary" size="default">
-                <Link href="/settings/connections">Connect channels</Link>
+                <Link href="/settings/integrations">Connect channels</Link>
               </TextureButton>
             </div>
           </PanelCard>

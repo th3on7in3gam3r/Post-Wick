@@ -173,23 +173,16 @@ export function SettingsClient({
 
       <div className="grid gap-4 lg:grid-cols-2">
         <QuickLinkCard
-          href="/settings/connections"
-          icon={Link2}
-          title="Connections"
-          description="Link LinkedIn and demo channels for publishing."
+          href="/settings/integrations"
+          icon={Plug}
+          title="Integrations"
+          description="Connect LinkedIn, Instagram, Facebook, and more."
         />
         <QuickLinkCard
           href="/settings/billing"
           icon={CreditCard}
           title="Billing"
           description={`You're on ${plan.label}. Manage your subscription.`}
-        />
-        <QuickLinkCard
-          href="/settings/integrations"
-          icon={Plug}
-          title="Integrations"
-          description="Instagram, Facebook, X, and more — coming soon."
-          badge="Soon"
         />
       </div>
 

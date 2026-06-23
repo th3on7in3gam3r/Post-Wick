@@ -47,6 +47,7 @@ async function ensureSchema() {
       platform TEXT NOT NULL,
       account_name TEXT,
       access_token TEXT,
+      metadata TEXT,
       is_demo BOOLEAN NOT NULL DEFAULT FALSE,
       created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
       updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
@@ -71,7 +72,7 @@ async function ensureSchema() {
   await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS notify_queue BOOLEAN NOT NULL DEFAULT TRUE`;
   await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS notify_publish BOOLEAN NOT NULL DEFAULT TRUE`;
   await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS notify_weekly_digest BOOLEAN NOT NULL DEFAULT FALSE`;
-  await sql`CREATE INDEX IF NOT EXISTS idx_brands_user_id ON brands(user_id)`;
+  await sql`ALTER TABLE connections ADD COLUMN IF NOT EXISTS metadata TEXT`;
   await sql`CREATE INDEX IF NOT EXISTS idx_posts_brand_id ON posts(brand_id)`;
   await sql`CREATE INDEX IF NOT EXISTS idx_posts_status ON posts(status)`;
   await sql`CREATE INDEX IF NOT EXISTS idx_posts_scheduled_at ON posts(scheduled_at)`;

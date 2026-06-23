@@ -91,7 +91,7 @@ export default async function BrandPage({
             </Link>
           </TextureButton>
           <TextureButton asChild variant="minimal" size="sm">
-            <Link href="/settings/connections">
+            <Link href="/settings/integrations">
               <Link2 className="mr-1.5 h-3.5 w-3.5" />
               Connect
             </Link>
@@ -214,7 +214,7 @@ export default async function BrandPage({
                 <div className="space-y-3 text-sm text-gray-body">
                   <p>No channels connected yet.</p>
                   <TextureButton asChild variant="minimal" size="sm">
-                    <Link href="/settings/connections">Connect LinkedIn</Link>
+                    <Link href="/settings/integrations">Connect channels</Link>
                   </TextureButton>
                 </div>
               )}

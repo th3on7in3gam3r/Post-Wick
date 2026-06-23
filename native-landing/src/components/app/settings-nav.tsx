@@ -3,7 +3,6 @@
 import Link from "next/link";
 import {
   CreditCard,
-  Link2,
   Plug,
   Settings2,
 } from "lucide-react";
@@ -16,9 +15,8 @@ const tabs: Array<{
   exact?: boolean;
 }> = [
   { href: "/settings", label: "General", icon: Settings2, exact: true },
-  { href: "/settings/connections", label: "Connections", icon: Link2 },
-  { href: "/settings/billing", label: "Billing", icon: CreditCard },
   { href: "/settings/integrations", label: "Integrations", icon: Plug },
+  { href: "/settings/billing", label: "Billing", icon: CreditCard },
 ];
 
 function isActive(pathname: string, href: string, exact?: boolean) {

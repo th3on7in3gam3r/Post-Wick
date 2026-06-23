@@ -1,61 +1,18 @@
-import { Link2 } from "lucide-react";
-import { ConnectionsClient } from "@/components/app/connections-client";
-import { EmptyState } from "@/components/app/empty-state";
-import { SettingsShell } from "@/components/app/settings-shell";
-import { getBrandsByUserId, getConnectionsByUserId } from "@/lib/db";
-import { requireUserId } from "@/lib/server/app-data";
+import { redirect } from "next/navigation";
 
-function flashMessage(searchParams: {
-  connected?: string;
-  error?: string;
-}) {
-  if (searchParams.connected === "linkedin") {
-    return "LinkedIn connected successfully. Approved posts can now publish when they are due.";
-  }
-  if (searchParams.error === "linkedin_exchange_failed") {
-    return "LinkedIn authorization failed. Try again or use demo mode.";
-  }
-  if (searchParams.error) {
-    return "Connection failed. Please try again.";
-  }
-  return null;
-}
-
-export default async function ConnectionsPage({
+export default function ConnectionsPage({
   searchParams,
 }: {
   searchParams: { connected?: string; error?: string };
 }) {
-  const userId = await requireUserId();
-  const brands = await getBrandsByUserId(userId);
-  const connections = await getConnectionsByUserId(userId);
-  const linkedInConfigured = Boolean(process.env.LINKEDIN_CLIENT_ID);
+  const params = new URLSearchParams();
+  if (searchParams.connected) {
+    params.set("connected", searchParams.connected);
+  }
+  if (searchParams.error) {
+    params.set("error", searchParams.error);
+  }
 
-  return (
-    <SettingsShell
-      title="Connections"
-      description="Link the channels autopilot will publish to."
-    >
-      {brands.length === 0 ? (
-        <EmptyState
-          icon={Link2}
-          title="No brands yet"
-          description="Set up your brand first, then connect LinkedIn or use demo mode to test publishing."
-        />
-      ) : (
-        <ConnectionsClient
-          brands={brands.map((brand) => ({ id: brand.id, name: brand.name }))}
-          initialConnections={connections.map((connection) => ({
-            id: connection.id,
-            brandId: connection.brandId,
-            platform: connection.platform,
-            accountName: connection.accountName,
-            isDemo: connection.isDemo,
-          }))}
-          linkedInConfigured={linkedInConfigured}
-          flash={flashMessage(searchParams)}
-        />
-      )}
-    </SettingsShell>
-  );
+  const query = params.toString();
+  redirect(query ? `/settings/integrations?${query}` : "/settings/integrations");
 }

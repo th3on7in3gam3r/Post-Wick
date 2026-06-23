@@ -15,12 +15,12 @@ export async function GET(req: Request) {
   const brandId = searchParams.get("state");
 
   if (!code || !brandId) {
-    return NextResponse.redirect("/settings/connections?error=invalid_callback");
+    return NextResponse.redirect("/settings/integrations?error=invalid_callback");
   }
 
   const brand = await getBrandById(brandId, userId);
   if (!brand) {
-    return NextResponse.redirect("/settings/connections?error=brand_not_found");
+    return NextResponse.redirect("/settings/integrations?error=brand_not_found");
   }
 
   try {
@@ -35,8 +35,8 @@ export async function GET(req: Request) {
       isDemo: false,
     });
 
-    return NextResponse.redirect("/settings/connections?connected=linkedin");
+    return NextResponse.redirect("/settings/integrations?connected=linkedin");
   } catch {
-    return NextResponse.redirect("/settings/connections?error=linkedin_exchange_failed");
+    return NextResponse.redirect("/settings/integrations?error=linkedin_exchange_failed");
   }
 }

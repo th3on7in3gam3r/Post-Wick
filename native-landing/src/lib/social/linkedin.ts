@@ -1,6 +1,16 @@
+function appBaseUrl() {
+  return (process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000").replace(
+    /\/+$/,
+    "",
+  );
+}
+
+export function linkedInRedirectUri() {
+  return `${appBaseUrl()}/api/social/linkedin/callback`;
+}
+
 export function getLinkedInAuthUrl(brandId: string) {
   const clientId = process.env.LINKEDIN_CLIENT_ID;
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
 
   if (!clientId) {
     throw new Error("LinkedIn OAuth is not configured");
@@ -9,7 +19,7 @@ export function getLinkedInAuthUrl(brandId: string) {
   const params = new URLSearchParams({
     response_type: "code",
     client_id: clientId,
-    redirect_uri: `${appUrl}/api/social/linkedin/callback`,
+    redirect_uri: linkedInRedirectUri(),
     state: brandId,
     scope: "w_member_social openid profile",
   });
@@ -20,7 +30,6 @@ export function getLinkedInAuthUrl(brandId: string) {
 export async function exchangeLinkedInCode(code: string) {
   const clientId = process.env.LINKEDIN_CLIENT_ID;
   const clientSecret = process.env.LINKEDIN_CLIENT_SECRET;
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
 
   if (!clientId || !clientSecret) {
     throw new Error("LinkedIn OAuth is not configured");
@@ -31,7 +40,7 @@ export async function exchangeLinkedInCode(code: string) {
     code,
     client_id: clientId,
     client_secret: clientSecret,
-    redirect_uri: `${appUrl}/api/social/linkedin/callback`,
+    redirect_uri: linkedInRedirectUri(),
   });
 
   const response = await fetch("https://www.linkedin.com/oauth/v2/accessToken", {
