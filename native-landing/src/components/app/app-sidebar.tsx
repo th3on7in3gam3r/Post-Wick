@@ -43,7 +43,7 @@ export function AppSidebar({ pathname }: { pathname: string }) {
         </p>
       </div>
 
-      <nav className="min-h-0 flex-1 space-y-1 overflow-y-auto p-4">
+      <nav className="min-h-0 flex-1 space-y-1 overflow-y-auto p-4 pb-6">
         {navItems.map(({ href, label, icon: Icon, exact }) => {
           const active = isActive(pathname, href, exact);
           return (
@@ -64,21 +64,6 @@ export function AppSidebar({ pathname }: { pathname: string }) {
         })}
       </nav>
 
-      <div className="relative mx-4 mb-3 hidden shrink-0 overflow-hidden rounded-2xl border border-black/[0.06] shadow-sm md:block">
-        <div
-          className="h-36 bg-cover bg-center"
-          style={{ backgroundImage: "url('/images/sign-in-forest-hammock.png')" }}
-          role="img"
-          aria-label="Forest landscape with a hammock, matching the Post-Wick sign-in page"
-        />
-        <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-white via-white/55 to-white/10" />
-        <div className="pointer-events-none absolute inset-x-0 bottom-0 px-3 pb-3">
-          <p className="font-playfair text-sm italic text-near-black/90">
-            {SITE_TAGLINE}
-          </p>
-        </div>
-      </div>
-
       <div className="shrink-0 border-t border-black/[0.06] p-4">
         <a
           href="mailto:hello@postwick.com"
@@ -86,6 +71,16 @@ export function AppSidebar({ pathname }: { pathname: string }) {
         >
           Questions? hello@postwick.com
         </a>
+        <div
+          className="relative mt-3 hidden h-20 overflow-hidden rounded-xl border border-black/[0.06] md:block"
+          aria-hidden
+        >
+          <div
+            className="h-full w-full bg-cover bg-center"
+            style={{ backgroundImage: "url('/images/sign-in-forest-hammock.png')" }}
+          />
+          <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-white/90 via-white/30 to-transparent" />
+        </div>
       </div>
     </aside>
   );

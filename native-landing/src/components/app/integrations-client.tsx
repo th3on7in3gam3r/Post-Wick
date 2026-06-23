@@ -156,6 +156,27 @@ export function IntegrationsClient({
     }
   }
 
+  function handleLiveConnect(platform: IntegrationPlatformId) {
+    const runtime = configById.get(platform);
+    const usesOAuth =
+      platform === "linkedin" || platform === "instagram" || platform === "facebook";
+
+    if (usesOAuth && runtime?.connectionMode !== "oauth") {
+      if (platform === "instagram" || platform === "facebook") {
+        document
+          .getElementById("meta-setup-guide")
+          ?.scrollIntoView({ behavior: "smooth", block: "start" });
+      } else {
+        document
+          .getElementById("oauth-setup-banner")
+          ?.scrollIntoView({ behavior: "smooth", block: "start" });
+      }
+      return;
+    }
+
+    connectOAuth(platform);
+  }
+
   const grouped = (Object.keys(INTEGRATION_CATEGORIES) as IntegrationCategory[]).map(
     (category) => ({
       category,
@@ -264,7 +285,10 @@ export function IntegrationsClient({
       </PanelCard>
 
       {!providers.linkedin || !providers.meta ? (
-        <div className="rounded-xl border border-black/[0.06] bg-cream/40 px-4 py-3 text-sm text-gray-body">
+        <div
+          id="oauth-setup-banner"
+          className="rounded-xl border border-black/[0.06] bg-cream/40 px-4 py-3 text-sm text-gray-body"
+        >
           <p className="font-medium text-near-black">OAuth setup</p>
           <p className="mt-1">
             {!providers.linkedin
@@ -377,17 +401,26 @@ export function IntegrationsClient({
                     </div>
                   ) : (
                     <div className="mt-5 flex flex-1 flex-col justify-end gap-2">
-                      {runtime?.connectionMode === "oauth" ? (
-                        <TextureButton
-                          type="button"
-                          variant="primary"
-                          size="sm"
-                          disabled={isLoading}
-                          onClick={() => connectOAuth(platform.id)}
-                        >
-                          <Link2 className="mr-2 h-4 w-4" />
-                          Connect {platform.name}
-                        </TextureButton>
+                      {platform.oauthProvider || platform.id === "linkedin" ? (
+                        <>
+                          <TextureButton
+                            type="button"
+                            variant="primary"
+                            size="sm"
+                            disabled={isLoading}
+                            onClick={() => handleLiveConnect(platform.id)}
+                          >
+                            <Link2 className="mr-2 h-4 w-4" />
+                            Connect {platform.name}
+                          </TextureButton>
+                          {runtime?.connectionMode !== "oauth" &&
+                          (platform.id === "instagram" || platform.id === "facebook") ? (
+                            <p className="text-xs text-gray-body">
+                              Add META_APP_ID and META_APP_SECRET on Vercel, redeploy, then
+                              tap Connect again.
+                            </p>
+                          ) : null}
+                        </>
                       ) : null}
                       {platform.demoAvailable ? (
                         <TextureButton
@@ -402,9 +435,7 @@ export function IntegrationsClient({
                           ) : (
                             <Sparkles className="mr-2 h-4 w-4" />
                           )}
-                          {runtime?.connectionMode === "oauth"
-                            ? "Try demo mode"
-                            : "Connect demo account"}
+                          Try demo mode
                         </TextureButton>
                       ) : (
                         <p className="text-xs text-gray-label">Coming soon</p>

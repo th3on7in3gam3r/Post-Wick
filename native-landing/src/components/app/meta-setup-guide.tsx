@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Check, Copy, ExternalLink } from "lucide-react";
+import { Check, Copy } from "lucide-react";
 import { TextureButton } from "@/components/ui/texture-button";
 import { cn } from "@/lib/utils";
 
@@ -31,7 +31,7 @@ export function MetaSetupGuide({ setup }: { setup: MetaSetupInfo }) {
   }
 
   return (
-    <div className="rounded-xl border border-black/[0.06] bg-cream/40">
+    <div id="meta-setup-guide" className="rounded-xl border border-black/[0.06] bg-cream/40">
       <button
         type="button"
         onClick={() => setOpen((value) => !value)}
@@ -89,17 +89,6 @@ export function MetaSetupGuide({ setup }: { setup: MetaSetupInfo }) {
             <StatusPill ok={setup.configured} label="META_APP_ID + SECRET on server" />
             <StatusPill ok={Boolean(setup.appUrl)} label="NEXT_PUBLIC_APP_URL set" />
           </div>
-
-          <TextureButton asChild variant="minimal" size="sm">
-            <a
-              href="https://developers.facebook.com/apps/"
-              target="_blank"
-              rel="noreferrer"
-            >
-              <ExternalLink className="mr-1.5 h-3.5 w-3.5" />
-              Open Meta Developer dashboard
-            </a>
-          </TextureButton>
         </div>
       ) : null}
     </div>
