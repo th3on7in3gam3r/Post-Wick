@@ -4,10 +4,17 @@ import { AppHeader } from "@/components/app/app-header";
 import { EmptyState } from "@/components/app/empty-state";
 import { QueueClient } from "@/components/app/queue-client";
 import { TextureButton } from "@/components/ui/texture-button";
-import { getAppContext } from "@/lib/server/app-data";
+import { getBrandsByUserId, getPendingPostsByUserId } from "@/lib/db";
+import { requireUserId } from "@/lib/server/app-data";
+
+export const dynamic = "force-dynamic";
 
 export default async function QueuePage() {
-  const { pendingPosts, brands } = await getAppContext();
+  const userId = await requireUserId();
+  const [pendingPosts, brands] = await Promise.all([
+    getPendingPostsByUserId(userId),
+    getBrandsByUserId(userId),
+  ]);
 
   return (
     <>

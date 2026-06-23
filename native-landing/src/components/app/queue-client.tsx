@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { Check, X } from "lucide-react";
 import { TextureButton } from "@/components/ui/texture-button";
 import { formatScheduleLabel } from "@/lib/scheduling/slots";
@@ -13,25 +14,55 @@ type QueuePost = {
 };
 
 export function QueueClient({ initialPosts }: { initialPosts: QueuePost[] }) {
+  const router = useRouter();
   const [posts, setPosts] = useState(initialPosts);
   const [lastScheduled, setLastScheduled] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [acting, setActing] = useState(false);
   const current = posts[0];
 
+  useEffect(() => {
+    setPosts(initialPosts);
+  }, [initialPosts]);
+
   async function handleAction(action: "approve" | "skip") {
-    if (!current) return;
+    if (!current || acting) return;
 
-    const response = await fetch(`/api/posts/${current.id}`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ action }),
-    });
+    setActing(true);
+    setError(null);
 
-    if (response.ok) {
-      const data = await response.json();
+    try {
+      const response = await fetch(`/api/posts/${current.id}`, {
+        method: "POST",
+        credentials: "same-origin",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action }),
+      });
+
+      const data = await response.json().catch(() => ({}));
+
+      if (!response.ok) {
+        throw new Error(
+          typeof data.error === "string"
+            ? data.error
+            : `Could not ${action} post (${response.status})`,
+        );
+      }
+
       if (action === "approve" && data.scheduledAt) {
         setLastScheduled(data.scheduledAt as string);
       }
+
       setPosts((prev) => prev.filter((post) => post.id !== current.id));
+      router.refresh();
+    } catch (actionError) {
+      setError(
+        actionError instanceof Error
+          ? actionError.message
+          : "Something went wrong. Check your connection and try again.",
+      );
+    } finally {
+      setActing(false);
     }
   }
 
@@ -57,7 +88,9 @@ export function QueueClient({ initialPosts }: { initialPosts: QueuePost[] }) {
             className="mt-4 aspect-square w-full rounded-xl border border-black/[0.06] object-cover"
             referrerPolicy="no-referrer"
           />
-        ) : null}
+        ) : (
+          <p className="mt-3 text-xs text-gray-label">No image for this draft</p>
+        )}
         <p className="mt-4 text-sm leading-relaxed text-near-black">{current.content}</p>
       </article>
 
@@ -66,6 +99,7 @@ export function QueueClient({ initialPosts }: { initialPosts: QueuePost[] }) {
           type="button"
           variant="secondary"
           size="default"
+          disabled={acting}
           onClick={() => void handleAction("skip")}
         >
           <X className="mr-2 h-4 w-4" />
@@ -75,10 +109,11 @@ export function QueueClient({ initialPosts }: { initialPosts: QueuePost[] }) {
           type="button"
           variant="primary"
           size="default"
+          disabled={acting}
           onClick={() => void handleAction("approve")}
         >
           <Check className="mr-2 h-4 w-4" />
-          Approve
+          {acting ? "Saving…" : "Approve"}
         </TextureButton>
       </div>
 
@@ -88,6 +123,11 @@ export function QueueClient({ initialPosts }: { initialPosts: QueuePost[] }) {
       {lastScheduled ? (
         <p className="mt-2 text-center text-xs text-gold">
           Scheduled for {formatScheduleLabel(lastScheduled)}
+        </p>
+      ) : null}
+      {error ? (
+        <p className="mt-3 text-center text-xs text-red-600" role="alert">
+          {error}
         </p>
       ) : null}
     </div>

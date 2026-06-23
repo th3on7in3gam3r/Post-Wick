@@ -27,8 +27,15 @@ export async function POST(
     }
 
     if (action === "approve") {
-      const scheduled = await scheduleApprovedPost(params.postId, userId);
-      return NextResponse.json(scheduled ?? post);
+      try {
+        const scheduled = await scheduleApprovedPost(params.postId, userId);
+        return NextResponse.json(scheduled ?? post);
+      } catch {
+        return NextResponse.json({
+          ...post,
+          scheduleError: "Approved, but scheduling failed. It will stay approved.",
+        });
+      }
     }
 
     return NextResponse.json(post);

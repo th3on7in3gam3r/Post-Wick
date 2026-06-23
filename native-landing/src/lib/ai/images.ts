@@ -175,7 +175,15 @@ export async function generateImagesForPosts(
   lastImageGenerationError = null;
   const imageUrls: Array<string | null> = [];
 
-  for (let index = 0; index < posts.length; index += 2) {
+  if (posts.length > 0) {
+    const probeUrl = await generatePostImage(buildImagePrompt(posts[0]!.content, research));
+    if (!probeUrl && lastImageGenerationError) {
+      return posts.map(() => null);
+    }
+    imageUrls.push(probeUrl);
+  }
+
+  for (let index = 1; index < posts.length; index += 2) {
     const batch = posts.slice(index, index + 2);
     const batchUrls = await Promise.all(
       batch.map(async (post) => {
