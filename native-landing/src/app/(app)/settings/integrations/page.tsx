@@ -4,7 +4,6 @@ import { IntegrationsClient } from "@/components/app/integrations-client";
 import { SettingsShell } from "@/components/app/settings-shell";
 import { getBrandsByUserId, getConnectionsByUserId } from "@/lib/db";
 import {
-  getIntegrationProvidersSummary,
   getIntegrationsRuntimeConfig,
 } from "@/lib/integrations/config";
 import { isMetaConfigured, metaRedirectUri } from "@/lib/social/meta";
@@ -44,7 +43,6 @@ export default async function IntegrationsPage({
             isDemo: connection.isDemo,
           }))}
           runtimeConfig={getIntegrationsRuntimeConfig()}
-          providers={getIntegrationProvidersSummary()}
           metaSetup={{
             configured: isMetaConfigured(),
             redirectUri: metaRedirectUri(),
