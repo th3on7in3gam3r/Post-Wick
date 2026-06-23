@@ -1,5 +1,9 @@
 import axios from "axios";
 import * as cheerio from "cheerio";
+import {
+  buildTemplatePost,
+  pillarAssignmentList,
+} from "@/lib/ai/prompts";
 import { extractAssetsFromHtml } from "@/lib/brand-assets";
 import { normalizeWebsiteUrl } from "@/lib/website-url";
 
@@ -109,6 +113,13 @@ export function buildResearchFromCrawl(
   const topics = uniqueHeadings.slice(0, 6);
 
   const home = pages[0];
+  const uniqueValueProposition =
+    snippets[0] ||
+    `${brandName} helps customers through consistent, high-quality communication.`;
+  const tagline =
+    home?.metaDescription?.trim() ||
+    uniqueValueProposition.split(/[.!?]/)[0]?.trim() ||
+    `${brandName} — growing with consistent social presence.`;
 
   return {
     companyName: brandName,
@@ -119,9 +130,8 @@ export function buildResearchFromCrawl(
     targetAudience: "Business owners and customers interested in " + brandName,
     tone: "Professional, approachable, and helpful",
     keyTopics: topics.length ? topics : ["Your services", "Customer success", "Behind the scenes"],
-    uniqueValueProposition:
-      snippets[0] ||
-      `${brandName} helps customers through consistent, high-quality communication.`,
+    uniqueValueProposition,
+    tagline,
     pageCount: pages.length,
     crawledPages: pages.map((page) => ({
       url: page.url,
@@ -154,22 +164,13 @@ export function generatePostsFromResearch(
   count = 8,
 ) {
   const topics = research.keyTopics;
-  const templates = [
-    (topic: string) => `Why ${research.companyName} is focused on ${topic.toLowerCase()} — and what that means for you.`,
-    (topic: string) => `A quick tip from ${research.companyName}: ${topic}.`,
-    (topic: string) => `Behind the scenes at ${research.companyName}: how we approach ${topic.toLowerCase()}.`,
-    (topic: string) => `Questions we hear about ${topic.toLowerCase()} — answered.`,
-    (topic: string) => `If you care about ${topic.toLowerCase()}, ${research.companyName} was built for you.`,
-    (topic: string) => `This week at ${research.companyName}: ${topic}.`,
-    () => research.uniqueValueProposition,
-    () => `Discover what makes ${research.companyName} different.`,
-  ];
-
+  const assignments = pillarAssignmentList(count);
   const posts: string[] = [];
+
   for (let i = 0; i < count; i += 1) {
     const topic = topics[i % topics.length] ?? research.companyName;
-    const template = templates[i % templates.length];
-    posts.push(template(topic));
+    const pillar = assignments[i] ?? "seo";
+    posts.push(buildTemplatePost(pillar, research, topic, i));
   }
 
   return posts;

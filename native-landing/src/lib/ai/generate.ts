@@ -3,6 +3,7 @@ import {
   generatePostsFromResearch,
   type buildResearchFromCrawl,
 } from "@/lib/crawl/website";
+import { buildGenerationPrompt, normalizeBrandResearch } from "@/lib/ai/prompts";
 
 let client: Anthropic | null = null;
 
@@ -38,17 +39,12 @@ export async function generatePostsWithAI(
       messages: [
         {
           role: "user",
-          content: `You write social media posts for ${research.companyName}.
-
-Brand research:
-${JSON.stringify(research, null, 2)}
-
-Generate exactly ${count} unique ${platform} posts.
-Rules:
-- Max ${charLimit} characters each
-- Professional, approachable tone matching the brand
-- No hashtags spam, no emoji overload
-- Return ONLY a JSON array of strings`,
+          content: buildGenerationPrompt({
+            research: normalizeBrandResearch(research),
+            count,
+            platform,
+            charLimit,
+          }),
         },
       ],
     });

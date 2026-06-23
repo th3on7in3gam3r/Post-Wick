@@ -12,6 +12,7 @@ import {
   Sparkles,
 } from "lucide-react";
 import { BrandLogo } from "@/components/brand-logo";
+import { SITE_TAGLINE } from "@/lib/brand";
 import { cn } from "@/lib/utils";
 
 const navItems = [
@@ -38,7 +39,7 @@ export function AppSidebar({ pathname }: { pathname: string }) {
       <div className="border-b border-black/[0.06] px-6 py-5">
         <BrandLogo href="/dashboard" variant="wordmark" priority />
         <p className="mt-2 text-[0.65rem] font-medium uppercase tracking-[0.18em] text-gray-label">
-          Social media on autopilot
+          {SITE_TAGLINE}
         </p>
       </div>
 

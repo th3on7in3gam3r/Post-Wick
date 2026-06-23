@@ -83,6 +83,7 @@ export async function POST(
           tone: "Professional, approachable, and helpful",
           keyTopics: [brand.name],
           uniqueValueProposition: brand.description ?? brand.name,
+          tagline: brand.description ?? `${brand.name} — growing with consistent social presence.`,
           pageCount: 0,
           crawledPages: [],
           summary: brand.description ?? "",

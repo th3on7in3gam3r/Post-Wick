@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { BrandLogo } from "@/components/brand-logo";
+import { SITE_TAGLINE } from "@/lib/brand";
 
 type AuthPageShellProps = {
   children: React.ReactNode;
@@ -63,10 +64,10 @@ export function AuthPageShell({
           <div className={`flex w-full ${contentMaxWidth} flex-col items-center text-center`}>
             <div className="mb-5 shrink-0">
               <h1 className="font-playfair text-[clamp(1.5rem,3.5vw,1.875rem)] italic leading-tight text-near-black">
-                Social media on autopilot
+                {SITE_TAGLINE}
               </h1>
               <p className="mt-2 text-sm text-gray-body md:text-[0.95rem]">
-                Reach more customers without lifting a finger.
+                Drop your URL and we&apos;ll generate posts for your brand.
               </p>
             </div>
             <div className="flex w-full justify-center">{children}</div>
@@ -77,10 +78,10 @@ export function AuthPageShell({
           <div className="flex flex-col items-center justify-center px-4 py-8 lg:items-start lg:px-12 lg:py-12 xl:px-16">
             <div className="mb-8 text-center lg:text-left">
               <h1 className="font-playfair text-[clamp(1.75rem,4vw,2rem)] italic text-near-black">
-                Social media on autopilot
+                {SITE_TAGLINE}
               </h1>
               <p className="mt-2 text-[0.95rem] text-gray-body">
-                Reach more customers without lifting a finger.
+                Drop your URL and we&apos;ll generate posts for your brand.
               </p>
             </div>
             <div className="mx-auto flex w-full max-w-[420px] justify-center lg:mx-0">

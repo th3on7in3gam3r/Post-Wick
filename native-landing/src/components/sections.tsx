@@ -2,6 +2,7 @@ import Link from "next/link";
 import { BrandLogo } from "@/components/brand-logo";
 import { CookieSettingsTrigger } from "@/components/cookie-settings-trigger";
 import { TextureButton } from "@/components/ui/texture-button";
+import { SITE_TAGLINE } from "@/lib/brand";
 
 const faqs = [
   {
@@ -125,7 +126,7 @@ export function Footer() {
         <div className="flex flex-col items-center gap-2 sm:items-start">
           <BrandLogo href="/" variant="wordmark" />
           <p className="text-[0.65rem] font-medium uppercase tracking-[0.18em] text-gray-label">
-            Social media on autopilot
+            {SITE_TAGLINE}
           </p>
         </div>
         <nav className="flex flex-wrap justify-center gap-6 text-sm text-gray-body">

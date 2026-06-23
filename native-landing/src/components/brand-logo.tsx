@@ -1,12 +1,13 @@
 import Image from "next/image";
 import Link from "next/link";
+import { SITE_NAME, SITE_TAGLINE } from "@/lib/brand";
 import { cn } from "@/lib/utils";
 
 const LOGO = {
   src: "/images/post-wick-logo.png",
   width: 929,
   height: 268,
-  alt: "Post-Wick — Social media on autopilot",
+  alt: `${SITE_NAME} — ${SITE_TAGLINE}`,
 } as const;
 
 type BrandLogoVariant = "wordmark" | "full" | "mark";

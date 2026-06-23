@@ -1,0 +1,28 @@
+# Post-Wick
+
+> Get more customers on autopilot.
+
+Post-Wick is a social media automation platform for small businesses. Drop your website URL and Post-Wick researches your brand, generates SEO-, GEO-, and conversion-focused posts, and publishes to LinkedIn, Instagram, Facebook, and more after you approve.
+
+## What Post-Wick does
+
+- Crawls your website to learn your brand, industry, and topics
+- Generates a balanced mix of SEO, GEO (AI-discoverability), and money (conversion) posts
+- Lets you refine captions and images in plain language before publishing
+- Connects to LinkedIn, Instagram, Facebook, and other channels
+
+## Key pages
+
+- Home: https://post-wick.vercel.app/
+- About: https://post-wick.vercel.app/about
+- Contact: https://post-wick.vercel.app/contact
+- Privacy: https://post-wick.vercel.app/privacy
+- Terms: https://post-wick.vercel.app/terms
+
+## Tagline
+
+Get more customers on autopilot.
+
+## Contact
+
+https://post-wick.vercel.app/contact

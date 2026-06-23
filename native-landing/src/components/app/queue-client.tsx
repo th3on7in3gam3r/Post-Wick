@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { Check, Loader2, Sparkles, X } from "lucide-react";
 import { TextureButton } from "@/components/ui/texture-button";
 import { formatScheduleLabel } from "@/lib/scheduling/slots";
+import { REFINE_QUICK_PICKS } from "@/lib/ai/prompts";
 import { cn } from "@/lib/utils";
 
 type QueuePost = {
@@ -251,6 +252,19 @@ export function QueueClient({ initialPosts }: { initialPosts: QueuePost[] }) {
           disabled={busy}
           className="mt-4 w-full resize-none rounded-xl border border-black/[0.1] bg-cream/30 px-4 py-3 text-sm text-near-black outline-none placeholder:text-gray-label focus:border-gold/50"
         />
+        <div className="mt-3 flex flex-wrap gap-2">
+          {REFINE_QUICK_PICKS.map((pick) => (
+            <button
+              key={pick.pillar}
+              type="button"
+              disabled={busy}
+              onClick={() => setInstruction(pick.instruction)}
+              className="rounded-full border border-black/[0.08] bg-cream/50 px-3 py-1 text-xs font-medium text-gray-body transition hover:border-gold/30 hover:text-near-black disabled:opacity-50"
+            >
+              {pick.label}
+            </button>
+          ))}
+        </div>
         <label className="mt-3 flex items-center gap-2 text-sm text-gray-body">
           <input
             type="checkbox"
