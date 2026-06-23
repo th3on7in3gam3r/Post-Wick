@@ -64,6 +64,10 @@ export async function GET(req: Request) {
     return NextResponse.redirect(integrationsUrl(req, `connected=${platform}`));
   } catch (error) {
     console.error("[meta-callback]", error);
-    return NextResponse.redirect(integrationsUrl(req, "error=meta_exchange_failed"));
+    const message = error instanceof Error ? error.message.toLowerCase() : "";
+    const code = message.includes("instagram business")
+      ? "meta_no_instagram"
+      : "meta_exchange_failed";
+    return NextResponse.redirect(integrationsUrl(req, `error=${code}`));
   }
 }

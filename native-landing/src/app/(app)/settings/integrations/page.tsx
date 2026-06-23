@@ -7,6 +7,8 @@ import {
   getIntegrationProvidersSummary,
   getIntegrationsRuntimeConfig,
 } from "@/lib/integrations/config";
+import { isMetaConfigured, metaRedirectUri } from "@/lib/social/meta";
+import { siteUrl } from "@/lib/brand";
 import { requireUserId } from "@/lib/server/app-data";
 
 export default async function IntegrationsPage({
@@ -43,6 +45,11 @@ export default async function IntegrationsPage({
           }))}
           runtimeConfig={getIntegrationsRuntimeConfig()}
           providers={getIntegrationProvidersSummary()}
+          metaSetup={{
+            configured: isMetaConfigured(),
+            redirectUri: metaRedirectUri(),
+            appUrl: siteUrl(),
+          }}
           flashParams={searchParams}
         />
       )}

@@ -10,6 +10,7 @@ import {
   Sparkles,
 } from "lucide-react";
 import { PanelCard } from "@/components/app/panel-card";
+import { MetaSetupGuide, type MetaSetupInfo } from "@/components/app/meta-setup-guide";
 import { TextureButton } from "@/components/ui/texture-button";
 import {
   INTEGRATION_CATEGORIES,
@@ -59,6 +60,9 @@ function flashMessage(searchParams: {
   if (searchParams.error === "linkedin_exchange_failed") {
     return "LinkedIn authorization failed. Try again or use demo mode.";
   }
+  if (searchParams.error === "meta_no_instagram") {
+    return "No Instagram Business account is linked to your Facebook Page. Link them in Meta Business Suite, then try again.";
+  }
   if (searchParams.error === "meta_exchange_failed") {
     return "Meta authorization failed. Confirm your Page and Instagram Business account are linked.";
   }
@@ -73,12 +77,14 @@ export function IntegrationsClient({
   initialConnections,
   runtimeConfig,
   providers,
+  metaSetup,
   flashParams,
 }: {
   brands: Brand[];
   initialConnections: Connection[];
   runtimeConfig: PlatformRuntimeConfig[];
   providers: { linkedin: boolean; meta: boolean };
+  metaSetup: MetaSetupInfo;
   flashParams?: { connected?: string; error?: string };
 }) {
   const router = useRouter();
@@ -184,6 +190,8 @@ export function IntegrationsClient({
           {flash}
         </div>
       ) : null}
+
+      <MetaSetupGuide setup={metaSetup} />
 
       <div className="grid gap-4 md:grid-cols-3">
         <div className="rounded-2xl border border-black/[0.06] bg-white p-5 shadow-card">
