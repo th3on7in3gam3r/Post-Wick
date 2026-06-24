@@ -21,6 +21,7 @@ type CalendarPost = {
 };
 
 const POST_ID_MIME = "application/x-post-wick-post-id";
+const DATE_LOCALE = "en-US";
 
 function startOfDay(date: Date) {
   const next = new Date(date);
@@ -41,48 +42,48 @@ function dayKey(date: Date) {
   return `${year}-${month}-${day}`;
 }
 
+function formatDayHeading(day: Date) {
+  return {
+    weekday: day.toLocaleDateString(DATE_LOCALE, { weekday: "short" }),
+    label: day.toLocaleDateString(DATE_LOCALE, { month: "short", day: "numeric" }),
+  };
+}
+
 function canReschedule(post: CalendarPost) {
   return post.status === "approved" && Boolean(post.scheduledAt);
 }
 
-function CalendarSkeleton() {
-  return (
-    <div className="space-y-4" aria-hidden>
-      <p className="text-sm text-gray-body">
-        Drag <span className="font-medium text-near-black">approved</span> posts to another day
-        to reschedule. Posts publish at 10:00 AM on the day you choose.
-      </p>
-      <div className="grid gap-4 lg:grid-cols-7">
-        {Array.from({ length: 14 }, (_, index) => (
-          <div
-            key={index}
-            className="min-h-[180px] animate-pulse rounded-2xl border border-black/[0.06] bg-white p-4 shadow-card"
-          />
-        ))}
-      </div>
-    </div>
-  );
+function buildCalendarDays() {
+  const start = startOfDay(new Date());
+  return Array.from({ length: 14 }, (_, index) => addDays(start, index));
 }
 
 export function CalendarClient({ posts: initialPosts }: { posts: CalendarPost[] }) {
   const router = useRouter();
-  const [mounted, setMounted] = useState(false);
-  const [days, setDays] = useState<Date[]>([]);
+  const [days] = useState(buildCalendarDays);
   const [posts, setPosts] = useState(initialPosts);
+  const [selectedPostId, setSelectedPostId] = useState<string | null>(null);
   const [draggingId, setDraggingId] = useState<string | null>(null);
   const [dropTarget, setDropTarget] = useState<string | null>(null);
   const [reschedulingId, setReschedulingId] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
 
   useEffect(() => {
-    const start = startOfDay(new Date());
-    setDays(Array.from({ length: 14 }, (_, index) => addDays(start, index)));
-    setMounted(true);
-  }, []);
-
-  useEffect(() => {
     setPosts(initialPosts);
   }, [initialPosts]);
+
+  useEffect(() => {
+    function onKeyDown(event: KeyboardEvent) {
+      if (event.key === "Escape") {
+        setSelectedPostId(null);
+        setDraggingId(null);
+        setDropTarget(null);
+      }
+    }
+
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, []);
 
   const postsByDay = useMemo(() => {
     const map = new Map<string, CalendarPost[]>();
@@ -96,12 +97,16 @@ export function CalendarClient({ posts: initialPosts }: { posts: CalendarPost[] 
     return map;
   }, [posts]);
 
+  const todayKey = dayKey(new Date());
+  const hasSelection = Boolean(selectedPostId);
+
   async function reschedulePost(postId: string, day: Date) {
     const post = posts.find((item) => item.id === postId);
     if (!post || !canReschedule(post)) return;
 
     const scheduledAt = scheduleSlotOnDay(day);
     if (post.scheduledAt && dayKey(new Date(post.scheduledAt)) === dayKey(day)) {
+      setSelectedPostId(null);
       return;
     }
 
@@ -133,6 +138,7 @@ export function CalendarClient({ posts: initialPosts }: { posts: CalendarPost[] 
       setMessage(error instanceof Error ? error.message : "Could not reschedule post");
     } finally {
       setReschedulingId(null);
+      setSelectedPostId(null);
       setDraggingId(null);
       setDropTarget(null);
     }
@@ -147,17 +153,23 @@ export function CalendarClient({ posts: initialPosts }: { posts: CalendarPost[] 
     void reschedulePost(postId, day);
   }
 
-  if (!mounted || days.length === 0) {
-    return <CalendarSkeleton />;
+  function handleDayClick(day: Date) {
+    if (!selectedPostId || reschedulingId) return;
+    void reschedulePost(selectedPostId, day);
   }
 
-  const todayKey = dayKey(new Date());
+  function togglePostSelection(postId: string) {
+    setSelectedPostId((current) => (current === postId ? null : postId));
+    setMessage(null);
+  }
 
   return (
     <div className="space-y-4">
       <p className="text-sm text-gray-body">
-        Drag <span className="font-medium text-near-black">approved</span> posts to another day
-        to reschedule. Posts publish at 10:00 AM on the day you choose.
+        <span className="font-medium text-near-black">Click an approved post</span>, then click a
+        day to move it — or drag it there. Posts publish at 10:00 AM on the day you choose. Press{" "}
+        <kbd className="rounded border border-black/10 bg-white px-1.5 py-0.5 text-xs">Esc</kbd> to
+        cancel.
       </p>
 
       {message ? (
@@ -180,10 +192,22 @@ export function CalendarClient({ posts: initialPosts }: { posts: CalendarPost[] 
           const dayPosts = postsByDay.get(key) ?? [];
           const isToday = key === todayKey;
           const isDropTarget = dropTarget === key;
+          const isMoveTarget = hasSelection && !isDropTarget;
+          const heading = formatDayHeading(day);
 
           return (
             <div
               key={key}
+              role={hasSelection ? "button" : undefined}
+              tabIndex={hasSelection ? 0 : undefined}
+              onKeyDown={(event) => {
+                if (!hasSelection) return;
+                if (event.key === "Enter" || event.key === " ") {
+                  event.preventDefault();
+                  handleDayClick(day);
+                }
+              }}
+              onClick={() => handleDayClick(day)}
               onDragOver={(event) => {
                 if (!draggingId) return;
                 event.preventDefault();
@@ -194,43 +218,57 @@ export function CalendarClient({ posts: initialPosts }: { posts: CalendarPost[] 
                 if (event.currentTarget.contains(event.relatedTarget as Node)) return;
                 setDropTarget((current) => (current === key ? null : current));
               }}
-              onDrop={(event) => handleDrop(day, event)}
+              onDrop={(event) => {
+                event.stopPropagation();
+                handleDrop(day, event);
+              }}
               className={cn(
                 "min-h-[180px] rounded-2xl border bg-white p-4 shadow-card transition-colors",
                 isToday ? "border-gold/40 bg-cream/30" : "border-black/[0.06]",
                 isDropTarget && "border-gold bg-gold/5 ring-2 ring-gold/30",
+                isMoveTarget && "cursor-pointer border-gold/30 hover:border-gold/60 hover:bg-gold/5",
               )}
             >
               <div className="mb-3 border-b border-black/[0.06] pb-2">
                 <p className="text-xs font-semibold uppercase tracking-[0.12em] text-gray-label">
-                  {day.toLocaleDateString(undefined, { weekday: "short" })}
+                  {heading.weekday}
                 </p>
-                <p className="font-playfair text-lg italic text-near-black">
-                  {day.toLocaleDateString(undefined, { month: "short", day: "numeric" })}
-                </p>
+                <p className="font-playfair text-lg italic text-near-black">{heading.label}</p>
               </div>
 
               {dayPosts.length === 0 ? (
                 <p className="text-xs text-gray-label">
-                  {isDropTarget ? "Drop to schedule here" : "No posts"}
+                  {isDropTarget
+                    ? "Drop to schedule here"
+                    : isMoveTarget
+                      ? "Click to move here"
+                      : "No posts"}
                 </p>
               ) : (
                 <div className="space-y-3">
                   {dayPosts.map((post) => {
-                    const draggable = canReschedule(post);
+                    const movable = canReschedule(post);
                     const isDragging = draggingId === post.id;
+                    const isSelected = selectedPostId === post.id;
                     const isSaving = reschedulingId === post.id;
 
                     return (
                       <article
                         key={post.id}
-                        draggable={draggable && !isSaving}
+                        draggable={movable && !isSaving}
+                        onClick={(event) => {
+                          event.stopPropagation();
+                          if (!movable || isSaving) return;
+                          togglePostSelection(post.id);
+                        }}
                         onDragStart={(event) => {
-                          if (!draggable) return;
+                          if (!movable) return;
+                          event.stopPropagation();
                           event.dataTransfer.setData(POST_ID_MIME, post.id);
                           event.dataTransfer.setData("text/plain", post.id);
                           event.dataTransfer.effectAllowed = "move";
                           setDraggingId(post.id);
+                          setSelectedPostId(post.id);
                           setMessage(null);
                         }}
                         onDragEnd={() => {
@@ -238,15 +276,17 @@ export function CalendarClient({ posts: initialPosts }: { posts: CalendarPost[] 
                           setDropTarget(null);
                         }}
                         className={cn(
-                          "rounded-xl border border-black/[0.06] bg-cream/50 p-3 transition-opacity",
-                          draggable && "cursor-grab select-none active:cursor-grabbing",
+                          "rounded-xl border bg-cream/50 p-3 transition-all",
+                          movable && "cursor-pointer select-none",
+                          movable && !isSelected && "border-black/[0.06] hover:border-gold/30",
+                          isSelected && "border-gold ring-2 ring-gold/25",
                           isDragging && "opacity-50",
                           isSaving && "opacity-70",
                         )}
                       >
                         <div className="flex items-center justify-between gap-2">
                           <div className="flex min-w-0 items-center gap-1.5">
-                            {draggable ? (
+                            {movable ? (
                               <GripVertical
                                 className="h-3.5 w-3.5 shrink-0 text-gray-label"
                                 aria-hidden

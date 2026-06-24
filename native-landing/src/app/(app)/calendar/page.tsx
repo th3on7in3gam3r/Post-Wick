@@ -1,12 +1,22 @@
 import Link from "next/link";
+import dynamic from "next/dynamic";
 import { CalendarDays } from "lucide-react";
 import { AppHeader } from "@/components/app/app-header";
-import { CalendarClient } from "@/components/app/calendar-client";
+import { CalendarLoading } from "@/components/app/calendar-loading";
 import { EmptyState } from "@/components/app/empty-state";
 import { TextureButton } from "@/components/ui/texture-button";
 import { getCalendarPostsByUserId } from "@/lib/db";
 import { processDuePostsForUser } from "@/lib/publish/process-due";
 import { requireUserId } from "@/lib/server/app-data";
+
+const CalendarClient = dynamic(
+  () =>
+    import("@/components/app/calendar-client").then((mod) => mod.CalendarClient),
+  {
+    ssr: false,
+    loading: () => <CalendarLoading />,
+  },
+);
 
 export default async function CalendarPage() {
   const userId = await requireUserId();

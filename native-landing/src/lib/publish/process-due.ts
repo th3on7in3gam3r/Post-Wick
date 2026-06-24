@@ -35,7 +35,12 @@ async function publishLivePost(
   const platform = post.platform.toLowerCase();
 
   if (platform === "linkedin" && connection.accessToken) {
-    const externalId = await publishToLinkedIn(connection.accessToken, post.content);
+    const imageUrl = resolvePostImageUrl(post.imageUrl);
+    const externalId = await publishToLinkedIn(
+      connection.accessToken,
+      post.content,
+      imageUrl,
+    );
     return externalId;
   }
 

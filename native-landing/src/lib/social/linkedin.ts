@@ -61,7 +61,16 @@ export async function exchangeLinkedInCode(code: string) {
   };
 }
 
-export async function publishToLinkedIn(accessToken: string, content: string) {
+async function readLinkedInError(response: Response) {
+  try {
+    const detail = await response.text();
+    return detail.slice(0, 240) || response.statusText;
+  } catch {
+    return response.statusText;
+  }
+}
+
+async function getLinkedInAuthor(accessToken: string) {
   const profileResponse = await fetch("https://api.linkedin.com/v2/userinfo", {
     headers: { Authorization: `Bearer ${accessToken}` },
   });
@@ -71,7 +80,138 @@ export async function publishToLinkedIn(accessToken: string, content: string) {
   }
 
   const profile = (await profileResponse.json()) as { sub: string };
-  const author = `urn:li:person:${profile.sub}`;
+  return `urn:li:person:${profile.sub}`;
+}
+
+async function fetchImageBinary(imageUrl: string) {
+  const response = await fetch(imageUrl);
+  if (!response.ok) {
+    throw new Error(`Failed to fetch post image (${response.status})`);
+  }
+
+  const contentType = response.headers.get("content-type") ?? "image/png";
+  const buffer = await response.arrayBuffer();
+  if (buffer.byteLength === 0) {
+    throw new Error("Post image file is empty");
+  }
+
+  return { buffer, contentType };
+}
+
+async function registerLinkedInImageUpload(accessToken: string, owner: string) {
+  const response = await fetch(
+    "https://api.linkedin.com/v2/assets?action=registerUpload",
+    {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        "Content-Type": "application/json",
+        "X-Restli-Protocol-Version": "2.0.0",
+      },
+      body: JSON.stringify({
+        registerUploadRequest: {
+          recipes: ["urn:li:digitalmediaRecipe:feedshare-image"],
+          owner,
+          serviceRelationships: [
+            {
+              relationshipType: "OWNER",
+              identifier: "urn:li:userGeneratedContent",
+            },
+          ],
+        },
+      }),
+    },
+  );
+
+  if (!response.ok) {
+    throw new Error(
+      `LinkedIn image registration failed: ${await readLinkedInError(response)}`,
+    );
+  }
+
+  const payload = (await response.json()) as {
+    value?: {
+      asset?: string;
+      uploadMechanism?: {
+        "com.linkedin.digitalmedia.uploading.MediaUploadHttpRequest"?: {
+          uploadUrl?: string;
+        };
+      };
+    };
+  };
+
+  const asset = payload.value?.asset;
+  const uploadUrl =
+    payload.value?.uploadMechanism?.[
+      "com.linkedin.digitalmedia.uploading.MediaUploadHttpRequest"
+    ]?.uploadUrl;
+
+  if (!asset || !uploadUrl) {
+    throw new Error("LinkedIn image registration response was incomplete");
+  }
+
+  return { asset, uploadUrl };
+}
+
+async function uploadLinkedInImageBinary(
+  accessToken: string,
+  uploadUrl: string,
+  buffer: ArrayBuffer,
+  contentType: string,
+) {
+  const response = await fetch(uploadUrl, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+      "Content-Type": contentType,
+    },
+    body: buffer,
+  });
+
+  if (!response.ok) {
+    throw new Error(`LinkedIn image upload failed: ${await readLinkedInError(response)}`);
+  }
+}
+
+export async function publishToLinkedIn(
+  accessToken: string,
+  content: string,
+  imageUrl?: string | null,
+) {
+  const author = await getLinkedInAuthor(accessToken);
+
+  let shareContent: {
+    shareCommentary: { text: string };
+    shareMediaCategory: "NONE" | "IMAGE";
+    media?: Array<{
+      status: "READY";
+      media: string;
+      title: { text: string };
+    }>;
+  };
+
+  if (imageUrl) {
+    const { buffer, contentType } = await fetchImageBinary(imageUrl);
+    const { asset, uploadUrl } = await registerLinkedInImageUpload(accessToken, author);
+    await uploadLinkedInImageBinary(accessToken, uploadUrl, buffer, contentType);
+
+    shareContent = {
+      shareCommentary: { text: content },
+      shareMediaCategory: "IMAGE",
+      media: [
+        {
+          status: "READY",
+          media: asset,
+          title: { text: content.slice(0, 200) || "Post image" },
+        },
+      ],
+    };
+  } else {
+    shareContent = {
+      shareCommentary: { text: content },
+      shareMediaCategory: "NONE",
+    };
+  }
 
   const response = await fetch("https://api.linkedin.com/v2/ugcPosts", {
     method: "POST",
@@ -84,10 +224,7 @@ export async function publishToLinkedIn(accessToken: string, content: string) {
       author,
       lifecycleState: "PUBLISHED",
       specificContent: {
-        "com.linkedin.ugc.ShareContent": {
-          shareCommentary: { text: content },
-          shareMediaCategory: "NONE",
-        },
+        "com.linkedin.ugc.ShareContent": shareContent,
       },
       visibility: {
         "com.linkedin.ugc.MemberNetworkVisibility": "PUBLIC",
@@ -96,8 +233,11 @@ export async function publishToLinkedIn(accessToken: string, content: string) {
   });
 
   if (!response.ok) {
-    throw new Error("LinkedIn publish request failed");
+    throw new Error(`LinkedIn publish request failed: ${await readLinkedInError(response)}`);
   }
+
+  const postId = response.headers.get("x-restli-id");
+  if (postId) return postId;
 
   const payload = (await response.json()) as { id?: string };
   return payload.id ?? "linkedin-post";
