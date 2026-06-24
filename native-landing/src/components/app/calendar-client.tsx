@@ -2,6 +2,7 @@
 
 import { useMemo } from "react";
 import { formatScheduleLabel } from "@/lib/scheduling/slots";
+import { ExternalPostLink } from "@/components/app/external-post-link";
 import { cn } from "@/lib/utils";
 
 type CalendarPost = {
@@ -11,6 +12,7 @@ type CalendarPost = {
   content: string;
   status: string;
   scheduledAt: string | null;
+  externalPostId: string | null;
 };
 
 function startOfDay(date: Date) {
@@ -104,6 +106,13 @@ export function CalendarClient({ posts }: { posts: CalendarPost[] }) {
                       <p className="mt-2 text-[0.65rem] text-gray-label">
                         {formatScheduleLabel(post.scheduledAt)}
                       </p>
+                    ) : null}
+                    {post.status === "published" ? (
+                      <ExternalPostLink
+                        platform={post.platform}
+                        externalPostId={post.externalPostId}
+                        className="mt-2 text-[0.65rem]"
+                      />
                     ) : null}
                   </article>
                 ))}

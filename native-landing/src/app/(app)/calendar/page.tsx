@@ -45,6 +45,7 @@ export default async function CalendarPage() {
               content: post.content,
               status: post.status,
               scheduledAt: post.scheduledAt,
+              externalPostId: post.externalPostId,
             }))}
           />
         )}

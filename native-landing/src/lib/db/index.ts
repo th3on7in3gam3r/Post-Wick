@@ -504,6 +504,24 @@ export async function getDuePosts(userId: string) {
   return rows.map((row) => parsePost(row.post));
 }
 
+export async function getUserIdsWithDuePosts() {
+  const db = await getDb();
+  const now = nowIso();
+  const rows = await db
+    .selectDistinct({ userId: brands.userId })
+    .from(posts)
+    .innerJoin(brands, eq(brands.id, posts.brandId))
+    .where(
+      and(
+        eq(posts.status, "approved"),
+        isNotNull(posts.scheduledAt),
+        lte(posts.scheduledAt, now),
+      ),
+    );
+
+  return rows.map((row) => row.userId);
+}
+
 export async function markPostPublished(
   postId: string,
   userId: string,

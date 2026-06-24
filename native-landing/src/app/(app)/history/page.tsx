@@ -72,6 +72,7 @@ export default async function HistoryPage({
               scheduledAt: post.scheduledAt,
               publishedAt: post.publishedAt,
               publishError: post.publishError,
+              externalPostId: post.externalPostId,
             }))}
           />
         )}

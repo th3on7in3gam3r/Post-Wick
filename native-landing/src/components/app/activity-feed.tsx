@@ -9,6 +9,7 @@ import {
 } from "lucide-react";
 import { formatScheduleLabel } from "@/lib/scheduling/slots";
 import type { ActivityItem } from "@/lib/db";
+import { ExternalPostLink } from "@/components/app/external-post-link";
 import { cn } from "@/lib/utils";
 
 const actionMeta = {
@@ -74,6 +75,13 @@ export function ActivityFeed({ items }: { items: ActivityItem[] }) {
               <div className="mt-2 flex flex-wrap items-center gap-3 text-xs text-gray-label">
                 <span>{item.brandName}</span>
                 {timestamp ? <span>{formatScheduleLabel(timestamp)}</span> : null}
+                {item.action === "published" ? (
+                  <ExternalPostLink
+                    platform={item.platform}
+                    externalPostId={item.externalPostId}
+                    className="text-xs"
+                  />
+                ) : null}
               </div>
             </div>
           </li>

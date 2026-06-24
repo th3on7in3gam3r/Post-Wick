@@ -402,5 +402,29 @@ export async function publishToInstagram(
   }
 
   const publishPayload = (await publish.json()) as { id?: string };
-  return publishPayload.id ?? "instagram-post";
+  const mediaId = publishPayload.id;
+  if (!mediaId) {
+    throw new Error("Instagram publish response missing id");
+  }
+
+  const permalink = await fetchInstagramPermalink(graphBase, mediaId, pageAccessToken);
+  return permalink;
+}
+
+async function fetchInstagramPermalink(
+  graphBase: string,
+  mediaId: string,
+  accessToken: string,
+) {
+  const url = new URL(`${graphBase}/${mediaId}`);
+  url.searchParams.set("fields", "permalink");
+  url.searchParams.set("access_token", accessToken);
+
+  const response = await fetch(url);
+  if (!response.ok) {
+    return mediaId;
+  }
+
+  const payload = (await response.json()) as { permalink?: string };
+  return payload.permalink ?? mediaId;
 }

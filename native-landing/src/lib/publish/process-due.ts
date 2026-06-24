@@ -1,6 +1,7 @@
 import {
   getConnectionForBrand,
   getDuePosts,
+  getUserIdsWithDuePosts,
   markPostFailed,
   markPostPublished,
   type ConnectionRecord,
@@ -101,4 +102,24 @@ export async function processDuePostsForUser(userId: string) {
   }
 
   return results;
+}
+
+export async function processDuePostsForAllUsers() {
+  const userIds = await getUserIdsWithDuePosts();
+  let published = 0;
+  let failed = 0;
+
+  for (const userId of userIds) {
+    const results = await processDuePostsForUser(userId);
+    for (const result of results) {
+      if (result.status === "published") published += 1;
+      else failed += 1;
+    }
+  }
+
+  return {
+    usersProcessed: userIds.length,
+    published,
+    failed,
+  };
 }
