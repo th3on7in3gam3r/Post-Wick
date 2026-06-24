@@ -11,7 +11,7 @@ import { useScrollDirection } from "@/hooks/use-scroll-direction";
 const navLinks = [
   { label: "How it works", href: "/#how-it-works" },
   { label: "About", href: "/about" },
-  { label: "Pricing", href: "/#pricing" },
+  { label: "Pricing", href: "/pricing" },
 ] as const;
 
 export function Navbar() {

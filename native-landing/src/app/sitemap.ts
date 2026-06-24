@@ -5,7 +5,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
   const base = siteUrl();
   const lastModified = new Date();
 
-  return ["/", "/about", "/contact", "/privacy", "/terms", "/cookies"].map((path) => ({
+  return ["/", "/pricing", "/about", "/contact", "/privacy", "/terms", "/cookies"].map((path) => ({
     url: `${base}${path}`,
     lastModified,
     changeFrequency: path === "/" ? "weekly" : "monthly",

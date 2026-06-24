@@ -20,7 +20,7 @@ function TypingIndustry({
   onIndustryChange: (industry: Industry, placement: ImagePlacement) => void;
 }) {
   const [currentWordIndex, setCurrentWordIndex] = useState(0);
-  const [currentText, setCurrentText] = useState("");
+  const [currentText, setCurrentText] = useState<string>(industries[0]);
   const [isDeleting, setIsDeleting] = useState(false);
   const controls = useAnimationControls();
 

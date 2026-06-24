@@ -25,7 +25,7 @@ function TypingText({
   delayBetweenWords = 1800,
 }: TypingTextProps) {
   const [currentWordIndex, setCurrentWordIndex] = useState(0);
-  const [currentText, setCurrentText] = useState("");
+  const [currentText, setCurrentText] = useState(words[0] ?? "");
   const [isDeleting, setIsDeleting] = useState(false);
   const controls = useAnimationControls();
 
