@@ -1,8 +1,10 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Check, Loader2, RotateCcw, Sparkles, X } from "lucide-react";
+import { Check, CheckCircle2, Loader2, RotateCcw, Sparkles, X } from "lucide-react";
+import { EmptyState } from "@/components/app/empty-state";
 import { TextureButton } from "@/components/ui/texture-button";
 import { formatScheduleLabel } from "@/lib/scheduling/slots";
 import { REFINE_QUICK_PICKS } from "@/lib/ai/prompts";
@@ -138,8 +140,11 @@ export function QueueClient({ initialPosts }: { initialPosts: QueuePost[] }) {
   const [regenerateInstruction, setRegenerateInstruction] = useState("");
   const [regenerating, setRegenerating] = useState(false);
   const regeneratePopoverRef = useRef<HTMLDivElement>(null);
+  const total = useRef(initialPosts.length);
+  const reviewed = total.current - posts.length;
   const current = posts[0];
   const currentImageSrc = resolvePostImageUrl(current?.imageUrl);
+  const busy = acting || refining || applying || regenerating;
 
   useEffect(() => {
     setPosts(initialPosts);
@@ -171,6 +176,12 @@ export function QueueClient({ initialPosts }: { initialPosts: QueuePost[] }) {
     window.addEventListener("mousedown", handlePointerDown);
     return () => window.removeEventListener("mousedown", handlePointerDown);
   }, [regenerateOpen]);
+
+  useEffect(() => {
+    if (!error) return;
+    const timer = window.setTimeout(() => setError(null), 8000);
+    return () => window.clearTimeout(timer);
+  }, [error]);
 
   async function handleAction(action: "approve" | "skip") {
     if (!current || acting) return;
@@ -212,6 +223,25 @@ export function QueueClient({ initialPosts }: { initialPosts: QueuePost[] }) {
       setActing(false);
     }
   }
+
+  useEffect(() => {
+    function handleKey(e: KeyboardEvent) {
+      if (e.target instanceof HTMLTextAreaElement) return;
+      if (e.target instanceof HTMLInputElement) return;
+      if (busy || !current) return;
+
+      if (e.key === "ArrowRight" || e.key === "a") {
+        void handleAction("approve");
+      } else if (e.key === "ArrowLeft" || e.key === "s") {
+        void handleAction("skip");
+      } else if (e.key === "r") {
+        setRegenerateOpen((prev) => !prev);
+      }
+    }
+
+    window.addEventListener("keydown", handleKey);
+    return () => window.removeEventListener("keydown", handleKey);
+  }, [busy, current]);
 
   async function handleRefine() {
     if (!current || refining || instruction.trim().length < 3) return;
@@ -356,16 +386,56 @@ export function QueueClient({ initialPosts }: { initialPosts: QueuePost[] }) {
 
   if (!current) {
     return (
-      <p className="text-center text-sm text-gray-body">
-        All caught up. Generate more posts from your brand page.
-      </p>
+      <div className="mx-auto max-w-xl">
+        <EmptyState
+          icon={CheckCircle2}
+          title="You're all caught up!"
+          description="Generate your next batch of posts when you're ready."
+          action={
+            <TextureButton asChild variant="primary" size="default">
+              <Link href="/brands">Generate more posts</Link>
+            </TextureButton>
+          }
+        />
+        {lastScheduled ? (
+          <p className="mt-4 text-center text-xs text-gray-label">
+            Last approved: scheduled for {formatScheduleLabel(lastScheduled)}
+          </p>
+        ) : null}
+      </div>
     );
   }
 
-  const busy = acting || refining || applying || regenerating;
-
   return (
     <div className="mx-auto max-w-xl">
+      {error ? (
+        <div
+          className="mb-4 flex items-center gap-2 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800"
+          role="alert"
+        >
+          <span className="font-medium">Something went wrong:</span> {error}
+          <button
+            type="button"
+            onClick={() => setError(null)}
+            className="ml-auto text-red-400 hover:text-red-600"
+            aria-label="Dismiss error"
+          >
+            ×
+          </button>
+        </div>
+      ) : null}
+      {posts.length > 0 ? (
+        <div className="mb-4 text-center text-xs text-gray-label">
+          <p>
+            {posts.length} post{posts.length !== 1 ? "s" : ""} waiting for review
+          </p>
+          {total.current > 0 ? (
+            <p className="mt-1">
+              Post {reviewed + 1} of {total.current}
+            </p>
+          ) : null}
+        </div>
+      ) : null}
       {regenerating ? (
         <PostCardSkeleton />
       ) : (
@@ -399,8 +469,8 @@ export function QueueClient({ initialPosts }: { initialPosts: QueuePost[] }) {
           <p className="text-sm font-medium text-near-black">Refine with Post-Wick</p>
         </div>
         <p className="mt-2 text-sm text-gray-body">
-          Almost love it? Describe what to change in plain words and pick your favorite
-          version.
+          Almost there? Give specific instructions and pick your favorite version. (Keeps
+          the same post, adjusts it.)
         </p>
         <textarea
           value={instruction}
@@ -540,6 +610,9 @@ export function QueueClient({ initialPosts }: { initialPosts: QueuePost[] }) {
             <p className="text-sm font-medium text-near-black">
               Any direction for the new version?
             </p>
+            <p className="mt-1 text-xs text-gray-body">
+              Starts fresh — writes a completely new post from scratch.
+            </p>
             <p className="mt-1 text-xs text-gray-label">Optional — leave blank for a fresh rewrite.</p>
             <input
               type="text"
@@ -564,7 +637,7 @@ export function QueueClient({ initialPosts }: { initialPosts: QueuePost[] }) {
                 disabled={busy}
                 onClick={() => void handleRegenerate()}
               >
-                Regenerate
+                Start fresh
               </TextureButton>
               <TextureButton
                 type="button"
@@ -598,7 +671,7 @@ export function QueueClient({ initialPosts }: { initialPosts: QueuePost[] }) {
           aria-expanded={regenerateOpen}
         >
           <RotateCcw className="mr-2 h-4 w-4" />
-          Regenerate ↺
+          Start fresh ↺
         </TextureButton>
         <TextureButton
           type="button"
@@ -612,17 +685,13 @@ export function QueueClient({ initialPosts }: { initialPosts: QueuePost[] }) {
         </TextureButton>
       </div>
 
-      <p className="mt-4 text-center text-sm text-gray-body">
-        {posts.length} remaining
+      <p className="mt-3 text-center text-xs text-gray-label">
+        ← Skip &nbsp;·&nbsp; Approve → &nbsp;·&nbsp; R to start fresh
       </p>
+
       {lastScheduled ? (
         <p className="mt-2 text-center text-xs text-gold">
           Scheduled for {formatScheduleLabel(lastScheduled)}
-        </p>
-      ) : null}
-      {error ? (
-        <p className="mt-3 text-center text-xs text-red-600" role="alert">
-          {error}
         </p>
       ) : null}
     </div>

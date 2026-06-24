@@ -67,7 +67,7 @@ export function SocialProofSection() {
               </p>
               <div className="mt-6 flex items-center gap-3 border-t border-[#E8E4D9] pt-5">
                 <div
-                  className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-cream font-inter text-sm font-semibold text-gold"
+                  className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-gold/20 text-sm font-semibold text-gold"
                   aria-hidden
                 >
                   {item.initials}

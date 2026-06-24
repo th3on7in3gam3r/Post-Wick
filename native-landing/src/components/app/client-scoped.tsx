@@ -10,19 +10,31 @@ export function AppHeaderWithClient({
   title,
   description,
   action,
+  clientAsTitle = false,
 }: {
-  title: string;
+  title?: string;
   description?: string;
   action?: ReactNode;
+  clientAsTitle?: boolean;
 }) {
   const { activeClient } = useActiveClient();
-  const fullDescription = description
-    ? activeClient.id
-      ? `${activeClient.name} — ${description}`
-      : description
-    : activeClient.name;
+  const headerTitle = clientAsTitle ? activeClient.name : (title ?? activeClient.name);
+  const fullDescription = clientAsTitle
+    ? description
+    : description
+      ? activeClient.id
+        ? `${activeClient.name} — ${description}`
+        : description
+      : activeClient.name;
 
-  return <AppHeader title={title} description={fullDescription} action={action} />;
+  return (
+    <AppHeader
+      title={headerTitle}
+      description={fullDescription}
+      action={action}
+      clientHero={clientAsTitle}
+    />
+  );
 }
 
 export function ActiveClientBanner() {

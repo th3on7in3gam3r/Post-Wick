@@ -3,15 +3,15 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import { ArrowLeft, ArrowRight } from "lucide-react";
+import { clientInitials } from "@/lib/clients";
 import { cn } from "@/lib/utils";
 
 export type Testimonial = {
   quote: string;
   name: string;
   designation: string;
-  src: string;
+  src?: string;
   initials?: string;
-  accent?: string;
 };
 
 type AnimatedTestimonialsProps = {
@@ -20,20 +20,63 @@ type AnimatedTestimonialsProps = {
   className?: string;
 };
 
-function CardFace({
+function testimonialInitials(testimonial: Testimonial) {
+  return testimonial.initials ?? clientInitials(testimonial.name);
+}
+
+function TestimonialPhoto({
   testimonial,
+  className,
+  alt,
 }: {
   testimonial: Testimonial;
+  className?: string;
+  alt?: string;
 }) {
-  return (
-    <div className="relative h-full w-full overflow-hidden rounded-2xl border border-black/[0.08] bg-white p-2 shadow-[0_12px_40px_rgba(0,0,0,0.12)]">
-      {/* eslint-disable-next-line @next/next/no-img-element */}
+  if (testimonial.src) {
+    return (
+      // eslint-disable-next-line @next/next/no-img-element
       <img
         src={testimonial.src}
-        alt={testimonial.name}
-        draggable={false}
-        className="h-full w-full rounded-xl object-cover object-center"
+        alt={alt ?? testimonial.name}
+        className={cn("shrink-0 rounded-full object-cover object-center", className)}
       />
+    );
+  }
+
+  return (
+    <div
+      className={cn(
+        "flex shrink-0 items-center justify-center rounded-full bg-gold/20 text-sm font-semibold text-gold",
+        className,
+      )}
+      aria-hidden
+    >
+      {testimonialInitials(testimonial)}
+    </div>
+  );
+}
+
+function CardFace({ testimonial }: { testimonial: Testimonial }) {
+  return (
+    <div className="relative h-full w-full overflow-hidden rounded-2xl border border-black/[0.08] bg-white p-2 shadow-[0_12px_40px_rgba(0,0,0,0.12)]">
+      {testimonial.src ? (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          src={testimonial.src}
+          alt=""
+          draggable={false}
+          className="h-full w-full rounded-xl object-cover object-center"
+        />
+      ) : (
+        <div className="flex h-full w-full flex-col items-center justify-center rounded-xl bg-cream/40 px-6">
+          <TestimonialPhoto
+            testimonial={testimonial}
+            className="h-20 w-20 text-xl"
+            alt=""
+          />
+        </div>
+      )}
       <div className="absolute inset-x-2 bottom-2 rounded-lg bg-white/92 px-3 py-2 text-left shadow-sm backdrop-blur-sm">
         <p className="font-playfair text-sm italic leading-tight text-near-black">
           {testimonial.name}
@@ -168,12 +211,17 @@ export function AnimatedTestimonials({
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
           >
-            <h3 className="font-playfair text-2xl italic text-near-black">
-              {current.name}
-            </h3>
-            <p className="mt-1 text-sm font-semibold text-gold">
-              {current.designation}
-            </p>
+            <div className="flex items-center gap-3">
+              <TestimonialPhoto testimonial={current} className="h-12 w-12" />
+              <div>
+                <h3 className="font-playfair text-2xl italic text-near-black">
+                  {current.name}
+                </h3>
+                <p className="mt-1 text-sm font-semibold text-gold">
+                  {current.designation}
+                </p>
+              </div>
+            </div>
             <blockquote className="body-copy mt-8 border-l-2 border-gold/40 pl-5 text-[1.05rem] leading-relaxed text-near-black">
               &ldquo;{current.quote}&rdquo;
             </blockquote>
@@ -208,8 +256,8 @@ export function AnimatedTestimonials({
                   className={cn(
                     "h-2 rounded-full transition-all duration-300 disabled:opacity-50",
                     index === active
-                      ? "w-6 bg-gold"
-                      : "w-2 bg-black/15 hover:bg-black/25",
+                      ? "w-4 bg-gold"
+                      : "w-2 bg-black/20 hover:bg-black/30",
                   )}
                   aria-label={`Go to testimonial from ${item.name}`}
                 />

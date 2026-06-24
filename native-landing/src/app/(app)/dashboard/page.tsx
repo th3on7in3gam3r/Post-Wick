@@ -30,8 +30,8 @@ export default async function DashboardPage({
   return (
     <>
       <AppHeaderWithClient
-        title="Dashboard"
-        description="your autopilot command center"
+        clientAsTitle
+        description="Autopilot command center"
       />
       <DashboardClientView
         stats={stats}

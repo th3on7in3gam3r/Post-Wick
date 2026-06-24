@@ -15,7 +15,6 @@ import { ClientSwitcher } from "@/components/app/client-switcher";
 import { SidebarQuickActions } from "@/components/app/sidebar-quick-actions";
 import { SidebarUpgradeNudge } from "@/components/app/sidebar-upgrade-nudge";
 import { BrandLogo } from "@/components/brand-logo";
-import { SITE_TAGLINE } from "@/lib/brand";
 import type { SubscriptionTier } from "@/lib/plans";
 import { cn } from "@/lib/utils";
 
@@ -74,9 +73,6 @@ export function AppSidebar({
       <div className="shrink-0 space-y-4 border-b border-black/[0.06] px-4 py-5">
         <div className="px-2">
           <BrandLogo href="/dashboard" variant="wordmark" priority />
-          <p className="mt-2 text-[0.65rem] font-medium uppercase tracking-[0.18em] text-gray-label">
-            {SITE_TAGLINE}
-          </p>
         </div>
         <ClientSwitcher />
         <SidebarQuickActions />
