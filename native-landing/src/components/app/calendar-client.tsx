@@ -35,15 +35,39 @@ function addDays(date: Date, days: number) {
 }
 
 function dayKey(date: Date) {
-  return startOfDay(date).toISOString().slice(0, 10);
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
 }
 
 function canReschedule(post: CalendarPost) {
   return post.status === "approved" && Boolean(post.scheduledAt);
 }
 
+function CalendarSkeleton() {
+  return (
+    <div className="space-y-4" aria-hidden>
+      <p className="text-sm text-gray-body">
+        Drag <span className="font-medium text-near-black">approved</span> posts to another day
+        to reschedule. Posts publish at 10:00 AM on the day you choose.
+      </p>
+      <div className="grid gap-4 lg:grid-cols-7">
+        {Array.from({ length: 14 }, (_, index) => (
+          <div
+            key={index}
+            className="min-h-[180px] animate-pulse rounded-2xl border border-black/[0.06] bg-white p-4 shadow-card"
+          />
+        ))}
+      </div>
+    </div>
+  );
+}
+
 export function CalendarClient({ posts: initialPosts }: { posts: CalendarPost[] }) {
   const router = useRouter();
+  const [mounted, setMounted] = useState(false);
+  const [days, setDays] = useState<Date[]>([]);
   const [posts, setPosts] = useState(initialPosts);
   const [draggingId, setDraggingId] = useState<string | null>(null);
   const [dropTarget, setDropTarget] = useState<string | null>(null);
@@ -51,13 +75,14 @@ export function CalendarClient({ posts: initialPosts }: { posts: CalendarPost[] 
   const [message, setMessage] = useState<string | null>(null);
 
   useEffect(() => {
+    const start = startOfDay(new Date());
+    setDays(Array.from({ length: 14 }, (_, index) => addDays(start, index)));
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
     setPosts(initialPosts);
   }, [initialPosts]);
-
-  const days = useMemo(() => {
-    const start = startOfDay(new Date());
-    return Array.from({ length: 14 }, (_, index) => addDays(start, index));
-  }, []);
 
   const postsByDay = useMemo(() => {
     const map = new Map<string, CalendarPost[]>();
@@ -122,6 +147,12 @@ export function CalendarClient({ posts: initialPosts }: { posts: CalendarPost[] 
     void reschedulePost(postId, day);
   }
 
+  if (!mounted || days.length === 0) {
+    return <CalendarSkeleton />;
+  }
+
+  const todayKey = dayKey(new Date());
+
   return (
     <div className="space-y-4">
       <p className="text-sm text-gray-body">
@@ -147,7 +178,7 @@ export function CalendarClient({ posts: initialPosts }: { posts: CalendarPost[] 
         {days.map((day) => {
           const key = dayKey(day);
           const dayPosts = postsByDay.get(key) ?? [];
-          const isToday = key === dayKey(new Date());
+          const isToday = key === todayKey;
           const isDropTarget = dropTarget === key;
 
           return (
@@ -208,7 +239,7 @@ export function CalendarClient({ posts: initialPosts }: { posts: CalendarPost[] 
                         }}
                         className={cn(
                           "rounded-xl border border-black/[0.06] bg-cream/50 p-3 transition-opacity",
-                          draggable && "cursor-grab active:cursor-grabbing",
+                          draggable && "cursor-grab select-none active:cursor-grabbing",
                           isDragging && "opacity-50",
                           isSaving && "opacity-70",
                         )}
@@ -236,9 +267,7 @@ export function CalendarClient({ posts: initialPosts }: { posts: CalendarPost[] 
                                   ? "bg-emerald-100 text-emerald-700"
                                   : post.status === "failed"
                                     ? "bg-red-100 text-red-700"
-                                    : post.status === "approved"
-                                      ? "bg-white text-gray-body"
-                                      : "bg-white text-gray-body",
+                                    : "bg-white text-gray-body",
                               )}
                             >
                               {post.status}
