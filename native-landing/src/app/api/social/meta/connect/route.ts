@@ -1,8 +1,7 @@
 import { auth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 import { getBrandById } from "@/lib/db";
-import { getMetaAuthUrl, instagramOAuthValidation, type MetaPlatform } from "@/lib/social/meta";
-import { requestOrigin } from "@/lib/social/request-origin";
+import { getMetaAuthUrl, type MetaPlatform } from "@/lib/social/meta";
 
 export async function GET(req: Request) {
   const { userId } = await auth();
@@ -26,22 +25,8 @@ export async function GET(req: Request) {
     return NextResponse.json({ error: "Brand not found" }, { status: 404 });
   }
 
-  const origin = requestOrigin(req);
-
-  if (platform === "instagram") {
-    const validation = instagramOAuthValidation(origin);
-    if (!validation.ok) {
-      const params = new URLSearchParams({
-        error: "instagram_oauth_config",
-        redirect_uri: validation.redirectUri,
-        detail: validation.issues[0] ?? "Instagram OAuth is not configured correctly.",
-      });
-      return NextResponse.redirect(new URL(`/settings/integrations?${params}`, req.url));
-    }
-  }
-
   try {
-    const url = getMetaAuthUrl(brandId, platform as MetaPlatform, origin);
+    const url = getMetaAuthUrl(brandId, platform as MetaPlatform);
     return NextResponse.redirect(url);
   } catch {
     return NextResponse.json(

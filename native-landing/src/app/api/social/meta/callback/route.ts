@@ -9,39 +9,28 @@ import {
   resolveMetaConnection,
   type MetaPlatform,
 } from "@/lib/social/meta";
-import { requestOrigin, sanitizeOAuthCode } from "@/lib/social/request-origin";
 
 function integrationsUrl(req: Request, query: string) {
   return new URL(`/settings/integrations?${query}`, req.url);
 }
 
-function signInUrl(req: Request) {
-  const returnTo = new URL("/settings/integrations", req.url).toString();
-  const url = new URL("/sign-in", req.url);
-  url.searchParams.set("redirect_url", returnTo);
-  return url;
-}
-
 export async function GET(req: Request) {
   try {
-    const origin = requestOrigin(req);
     const { userId } = await auth();
     if (!userId) {
-      return NextResponse.redirect(signInUrl(req));
+      return NextResponse.redirect(
+        new URL("/sign-in?redirect_url=/settings/integrations", req.url),
+      );
     }
 
     const { searchParams } = new URL(req.url);
     const code = searchParams.get("code");
     const state = searchParams.get("state");
     const oauthError = searchParams.get("error");
-    const oauthErrorDescription = searchParams.get("error_description");
 
     if (oauthError) {
-      const detail = oauthErrorDescription
-        ? `${oauthError}:${oauthErrorDescription}`
-        : oauthError;
       return NextResponse.redirect(
-        integrationsUrl(req, `error=${encodeURIComponent(detail)}`),
+        integrationsUrl(req, `error=${encodeURIComponent(oauthError)}`),
       );
     }
 
@@ -49,7 +38,6 @@ export async function GET(req: Request) {
       return NextResponse.redirect(integrationsUrl(req, "error=invalid_callback"));
     }
 
-    const sanitizedCode = sanitizeOAuthCode(code);
     const [brandId, platformRaw] = state.split(":");
     if (!brandId || (platformRaw !== "instagram" && platformRaw !== "facebook")) {
       return NextResponse.redirect(integrationsUrl(req, "error=invalid_callback"));
@@ -63,8 +51,8 @@ export async function GET(req: Request) {
 
     const userAccessToken =
       platform === "instagram"
-        ? await exchangeInstagramCode(sanitizedCode, origin)
-        : await exchangeMetaCode(sanitizedCode, origin);
+        ? await exchangeInstagramCode(code)
+        : await exchangeMetaCode(code);
     const resolved =
       platform === "instagram"
         ? await resolveInstagramConnection(userAccessToken)
