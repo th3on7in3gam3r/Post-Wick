@@ -19,24 +19,11 @@ import { StatCard } from "@/components/app/stat-card";
 import { TextureButton } from "@/components/ui/texture-button";
 import { RelativeScheduleTime } from "@/components/app/relative-schedule-time";
 import { useActiveClient } from "@/components/app/client-context";
-import type { ActivityItem, CalendarPost } from "@/lib/db";
+import type { ActivityItem, CalendarPost, PublishedBrandStats } from "@/lib/db";
 import { formatUpdatedAgo } from "@/lib/scheduling/slots";
 import { cn } from "@/lib/utils";
 
 type DashboardPost = CalendarPost & { brandName?: string };
-
-type UpcomingPlatformFilter = "all" | "linkedin" | "instagram" | "facebook";
-
-const UPCOMING_PLATFORM_TABS: {
-  id: UpcomingPlatformFilter;
-  label: string;
-  dotClass: string;
-}[] = [
-  { id: "all", label: "All", dotClass: "bg-near-black" },
-  { id: "linkedin", label: "LinkedIn", dotClass: "bg-[#0A66C2]" },
-  { id: "instagram", label: "Instagram", dotClass: "bg-[#E4405F]" },
-  { id: "facebook", label: "Facebook", dotClass: "bg-[#1877F2]" },
-];
 
 type DashboardClientViewProps = {
   stats: {
@@ -44,6 +31,7 @@ type DashboardClientViewProps = {
     pending: number;
     published: number;
   };
+  publishedByBrand: Record<string, PublishedBrandStats>;
   analytics: {
     publishedThisWeek: number;
   };
@@ -56,6 +44,7 @@ type DashboardClientViewProps = {
 
 export function DashboardClientView({
   stats,
+  publishedByBrand,
   analytics,
   pendingPosts,
   scheduledPosts,
@@ -72,32 +61,28 @@ export function DashboardClientView({
   const clientPending = useClientFilteredPosts(pendingPosts);
   const clientScheduled = useClientFilteredPosts(scheduledPosts);
   const clientActivity = useClientFilteredPosts(recentActivity);
-  const [upcomingPlatformFilter, setUpcomingPlatformFilter] =
-    useState<UpcomingPlatformFilter>("all");
+  const clientPublished = useMemo(() => {
+    if (!activeClient.id) return stats.published;
+    return publishedByBrand[activeClient.id]?.total ?? 0;
+  }, [activeClient.id, publishedByBrand, stats.published]);
+  const clientPublishedThisWeek = useMemo(() => {
+    if (!activeClient.id) return analytics.publishedThisWeek;
+    return publishedByBrand[activeClient.id]?.thisWeek ?? 0;
+  }, [activeClient.id, publishedByBrand, analytics.publishedThisWeek]);
+  const [platformFilter, setPlatformFilter] = useState("all");
 
-  const upcomingPlatformCounts = useMemo(() => {
-    const counts = { linkedin: 0, instagram: 0, facebook: 0 };
-    for (const post of clientScheduled) {
-      if (post.platform in counts) {
-        counts[post.platform as keyof typeof counts] += 1;
-      }
-    }
-    return counts;
-  }, [clientScheduled]);
+  const platforms = useMemo(
+    () => Array.from(new Set(clientScheduled.map((post) => post.platform.toLowerCase()))),
+    [clientScheduled],
+  );
 
-  const filteredUpcomingPosts = useMemo(() => {
-    if (upcomingPlatformFilter === "all") return clientScheduled;
-    return clientScheduled.filter((post) => post.platform === upcomingPlatformFilter);
-  }, [clientScheduled, upcomingPlatformFilter]);
-
-  useEffect(() => {
-    if (
-      upcomingPlatformFilter !== "all" &&
-      upcomingPlatformCounts[upcomingPlatformFilter] === 0
-    ) {
-      setUpcomingPlatformFilter("all");
-    }
-  }, [upcomingPlatformFilter, upcomingPlatformCounts]);
+  const filteredScheduled = useMemo(
+    () =>
+      platformFilter === "all"
+        ? clientScheduled
+        : clientScheduled.filter((post) => post.platform.toLowerCase() === platformFilter),
+    [clientScheduled, platformFilter],
+  );
 
   useEffect(() => {
     const interval = window.setInterval(() => setTimeTick((value) => value + 1), 60_000);
@@ -127,13 +112,29 @@ export function DashboardClientView({
     { label: "Connect social channels", done: hasConnections },
     {
       label: "Approve your first posts",
-      done: clientPending.length === 0 && clientScheduled.length > 0,
+      done:
+        clientPending.length === 0 &&
+        (clientScheduled.length > 0 || clientPublished > 0),
     },
   ];
 
   return (
     <div className="flex-1 overflow-y-auto px-6 py-6 md:px-8 md:py-8">
       <ActiveClientBanner />
+
+      <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <h1 className="font-playfair text-3xl italic text-near-black">Dashboard</h1>
+          <p className="mt-1 text-sm text-gray-label">
+            {activeClient.name} — your autopilot command center
+          </p>
+        </div>
+        <TextureButton asChild variant="primary" size="default" className="shrink-0">
+          <Link href={activeClient.id ? `/brands/${activeClient.id}` : "/brands"}>
+            Generate posts →
+          </Link>
+        </TextureButton>
+      </div>
 
       <div>
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
@@ -153,8 +154,8 @@ export function DashboardClientView({
           />
           <StatCard
             label="Published"
-            value={stats.published}
-            hint={`${analytics.publishedThisWeek} this week (all clients)`}
+            value={clientPublished}
+            hint={`${clientPublishedThisWeek} this week · For ${activeClient.name}`}
             icon={Send}
             loading={isRefreshing}
           />
@@ -207,17 +208,11 @@ export function DashboardClientView({
             <EmptyState
               icon={CheckCircle2}
               title="You're all caught up!"
-              description="Ready to generate your next batch?"
+              description="Ready to generate your next batch of posts?"
               action={
-                <div className="flex flex-wrap items-center justify-center gap-3">
+                <div className="flex gap-3">
                   <TextureButton asChild variant="primary" size="default">
-                    <Link
-                      href={
-                        activeClient.id ? `/brands/${activeClient.id}` : "/brands"
-                      }
-                    >
-                      Generate more posts
-                    </Link>
+                    <Link href="/brands">Generate more posts</Link>
                   </TextureButton>
                   <TextureButton asChild variant="secondary" size="default">
                     <Link href="/history">View history</Link>
@@ -238,40 +233,30 @@ export function DashboardClientView({
           }
         >
           {clientScheduled.length > 0 ? (
-            <div className="space-y-4">
-              <div className="flex flex-wrap gap-2 border-b border-black/[0.06] pb-3">
-                {UPCOMING_PLATFORM_TABS.map((tab) => {
-                  const isAll = tab.id === "all";
-                  const isDisabled =
-                    !isAll && upcomingPlatformCounts[tab.id as keyof typeof upcomingPlatformCounts] === 0;
-                  const isSelected = upcomingPlatformFilter === tab.id;
-
-                  return (
+            <div className="space-y-3">
+              {platforms.length > 1 ? (
+                <div className="mb-3 flex flex-wrap gap-2">
+                  {["all", ...platforms].map((platform) => (
                     <button
-                      key={tab.id}
+                      key={platform}
                       type="button"
-                      disabled={isDisabled}
-                      onClick={() => setUpcomingPlatformFilter(tab.id)}
+                      onClick={() => setPlatformFilter(platform)}
                       className={cn(
-                        "inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-xs font-medium transition",
-                        isSelected
-                          ? "bg-cream text-near-black shadow-sm"
-                          : "text-gray-body hover:bg-cream/70",
-                        isDisabled && "cursor-not-allowed opacity-40 hover:bg-transparent",
+                        "rounded-full border px-3 py-1 text-xs transition-colors",
+                        platformFilter === platform
+                          ? "border-gold bg-gold text-white"
+                          : "border-black/10 bg-cream text-gray-label hover:border-gold/50",
                       )}
                     >
-                      <span
-                        className={cn("h-2 w-2 shrink-0 rounded-full", tab.dotClass)}
-                        aria-hidden
-                      />
-                      {tab.label}
+                      {platform === "all"
+                        ? "All"
+                        : platform.charAt(0).toUpperCase() + platform.slice(1)}
                     </button>
-                  );
-                })}
-              </div>
+                  ))}
+                </div>
+              ) : null}
 
-              <div className="space-y-3">
-                {filteredUpcomingPosts.map((post) => (
+              {filteredScheduled.map((post) => (
                   <article
                     key={post.id}
                     className="rounded-xl border border-black/[0.06] bg-cream/50 p-4"
@@ -290,7 +275,6 @@ export function DashboardClientView({
                     <p className="mt-2 line-clamp-2 text-sm text-near-black">{post.content}</p>
                   </article>
                 ))}
-              </div>
             </div>
           ) : (
             <EmptyState

@@ -13,6 +13,7 @@ export default async function DashboardPage({
     websiteUrl,
     brands,
     stats,
+    publishedByBrand,
     pendingPosts,
     scheduledPosts,
     recentActivity,
@@ -37,6 +38,7 @@ export default async function DashboardPage({
       />
       <DashboardClientView
         stats={stats}
+        publishedByBrand={publishedByBrand}
         analytics={analytics}
         pendingPosts={pendingPosts}
         scheduledPosts={scheduledPosts}

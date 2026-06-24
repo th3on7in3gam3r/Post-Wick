@@ -7,6 +7,7 @@ import {
   getDashboardStats,
   getPendingPostsByUserId,
   getOrCreateUser,
+  getPublishedStatsByBrand,
   getRecentActivity,
   getScheduledPostsByUserId,
   userHasConnections,
@@ -37,6 +38,7 @@ export async function getAppContext(urlParam?: string) {
   const websiteUrl = urlParam ? normalizeWebsiteUrl(urlParam) : null;
   const brands = await getBrandsByUserId(userId);
   const stats = await getDashboardStats(userId);
+  const publishedByBrand = await getPublishedStatsByBrand(userId);
   const pendingPosts = (await getPendingPostsByUserId(userId)).slice(0, 5);
   const scheduledPosts = await getScheduledPostsByUserId(userId, 5);
   const recentActivity = await getRecentActivity(userId, 6);
@@ -52,6 +54,7 @@ export async function getAppContext(urlParam?: string) {
     websiteUrl,
     brands,
     stats,
+    publishedByBrand,
     pendingPosts,
     scheduledPosts,
     recentActivity,

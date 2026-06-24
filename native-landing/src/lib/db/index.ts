@@ -836,6 +836,58 @@ export async function getDashboardStats(userId: string) {
   };
 }
 
+export type PublishedBrandStats = {
+  total: number;
+  thisWeek: number;
+};
+
+export async function getPublishedStatsByBrand(userId: string) {
+  const db = await getDb();
+
+  const totalRows = await db
+    .select({
+      brandId: posts.brandId,
+      count: count(),
+    })
+    .from(posts)
+    .innerJoin(brands, eq(brands.id, posts.brandId))
+    .where(and(eq(brands.userId, userId), eq(posts.status, "published")))
+    .groupBy(posts.brandId);
+
+  const weekRows = await db
+    .select({
+      brandId: posts.brandId,
+      count: count(),
+    })
+    .from(posts)
+    .innerJoin(brands, eq(brands.id, posts.brandId))
+    .where(
+      and(
+        eq(brands.userId, userId),
+        eq(posts.status, "published"),
+        gte(posts.publishedAt, sql`NOW() - INTERVAL '7 days'`),
+      ),
+    )
+    .groupBy(posts.brandId);
+
+  const byBrandId: Record<string, PublishedBrandStats> = {};
+
+  for (const row of totalRows) {
+    byBrandId[row.brandId] = {
+      total: row.count,
+      thisWeek: 0,
+    };
+  }
+
+  for (const row of weekRows) {
+    const current = byBrandId[row.brandId] ?? { total: 0, thisWeek: 0 };
+    current.thisWeek = row.count;
+    byBrandId[row.brandId] = current;
+  }
+
+  return byBrandId;
+}
+
 export async function getAnalyticsSummary(userId: string): Promise<AnalyticsSummary> {
   const db = await getDb();
 
