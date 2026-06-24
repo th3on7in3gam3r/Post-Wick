@@ -1,7 +1,7 @@
 "use client";
 
 import { usePathname } from "next/navigation";
-import { AppSidebar } from "@/components/app/app-sidebar";
+import { AppShell } from "@/components/app/app-shell";
 
 export default function AppLayout({
   children,
@@ -10,10 +10,5 @@ export default function AppLayout({
 }) {
   const pathname = usePathname();
 
-  return (
-    <div className="flex min-h-screen bg-cream">
-      <AppSidebar pathname={pathname} />
-      <div className="flex min-h-screen min-w-0 flex-1 flex-col">{children}</div>
-    </div>
-  );
+  return <AppShell pathname={pathname}>{children}</AppShell>;
 }

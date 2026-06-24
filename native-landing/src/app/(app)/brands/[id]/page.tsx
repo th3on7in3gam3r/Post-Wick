@@ -76,7 +76,7 @@ export default async function BrandPage({
         description={`${websiteHostname(brand.websiteUrl)} — brand profile and content`}
       />
 
-      <div className="flex-1 space-y-6 overflow-y-auto px-6 py-6 md:px-8 md:py-8">
+      <div className="flex-1 space-y-6 overflow-y-auto px-4 py-4 sm:px-6 sm:py-6 md:px-8 md:py-8">
         <BrandSitePreview
           variant="identity"
           name={brand.name}
@@ -108,6 +108,7 @@ export default async function BrandPage({
           <StatCard
             label="Crawl status"
             value={brand.crawlStatus.charAt(0).toUpperCase() + brand.crawlStatus.slice(1)}
+            valueVariant="compact"
             icon={Globe}
           />
           <StatCard
@@ -135,9 +136,9 @@ export default async function BrandPage({
             title="Brand profile"
             description="Built from your website crawl."
             action={
-              <div className="flex flex-col items-end gap-2 sm:flex-row sm:items-center">
+              <div className="flex w-full flex-col gap-3">
                 <GeneratePostsButton brandId={brand.id} generateMax={plan.generateMax} />
-                <TextureButton asChild variant="minimal" size="sm">
+                <TextureButton asChild variant="secondary" size="sm" className="w-full sm:w-fit">
                   <Link href="/queue">Open queue</Link>
                 </TextureButton>
               </div>

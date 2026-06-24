@@ -70,8 +70,8 @@ export function GeneratePostsButton({
   }
 
   return (
-    <div className="flex flex-col items-start gap-2">
-      <div className="flex flex-wrap items-center gap-2">
+    <div className="flex w-full flex-col items-stretch gap-2">
+      <div className="flex w-full flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center">
         <label className="sr-only" htmlFor={`generate-platform-${brandId}`}>
           Platform
         </label>
@@ -80,7 +80,7 @@ export function GeneratePostsButton({
           value={platform}
           disabled={loading}
           onChange={(event) => setPlatform(event.target.value)}
-          className="rounded-full border border-black/[0.1] bg-cream/50 px-3 py-2 text-sm text-near-black outline-none focus:border-gold/50"
+          className="w-full rounded-full border border-black/[0.1] bg-cream/50 px-3 py-2 text-sm text-near-black outline-none focus:border-gold/50 sm:w-auto"
         >
           {GENERATE_PLATFORMS.map((item) => (
             <option key={item} value={item}>
@@ -93,6 +93,7 @@ export function GeneratePostsButton({
           variant="primary"
           size="default"
           disabled={loading}
+          className="w-full sm:w-auto"
           onClick={() => void handleGenerate()}
         >
           {loading ? (

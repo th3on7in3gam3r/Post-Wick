@@ -47,6 +47,7 @@ export default async function IntegrationsPage({
             configured: isMetaConfigured(),
             redirectUri: metaRedirectUri(),
             appUrl: siteUrl(),
+            usesInstagramAppId: Boolean(process.env.INSTAGRAM_APP_ID?.trim()),
           }}
           flashParams={searchParams}
         />

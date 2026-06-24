@@ -58,7 +58,6 @@ export function getMetaAuthUrl(brandId: string, platform: MetaPlatform) {
     }
 
     const params = new URLSearchParams({
-      enable_fb_login: "0",
       client_id: appId,
       redirect_uri: metaRedirectUri(),
       state: `${brandId}:instagram`,
@@ -66,7 +65,7 @@ export function getMetaAuthUrl(brandId: string, platform: MetaPlatform) {
       response_type: "code",
     });
 
-    return `https://www.instagram.com/oauth/authorize?${params}`;
+    return `https://api.instagram.com/oauth/authorize?${params}`;
   }
 
   const appId = process.env.META_APP_ID;

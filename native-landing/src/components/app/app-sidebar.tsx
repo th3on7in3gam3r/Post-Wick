@@ -33,9 +33,22 @@ function isActive(pathname: string, href: string, exact?: boolean) {
   return pathname === href || pathname.startsWith(`${href}/`);
 }
 
-export function AppSidebar({ pathname }: { pathname: string }) {
+export function AppSidebar({
+  pathname,
+  className,
+  onNavigate,
+}: {
+  pathname: string;
+  className?: string;
+  onNavigate?: () => void;
+}) {
   return (
-    <aside className="flex h-screen w-64 shrink-0 flex-col border-r border-black/[0.08] bg-white/80 backdrop-blur-sm">
+    <aside
+      className={cn(
+        "flex h-screen w-64 shrink-0 flex-col border-r border-black/[0.08] bg-white/80 backdrop-blur-sm",
+        className,
+      )}
+    >
       <div className="shrink-0 border-b border-black/[0.06] px-6 py-5">
         <BrandLogo href="/dashboard" variant="wordmark" priority />
         <p className="mt-2 text-[0.65rem] font-medium uppercase tracking-[0.18em] text-gray-label">
@@ -50,8 +63,9 @@ export function AppSidebar({ pathname }: { pathname: string }) {
             <Link
               key={href}
               href={href}
+              onClick={onNavigate}
               className={cn(
-                "flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors",
+                "flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium leading-none transition-colors",
                 active
                   ? "bg-cream text-near-black shadow-sm"
                   : "text-gray-body hover:bg-cream/70 hover:text-near-black",
