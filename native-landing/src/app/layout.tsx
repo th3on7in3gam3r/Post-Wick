@@ -1,15 +1,15 @@
-import type { Metadata } from "next";
 import { Inter, Playfair_Display } from "next/font/google";
 import { ClerkProvider } from "@clerk/nextjs";
 import { CookieAnalytics } from "@/components/cookie-analytics";
 import { CookieConsentUI } from "@/components/cookie-banner";
 import { CookieConsentProvider } from "@/components/cookie-consent-provider";
 import {
-  SITE_DESCRIPTION,
+  OG_DEFAULT_DESCRIPTION,
   SITE_NAME,
   SITE_TAGLINE,
   siteUrl,
 } from "@/lib/brand";
+import { rootMetadata } from "@/lib/metadata";
 import "./globals.css";
 
 const inter = Inter({
@@ -23,40 +23,9 @@ const playfair = Playfair_Display({
   variable: "--font-playfair",
 });
 
-const appUrl = siteUrl();
+export const metadata = rootMetadata;
 
-export const metadata: Metadata = {
-  metadataBase: new URL(appUrl),
-  title: {
-    default: `${SITE_NAME} — ${SITE_TAGLINE}`,
-    template: `%s | ${SITE_NAME}`,
-  },
-  description: SITE_DESCRIPTION,
-  keywords: [
-    "social media automation",
-    "AI social media posts",
-    "small business marketing",
-    "LinkedIn scheduling",
-    "Instagram posts",
-    SITE_TAGLINE.replace(/\.$/, ""),
-  ],
-  openGraph: {
-    type: "website",
-    locale: "en_US",
-    url: appUrl,
-    siteName: SITE_NAME,
-    title: `${SITE_NAME} — ${SITE_TAGLINE}`,
-    description: SITE_DESCRIPTION,
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: `${SITE_NAME} — ${SITE_TAGLINE}`,
-    description: SITE_DESCRIPTION,
-  },
-  alternates: {
-    canonical: appUrl,
-  },
-};
+const appUrl = siteUrl();
 
 const organizationJsonLd = {
   "@context": "https://schema.org",
@@ -64,7 +33,7 @@ const organizationJsonLd = {
   name: SITE_NAME,
   url: appUrl,
   slogan: SITE_TAGLINE,
-  description: SITE_DESCRIPTION,
+  description: OG_DEFAULT_DESCRIPTION,
 };
 
 const softwareJsonLd = {
@@ -73,7 +42,7 @@ const softwareJsonLd = {
   name: SITE_NAME,
   url: appUrl,
   slogan: SITE_TAGLINE,
-  description: SITE_DESCRIPTION,
+  description: OG_DEFAULT_DESCRIPTION,
   applicationCategory: "BusinessApplication",
   operatingSystem: "Web",
 };

@@ -1,12 +1,17 @@
-import type { Metadata } from "next";
 import { LegalPageLinks } from "@/components/legal-page-links";
 import { MarketingShell } from "@/components/marketing-shell";
+import { createPageMetadata } from "@/lib/metadata";
 
-export const metadata: Metadata = {
-  title: "Privacy Policy — Post-Wick",
-  description:
-    "How Post-Wick collects, uses, stores, and protects your personal information.",
-};
+const description =
+  "How Post-Wick collects, uses, stores, and protects your personal information.";
+
+export const metadata = createPageMetadata({
+  title: "Privacy Policy",
+  description,
+  ogTitle: "Privacy Policy | Post-Wick",
+  ogDescription: description,
+  path: "/privacy",
+});
 
 function Section({
   title,

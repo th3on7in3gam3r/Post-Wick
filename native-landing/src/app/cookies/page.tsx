@@ -1,13 +1,18 @@
-import type { Metadata } from "next";
 import { CookieSettingsTrigger } from "@/components/cookie-settings-trigger";
 import { LegalPageLinks } from "@/components/legal-page-links";
 import { MarketingShell } from "@/components/marketing-shell";
+import { createPageMetadata } from "@/lib/metadata";
 
-export const metadata: Metadata = {
-  title: "Cookie Policy — Post-Wick",
-  description:
-    "How Post-Wick uses cookies, local storage, and similar technologies on our website and app.",
-};
+const description =
+  "How Post-Wick uses cookies, local storage, and similar technologies on our website and app.";
+
+export const metadata = createPageMetadata({
+  title: "Cookie Policy",
+  description,
+  ogTitle: "Cookie Policy | Post-Wick",
+  ogDescription: description,
+  path: "/cookies",
+});
 
 function Section({
   title,

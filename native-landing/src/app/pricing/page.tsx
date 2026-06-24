@@ -1,14 +1,19 @@
-import type { Metadata } from "next";
 import { Comparison, ComparisonTable } from "@/components/comparison";
 import { Pricing } from "@/components/pricing";
 import { Navbar } from "@/components/navbar";
 import { FAQ, Footer } from "@/components/sections";
+import { createPageMetadata } from "@/lib/metadata";
 
-export const metadata: Metadata = {
-  title: "Pricing — Post-Wick",
-  description:
-    "Simple pricing for AI-generated social content. Pro and Max plans with monthly or yearly billing.",
-};
+const description =
+  "Simple pricing for AI-generated social content. Pro and Max plans with monthly or yearly billing.";
+
+export const metadata = createPageMetadata({
+  title: "Pricing",
+  description,
+  ogTitle: "Pricing | Post-Wick | Social media on autopilot for local businesses",
+  ogDescription: description,
+  path: "/pricing",
+});
 
 export default function PricingPage() {
   return (

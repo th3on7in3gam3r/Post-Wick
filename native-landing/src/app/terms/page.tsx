@@ -1,13 +1,18 @@
-import type { Metadata } from "next";
 import { LegalPageLinks } from "@/components/legal-page-links";
 import { LegalSection } from "@/components/legal-section";
 import { MarketingShell } from "@/components/marketing-shell";
+import { createPageMetadata } from "@/lib/metadata";
 
-export const metadata: Metadata = {
-  title: "Terms of Service — Post-Wick",
-  description:
-    "Terms and conditions governing your use of Post-Wick social media automation.",
-};
+const description =
+  "Terms and conditions governing your use of Post-Wick social media automation.";
+
+export const metadata = createPageMetadata({
+  title: "Terms of Service",
+  description,
+  ogTitle: "Terms of Service | Post-Wick",
+  ogDescription: description,
+  path: "/terms",
+});
 
 const linkClass =
   "font-medium text-gold underline decoration-gold/40 underline-offset-2 hover:decoration-gold";
