@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { CheckCircle2 } from "lucide-react";
 import { PanelCard } from "@/components/app/panel-card";
@@ -14,12 +14,12 @@ type SetupStep = {
 };
 
 export function GettingStartedCard({ steps }: { steps: SetupStep[] }) {
-  const [dismissed, setDismissed] = useState(
-    () =>
-      typeof window !== "undefined" &&
-      localStorage.getItem(STORAGE_KEY) === "true",
-  );
+  const [dismissed, setDismissed] = useState(false);
   const allComplete = steps.every((step) => step.done);
+
+  useEffect(() => {
+    setDismissed(localStorage.getItem(STORAGE_KEY) === "true");
+  }, []);
 
   function dismiss() {
     localStorage.setItem(STORAGE_KEY, "true");

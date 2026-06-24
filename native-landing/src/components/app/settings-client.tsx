@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useClerk } from "@clerk/nextjs";
 import {
@@ -9,6 +9,7 @@ import {
   CalendarClock,
   CheckCircle2,
   ChevronRight,
+  XCircle,
   CreditCard,
   Globe,
   Link2,
@@ -129,7 +130,20 @@ export function SettingsClient({
   const [settings, setSettings] = useState(initialSettings);
   const [savingKey, setSavingKey] = useState<string | null>(null);
   const [savedMessage, setSavedMessage] = useState<string | null>(null);
+  const [savedMessageFading, setSavedMessageFading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const plan = getPlanLimits(workspace.tier);
+
+  useEffect(() => {
+    if (!savedMessage) return;
+    setSavedMessageFading(false);
+    const fadeTimer = setTimeout(() => setSavedMessageFading(true), 2700);
+    const timer = setTimeout(() => setSavedMessage(null), 3000);
+    return () => {
+      clearTimeout(fadeTimer);
+      clearTimeout(timer);
+    };
+  }, [savedMessage]);
 
   async function saveSettings(
     patch: Partial<UserSettingsPayload>,
@@ -139,6 +153,7 @@ export function SettingsClient({
     setSettings(next);
     setSavingKey(key);
     setSavedMessage(null);
+    setErrorMessage(null);
 
     try {
       const response = await fetch("/api/settings", {
@@ -156,7 +171,9 @@ export function SettingsClient({
       setSavedMessage("Settings saved.");
     } catch (error) {
       setSettings(settings);
-      alert(error instanceof Error ? error.message : "Failed to save settings");
+      setErrorMessage(
+        error instanceof Error ? error.message : "Failed to save settings",
+      );
     } finally {
       setSavingKey(null);
     }
@@ -164,8 +181,19 @@ export function SettingsClient({
 
   return (
     <div className="space-y-6">
+      {errorMessage ? (
+        <div className="flex items-center gap-2 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">
+          <XCircle className="h-4 w-4 text-red-500" />
+          {errorMessage}
+        </div>
+      ) : null}
       {savedMessage ? (
-        <div className="flex items-center gap-2 rounded-xl border border-gold/25 bg-cream/60 px-4 py-3 text-sm text-near-black">
+        <div
+          className={cn(
+            "flex items-center gap-2 rounded-xl border border-gold/25 bg-cream/60 px-4 py-3 text-sm text-near-black transition-opacity duration-300",
+            savedMessageFading ? "opacity-0" : "opacity-100",
+          )}
+        >
           <CheckCircle2 className="h-4 w-4 text-gold" />
           {savedMessage}
         </div>
@@ -261,16 +289,12 @@ export function SettingsClient({
             </div>
           </div>
           <div className="mt-4 flex flex-wrap gap-3">
-            <Link href="/brands">
-              <TextureButton type="button" variant="minimal" size="sm">
-                View brands
-              </TextureButton>
-            </Link>
-            <Link href="/settings/billing">
-              <TextureButton type="button" variant="minimal" size="sm">
-                View billing
-              </TextureButton>
-            </Link>
+            <TextureButton asChild variant="minimal" size="sm">
+              <Link href="/brands">View brands</Link>
+            </TextureButton>
+            <TextureButton asChild variant="minimal" size="sm">
+              <Link href="/settings/billing">View billing</Link>
+            </TextureButton>
           </div>
         </PanelCard>
       </div>
@@ -322,13 +346,19 @@ export function SettingsClient({
               <p className="mt-1 text-sm text-gray-body">
                 How often new brands post once content is approved.
               </p>
-              <div className="mt-3 space-y-2">
+              <div
+                role="radiogroup"
+                aria-label="Default posting frequency"
+                className="mt-3 space-y-2"
+              >
                 {POSTING_FREQUENCY_OPTIONS.map((option) => {
                   const selected = settings.defaultPostingFrequency === option.value;
                   return (
                     <button
                       key={option.value}
                       type="button"
+                      role="radio"
+                      aria-checked={selected}
                       disabled={savingKey === "frequency"}
                       onClick={() =>
                         void saveSettings(
@@ -350,6 +380,7 @@ export function SettingsClient({
                         <p className="text-xs text-gray-body">{option.description}</p>
                       </div>
                       <span
+                        aria-hidden
                         className={cn(
                           "h-4 w-4 rounded-full border",
                           selected

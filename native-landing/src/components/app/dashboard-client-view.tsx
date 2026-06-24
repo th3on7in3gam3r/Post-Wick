@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import {
   CalendarDays,
   CheckCircle2,
+  Clock,
   ListChecks,
   RotateCw,
   Send,
@@ -24,6 +25,12 @@ import { formatUpdatedAgo } from "@/lib/scheduling/slots";
 import { cn } from "@/lib/utils";
 
 type DashboardPost = CalendarPost & { brandName?: string };
+
+function truncateCaption(text: string, maxLength = 60) {
+  const normalized = text.trim();
+  if (normalized.length <= maxLength) return normalized;
+  return `${normalized.slice(0, maxLength).trimEnd()}…`;
+}
 
 type DashboardClientViewProps = {
   stats: {
@@ -83,6 +90,16 @@ export function DashboardClientView({
         : clientScheduled.filter((post) => post.platform.toLowerCase() === platformFilter),
     [clientScheduled, platformFilter],
   );
+  const nextUp = clientScheduled[0];
+  const byPlatform = useMemo(
+    () =>
+      clientScheduled.reduce<Record<string, number>>((acc, post) => {
+        const platform = post.platform ?? "Unknown";
+        acc[platform] = (acc[platform] ?? 0) + 1;
+        return acc;
+      }, {}),
+    [clientScheduled],
+  );
 
   useEffect(() => {
     const interval = window.setInterval(() => setTimeTick((value) => value + 1), 60_000);
@@ -122,19 +139,37 @@ export function DashboardClientView({
     <div className="flex-1 overflow-y-auto px-6 py-6 md:px-8 md:py-8">
       <ActiveClientBanner />
 
-      <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="font-playfair text-3xl italic text-near-black">Dashboard</h1>
-          <p className="mt-1 text-sm text-gray-label">
-            {activeClient.name} — your autopilot command center
-          </p>
-        </div>
-        <TextureButton asChild variant="primary" size="default" className="shrink-0">
-          <Link href={activeClient.id ? `/brands/${activeClient.id}` : "/brands"}>
-            Generate posts →
+      {nextUp ? (
+        <article className="mb-6 flex flex-col gap-3 rounded-2xl border border-black/[0.06] bg-cream/60 px-5 py-3 sm:flex-row sm:items-center sm:gap-4">
+          <Clock className="h-4 w-4 shrink-0 text-gold" aria-hidden />
+          <div className="flex min-w-0 flex-1 flex-col gap-2 sm:flex-row sm:items-center sm:gap-3">
+            <p className="shrink-0 text-sm text-gray-label">Next post going live:</p>
+            <div className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1">
+              <span className="text-[11px] font-semibold uppercase tracking-[0.12em] text-gold">
+                {nextUp.platform}
+              </span>
+              {nextUp.scheduledAt ? (
+                <RelativeScheduleTime
+                  iso={nextUp.scheduledAt}
+                  className="text-xs text-gray-label"
+                />
+              ) : null}
+              <span className="hidden text-gray-label sm:inline" aria-hidden>
+                ·
+              </span>
+              <p className="min-w-0 text-sm text-near-black sm:truncate">
+                {truncateCaption(nextUp.content)}
+              </p>
+            </div>
+          </div>
+          <Link
+            href="/calendar"
+            className="shrink-0 text-xs font-medium text-gold transition hover:opacity-80"
+          >
+            View calendar →
           </Link>
-        </TextureButton>
-      </div>
+        </article>
+      ) : null}
 
       <div>
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
@@ -300,7 +335,37 @@ export function DashboardClientView({
           <ActivityFeedFooter />
         </PanelCard>
 
-        <GettingStartedCard steps={setupSteps} />
+        <div className="flex flex-col gap-6">
+          <GettingStartedCard steps={setupSteps} />
+          <PanelCard
+            title="Platform breakdown"
+            description="Scheduled posts by channel."
+          >
+            {Object.keys(byPlatform).length > 0 ? (
+              <div className="space-y-3">
+                {Object.entries(byPlatform).map(([platform, count]) => (
+                  <div
+                    key={platform}
+                    className="flex items-center justify-between rounded-xl border border-black/[0.06] bg-cream/50 px-4 py-3"
+                  >
+                    <span className="text-xs font-semibold uppercase tracking-[0.12em] text-gold">
+                      {platform}
+                    </span>
+                    <span className="text-sm font-medium text-near-black">
+                      {count} post{count !== 1 ? "s" : ""}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <EmptyState
+                icon={CalendarDays}
+                title="No posts scheduled"
+                description="Approve posts in your queue to see them here."
+              />
+            )}
+          </PanelCard>
+        </div>
       </div>
     </div>
   );
