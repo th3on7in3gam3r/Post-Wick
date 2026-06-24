@@ -164,6 +164,7 @@ function inferIndustry(text: string) {
 export function generatePostsFromResearch(
   research: ReturnType<typeof buildResearchFromCrawl>,
   count = 8,
+  platform = "linkedin",
 ) {
   const topics = research.keyTopics;
   const assignments = pillarAssignmentList(count);
@@ -172,7 +173,7 @@ export function generatePostsFromResearch(
   for (let i = 0; i < count; i += 1) {
     const topic = topics[i % topics.length] ?? research.companyName;
     const pillar = assignments[i] ?? "seo";
-    posts.push(buildTemplatePost(pillar, research, topic, i));
+    posts.push(buildTemplatePost(pillar, research, topic, i, platform));
   }
 
   return posts;

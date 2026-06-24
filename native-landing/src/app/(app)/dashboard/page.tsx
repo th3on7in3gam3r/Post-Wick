@@ -17,7 +17,6 @@ export default async function DashboardPage({
     recentActivity,
     analytics,
     hasConnections,
-    plan,
   } = await getAppContext(searchParams.url);
 
   if (brands.length === 0) {
@@ -36,7 +35,6 @@ export default async function DashboardPage({
       <DashboardClientView
         stats={stats}
         analytics={analytics}
-        plan={plan}
         pendingPosts={pendingPosts}
         scheduledPosts={scheduledPosts}
         recentActivity={recentActivity}

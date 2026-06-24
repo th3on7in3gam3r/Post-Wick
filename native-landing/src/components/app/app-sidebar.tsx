@@ -12,6 +12,7 @@ import {
   Sparkles,
 } from "lucide-react";
 import { ClientSwitcher } from "@/components/app/client-switcher";
+import { SidebarPlanCard } from "@/components/app/sidebar-plan-card";
 import { BrandLogo } from "@/components/brand-logo";
 import { SITE_TAGLINE } from "@/lib/brand";
 import { cn } from "@/lib/utils";
@@ -36,10 +37,15 @@ function isActive(pathname: string, href: string, exact?: boolean) {
 
 export function AppSidebar({
   pathname,
+  plan,
   className,
   onNavigate,
 }: {
   pathname: string;
+  plan: {
+    label: string;
+    generateMax: number;
+  };
   className?: string;
   onNavigate?: () => void;
 }) {
@@ -58,6 +64,7 @@ export function AppSidebar({
           </p>
         </div>
         <ClientSwitcher />
+        <SidebarPlanCard plan={plan} />
       </div>
 
       <nav className="min-h-0 flex-1 space-y-1 overflow-y-auto p-4 pb-6">

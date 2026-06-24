@@ -27,7 +27,7 @@ export async function generatePostsWithAI(
 ) {
   if (!process.env.ANTHROPIC_API_KEY) {
     return {
-      posts: generatePostsFromResearch(research, count),
+      posts: generatePostsFromResearch(research, count, platform),
       source: "template" as const,
     };
   }
@@ -66,7 +66,7 @@ export async function generatePostsWithAI(
     };
   } catch {
     return {
-      posts: generatePostsFromResearch(research, count),
+      posts: generatePostsFromResearch(research, count, platform),
       source: "template" as const,
     };
   }

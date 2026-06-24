@@ -6,11 +6,11 @@ import {
   CheckCircle2,
   ListChecks,
   Send,
-  Sparkles,
 } from "lucide-react";
 import { ActiveClientBanner, useClientFilteredPosts } from "@/components/app/client-scoped";
 import { ActivityFeed, ActivityFeedFooter } from "@/components/app/activity-feed";
 import { EmptyState } from "@/components/app/empty-state";
+import { GettingStartedCard } from "@/components/app/getting-started-card";
 import { PanelCard } from "@/components/app/panel-card";
 import { StatCard } from "@/components/app/stat-card";
 import { TextureButton } from "@/components/ui/texture-button";
@@ -29,10 +29,6 @@ type DashboardClientViewProps = {
   analytics: {
     publishedThisWeek: number;
   };
-  plan: {
-    label: string;
-    generateMax: number;
-  };
   pendingPosts: DashboardPost[];
   scheduledPosts: DashboardPost[];
   recentActivity: ActivityItem[];
@@ -43,7 +39,6 @@ type DashboardClientViewProps = {
 export function DashboardClientView({
   stats,
   analytics,
-  plan,
   pendingPosts,
   scheduledPosts,
   recentActivity,
@@ -68,7 +63,7 @@ export function DashboardClientView({
     <div className="flex-1 overflow-y-auto px-6 py-6 md:px-8 md:py-8">
       <ActiveClientBanner />
 
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
         <StatCard
           label="Scheduled"
           value={clientScheduled.length}
@@ -86,12 +81,6 @@ export function DashboardClientView({
           value={stats.published}
           hint={`${analytics.publishedThisWeek} this week (all clients)`}
           icon={Send}
-        />
-        <StatCard
-          label="Plan"
-          value={plan.label}
-          hint={`Up to ${plan.generateMax} posts per batch`}
-          icon={Sparkles}
         />
       </div>
 
@@ -121,20 +110,31 @@ export function DashboardClientView({
             </div>
           ) : (
             <EmptyState
-              icon={ListChecks}
-              title="No posts waiting"
-              description="Generate more posts for this client from the brand page."
+              icon={CheckCircle2}
+              title="You're all caught up!"
+              description="Ready to generate your next batch?"
               action={
-                <TextureButton asChild variant="primary" size="default">
-                  <Link href="/brands">Open brands</Link>
-                </TextureButton>
+                <div className="flex flex-wrap items-center justify-center gap-3">
+                  <TextureButton asChild variant="primary" size="default">
+                    <Link
+                      href={
+                        activeClient.id ? `/brands/${activeClient.id}` : "/brands"
+                      }
+                    >
+                      Generate more posts
+                    </Link>
+                  </TextureButton>
+                  <TextureButton asChild variant="secondary" size="default">
+                    <Link href="/history">View history</Link>
+                  </TextureButton>
+                </div>
               }
             />
           )}
         </PanelCard>
 
         <PanelCard
-          title="Upcoming week"
+          title="Upcoming this week"
           description="A preview of what autopilot will publish."
           action={
             <TextureButton asChild variant="minimal" size="sm">
@@ -187,32 +187,7 @@ export function DashboardClientView({
           <ActivityFeedFooter />
         </PanelCard>
 
-        <PanelCard
-          title="Getting started"
-          description="Three steps to your first autopilot post."
-        >
-          <ol className="space-y-3">
-            {setupSteps.map((step) => (
-              <li
-                key={step.label}
-                className="flex items-center gap-3 rounded-xl border border-black/[0.06] bg-cream/60 px-4 py-3 text-sm"
-              >
-                <CheckCircle2
-                  className={`h-4 w-4 shrink-0 ${step.done ? "text-gold" : "text-gray-label"}`}
-                />
-                <span className="text-near-black">{step.label}</span>
-              </li>
-            ))}
-          </ol>
-          <div className="mt-6 flex flex-wrap gap-3">
-            <TextureButton asChild variant="primary" size="default">
-              <Link href="/queue">Review posts</Link>
-            </TextureButton>
-            <TextureButton asChild variant="secondary" size="default">
-              <Link href="/settings/integrations">Connect channels</Link>
-            </TextureButton>
-          </div>
-        </PanelCard>
+        <GettingStartedCard steps={setupSteps} />
       </div>
     </div>
   );

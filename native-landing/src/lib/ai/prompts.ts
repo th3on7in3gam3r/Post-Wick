@@ -135,6 +135,42 @@ function pillarBlock(pillar: ContentPillar, count: number): string {
   ].join("\n");
 }
 
+const INSTAGRAM_POST_TYPES = [
+  "educational",
+  "behind-the-scenes",
+  "promotional",
+  "community",
+  "story-driven",
+] as const;
+
+function instagramPostTypeRotation(count: number): string {
+  return Array.from({ length: count }, (_, index) => {
+    const type = INSTAGRAM_POST_TYPES[index % INSTAGRAM_POST_TYPES.length]!;
+    return `${index + 1}. ${type}`;
+  }).join("\n");
+}
+
+const BATCH_VARIATION_RULES = [
+  "Each post must use a different opening structure and cover a distinct angle. Avoid repeating sentence starters.",
+  "No two posts in the batch may start with the same first 5 words.",
+  "Vary hooks: questions, statements, stories, tips, invitations, and observations — do not reuse the same pattern.",
+];
+
+function batchVariationBlock(platform: string, count: number): string {
+  const lines = [...BATCH_VARIATION_RULES];
+
+  if (platform === "instagram") {
+    lines.push(
+      "Rotate Instagram post types across the batch — assign one type per post in this order:",
+      instagramPostTypeRotation(count),
+      "Educational = teach something useful. Behind-the-scenes = process, team, or craft. Promotional = offer or service highlight. Community = audience shout-out or conversation starter. Story-driven = narrative moment or customer story.",
+      'Never open multiple posts with the same phrase (e.g. avoid repeating "What should you know about…").',
+    );
+  }
+
+  return lines.map((line) => `- ${line}`).join("\n");
+}
+
 export function buildGenerationPrompt(input: {
   research: BrandResearch;
   count: number;
@@ -186,6 +222,10 @@ Global rules:
 - Professional, approachable tone matching the brand
 - Each post must clearly fit its assigned pillar (SEO, GEO, or Money)
 ${platform === "instagram" ? "- Instagram: visual-first captions, 1-3 relevant hashtags max, conversational tone\n" : ""}- No hashtag spam, no emoji overload
+
+Batch variation (mandatory — every post in this batch):
+${batchVariationBlock(platform, count)}
+
 - Return ONLY a JSON array of ${count} strings in the assignment order above`;
 }
 
@@ -194,38 +234,114 @@ export function buildTemplatePost(
   research: BrandResearch,
   topic: string,
   index: number,
+  platform = "linkedin",
 ): string {
   const { companyName, uniqueValueProposition, industry, targetAudience } =
     normalizeBrandResearch(research);
   const tagline = brandTagline({ ...research, uniqueValueProposition });
+  const topicLabel = topic.toLowerCase();
+
+  if (platform === "instagram") {
+    return buildInstagramTemplatePost(research, topicLabel, index);
+  }
 
   switch (pillar) {
-    case "seo":
+    case "seo": {
+      const openings = [
+        `Quick tip on ${topicLabel}:`,
+        `The honest guide to ${topicLabel}.`,
+        `3 things about ${topicLabel} most people overlook.`,
+        `Why ${topicLabel} matters this week.`,
+        `A simple way to think about ${topicLabel}.`,
+      ];
+      const opening = openings[index % openings.length]!;
       return [
-        `What should you know about ${topic.toLowerCase()}?`,
+        opening,
         `${companyName} — ${tagline}`,
         `Practical guidance for ${targetAudience.toLowerCase()}.`,
         uniqueValueProposition,
       ].join(" ");
+    }
 
-    case "geo":
-      return [
+    case "geo": {
+      const openings = [
         `${companyName} is a ${industry.toLowerCase()} brand built for ${targetAudience.toLowerCase()}.`,
-        `${tagline}`,
-        `We focus on ${topic.toLowerCase()} because ${uniqueValueProposition}`,
-      ].join(" ");
-
-    case "money":
+        `If you are exploring ${topicLabel}, here is how ${companyName} shows up.`,
+        `${companyName} exists to help ${targetAudience.toLowerCase()} with ${topicLabel}.`,
+        `Trusted ${industry.toLowerCase()} perspective from ${companyName}:`,
+      ];
       return [
-        `Struggling with ${topic.toLowerCase()}?`,
+        openings[index % openings.length]!,
+        tagline,
+        `We focus on ${topicLabel} because ${uniqueValueProposition}`,
+      ].join(" ");
+    }
+
+    case "money": {
+      const openings = [
+        `Struggling with ${topicLabel}?`,
+        `Ready for a better ${topicLabel} experience?`,
+        `This week at ${companyName}:`,
+        `A reason customers choose us for ${topicLabel}:`,
+      ];
+      return [
+        openings[index % openings.length]!,
         `${companyName} helps you get results — ${uniqueValueProposition}`,
         index % 2 === 0
           ? "Ready to get started? Visit our site or send us a message today."
           : "See why customers choose us — link in bio or DM us to learn more.",
       ].join(" ");
+    }
 
     default:
       return uniqueValueProposition;
+  }
+}
+
+function buildInstagramTemplatePost(
+  research: BrandResearch,
+  topicLabel: string,
+  index: number,
+): string {
+  const { companyName, uniqueValueProposition, targetAudience } =
+    normalizeBrandResearch(research);
+  const postType = INSTAGRAM_POST_TYPES[index % INSTAGRAM_POST_TYPES.length]!;
+
+  switch (postType) {
+    case "educational":
+      return [
+        `Save this: one ${topicLabel} tip that actually helps.`,
+        `${companyName} breaks it down for ${targetAudience.toLowerCase()}.`,
+        uniqueValueProposition,
+      ].join(" ");
+
+    case "behind-the-scenes":
+      return [
+        `On the floor today at ${companyName} —`,
+        `here is what goes into ${topicLabel} behind the scenes.`,
+        uniqueValueProposition,
+      ].join(" ");
+
+    case "promotional":
+      return [
+        `This week at ${companyName}:`,
+        `a closer look at ${topicLabel} and why customers keep coming back.`,
+        "Tap the link in bio to learn more.",
+      ].join(" ");
+
+    case "community":
+      return [
+        `Shoutout to everyone working on ${topicLabel} this week.`,
+        `${companyName} loves supporting ${targetAudience.toLowerCase()}.`,
+        "Tell us what you are working on in the comments.",
+      ].join(" ");
+
+    case "story-driven":
+      return [
+        `A moment that reminded us why ${topicLabel} matters —`,
+        `${companyName} is here for ${targetAudience.toLowerCase()} every step of the way.`,
+        uniqueValueProposition,
+      ].join(" ");
   }
 }
 

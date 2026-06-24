@@ -43,7 +43,11 @@ export function getPlatformRuntimeConfig(
     return {
       id: platformId,
       oauthConfigured,
-      connectionMode: oauthConfigured ? "oauth" : platform.demoAvailable ? "demo" : "unavailable",
+      connectionMode: oauthConfigured
+        ? "oauth"
+        : platform.demoAvailable
+          ? "demo"
+          : "unavailable",
     };
   }
 

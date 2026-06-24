@@ -1,3 +1,9 @@
+import {
+  instagramRedirectUri,
+  parseInstagramShortLivedToken,
+  validateInstagramOAuth,
+} from "@/lib/social/instagram-oauth-config";
+
 export type MetaPlatform = "instagram" | "facebook";
 
 export type MetaConnectionDetails = {
@@ -13,29 +19,33 @@ export type MetaConnectionDetails = {
 };
 
 const GRAPH_VERSION = "v21.0";
+const INSTAGRAM_AUTHORIZE_URL = "https://www.instagram.com/oauth/authorize";
 
 const INSTAGRAM_SCOPES = [
   "instagram_business_basic",
   "instagram_business_content_publish",
 ] as const;
 
-function appBaseUrl() {
-  return (process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000").replace(
-    /\/+$/,
-    "",
-  );
+export function metaRedirectUri(origin?: string) {
+  return instagramRedirectUri(origin);
 }
 
-export function metaRedirectUri() {
-  return `${appBaseUrl()}/api/social/meta/callback`;
+export function instagramOAuthValidation(origin?: string) {
+  return validateInstagramOAuth(origin);
 }
 
 export function instagramAppCredentials() {
+  const instagramAppId = process.env.INSTAGRAM_APP_ID?.trim();
+  const instagramAppSecret = process.env.INSTAGRAM_APP_SECRET?.trim();
+
+  if (instagramAppId && instagramAppSecret) {
+    return { appId: instagramAppId, appSecret: instagramAppSecret };
+  }
+
   return {
-    appId:
-      process.env.INSTAGRAM_APP_ID?.trim() || process.env.META_APP_ID?.trim() || "",
+    appId: instagramAppId || process.env.META_APP_ID?.trim() || "",
     appSecret:
-      process.env.INSTAGRAM_APP_SECRET?.trim() ||
+      instagramAppSecret ||
       process.env.META_APP_SECRET?.trim() ||
       "",
   };
@@ -50,7 +60,13 @@ export function instagramOAuthScopes() {
   return [...INSTAGRAM_SCOPES];
 }
 
-export function getMetaAuthUrl(brandId: string, platform: MetaPlatform) {
+export function getMetaAuthUrl(
+  brandId: string,
+  platform: MetaPlatform,
+  origin?: string,
+) {
+  const redirectUri = metaRedirectUri(origin);
+
   if (platform === "instagram") {
     const { appId } = instagramAppCredentials();
     if (!appId) {
@@ -59,13 +75,14 @@ export function getMetaAuthUrl(brandId: string, platform: MetaPlatform) {
 
     const params = new URLSearchParams({
       client_id: appId,
-      redirect_uri: metaRedirectUri(),
+      redirect_uri: redirectUri,
       state: `${brandId}:instagram`,
       scope: INSTAGRAM_SCOPES.join(","),
       response_type: "code",
+      enable_fb_login: "false",
     });
 
-    return `https://api.instagram.com/oauth/authorize?${params}`;
+    return `${INSTAGRAM_AUTHORIZE_URL}?${params}`;
   }
 
   const appId = process.env.META_APP_ID;
@@ -76,7 +93,7 @@ export function getMetaAuthUrl(brandId: string, platform: MetaPlatform) {
   const scopes = ["pages_show_list", "pages_manage_posts", "pages_read_engagement"];
   const params = new URLSearchParams({
     client_id: appId,
-    redirect_uri: metaRedirectUri(),
+    redirect_uri: redirectUri,
     state: `${brandId}:${platform}`,
     scope: scopes.join(","),
     response_type: "code",
@@ -108,11 +125,13 @@ async function graphGet<T>(path: string, accessToken: string) {
   return (await response.json()) as T;
 }
 
-export async function exchangeInstagramCode(code: string) {
+export async function exchangeInstagramCode(code: string, origin?: string) {
   const { appId, appSecret } = instagramAppCredentials();
   if (!appId || !appSecret) {
     throw new Error("Instagram OAuth is not configured");
   }
+
+  const redirectUri = metaRedirectUri(origin);
 
   const response = await fetch("https://api.instagram.com/oauth/access_token", {
     method: "POST",
@@ -121,7 +140,7 @@ export async function exchangeInstagramCode(code: string) {
       client_id: appId,
       client_secret: appSecret,
       grant_type: "authorization_code",
-      redirect_uri: metaRedirectUri(),
+      redirect_uri: redirectUri,
       code,
     }),
   });
@@ -132,12 +151,13 @@ export async function exchangeInstagramCode(code: string) {
     throw new Error(`Failed to exchange Instagram authorization code (${response.status})`);
   }
 
-  const shortLived = (await response.json()) as { access_token: string };
+  const shortLived = (await response.json()) as unknown;
+  const shortLivedToken = parseInstagramShortLivedToken(shortLived);
 
   const longParams = new URLSearchParams({
     grant_type: "ig_exchange_token",
     client_secret: appSecret,
-    access_token: shortLived.access_token,
+    access_token: shortLivedToken,
   });
   const longResponse = await fetch(
     `https://graph.instagram.com/access_token?${longParams}`,
@@ -154,7 +174,7 @@ export async function exchangeInstagramCode(code: string) {
   return longLived.access_token;
 }
 
-export async function exchangeMetaCode(code: string) {
+export async function exchangeMetaCode(code: string, origin?: string) {
   const appId = process.env.META_APP_ID;
   const appSecret = process.env.META_APP_SECRET;
   if (!appId || !appSecret) {
@@ -164,7 +184,7 @@ export async function exchangeMetaCode(code: string) {
   const params = new URLSearchParams({
     client_id: appId,
     client_secret: appSecret,
-    redirect_uri: metaRedirectUri(),
+    redirect_uri: metaRedirectUri(origin),
     code,
   });
 

@@ -3,12 +3,7 @@ import { EmptyState } from "@/components/app/empty-state";
 import { IntegrationsClient } from "@/components/app/integrations-client";
 import { SettingsShell } from "@/components/app/settings-shell";
 import { getBrandsByUserId, getConnectionsByUserId } from "@/lib/db";
-import {
-  getIntegrationsRuntimeConfig,
-} from "@/lib/integrations/config";
-import { isMetaConfigured, metaRedirectUri } from "@/lib/social/meta";
-import { isPlatformAdmin } from "@/lib/server/platform-admin";
-import { siteUrl } from "@/lib/brand";
+import { getIntegrationsRuntimeConfig } from "@/lib/integrations/config";
 import { requireUserId } from "@/lib/server/app-data";
 
 export default async function IntegrationsPage({
@@ -17,10 +12,9 @@ export default async function IntegrationsPage({
   searchParams: { connected?: string; error?: string };
 }) {
   const userId = await requireUserId();
-  const [brands, connections, showMetaAdminGuide] = await Promise.all([
+  const [brands, connections] = await Promise.all([
     getBrandsByUserId(userId),
     getConnectionsByUserId(userId),
-    isPlatformAdmin(),
   ]);
 
   return (
@@ -45,14 +39,7 @@ export default async function IntegrationsPage({
             isDemo: connection.isDemo,
           }))}
           runtimeConfig={getIntegrationsRuntimeConfig()}
-          metaSetup={{
-            configured: isMetaConfigured(),
-            redirectUri: metaRedirectUri(),
-            appUrl: siteUrl(),
-            usesInstagramAppId: Boolean(process.env.INSTAGRAM_APP_ID?.trim()),
-          }}
           flashParams={searchParams}
-          showMetaAdminGuide={showMetaAdminGuide}
         />
       )}
     </SettingsShell>

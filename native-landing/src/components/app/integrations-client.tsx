@@ -10,7 +10,6 @@ import {
   Sparkles,
 } from "lucide-react";
 import { PanelCard } from "@/components/app/panel-card";
-import { MetaSetupGuide, type MetaSetupInfo } from "@/components/app/meta-setup-guide";
 import { TextureButton } from "@/components/ui/texture-button";
 import {
   INTEGRATION_CATEGORIES,
@@ -44,27 +43,15 @@ const PLATFORM_ACCENTS: Record<IntegrationPlatformId, string> = {
   google_business: "bg-[#4285F4]/10 text-[#4285F4]",
 };
 
-function flashMessage(searchParams: {
-  connected?: string;
-  error?: string;
-}) {
+function flashMessage(searchParams: { connected?: string; error?: string }) {
   if (searchParams.connected === "linkedin") {
-    return "LinkedIn connected. Approved posts can publish when they are due.";
+    return "LinkedIn connected.";
   }
   if (searchParams.connected === "instagram") {
-    return "Instagram connected. Image posts can publish to your Business account.";
+    return "Instagram connected.";
   }
   if (searchParams.connected === "facebook") {
-    return "Facebook Page connected. Approved posts can publish when they are due.";
-  }
-  if (searchParams.error === "linkedin_exchange_failed") {
-    return "LinkedIn authorization failed. Try again or use demo mode.";
-  }
-  if (searchParams.error === "meta_no_instagram") {
-    return "No Instagram Business account is linked to your Facebook Page. Link them in Meta Business Suite, then try again.";
-  }
-  if (searchParams.error === "meta_exchange_failed") {
-    return "Meta authorization failed. Confirm your Page and Instagram Business account are linked.";
+    return "Facebook connected.";
   }
   if (searchParams.error) {
     return "Connection failed. Please try again.";
@@ -76,15 +63,11 @@ export function IntegrationsClient({
   brands,
   initialConnections,
   runtimeConfig,
-  metaSetup,
-  showMetaAdminGuide,
   flashParams,
 }: {
   brands: Brand[];
   initialConnections: Connection[];
   runtimeConfig: PlatformRuntimeConfig[];
-  metaSetup: MetaSetupInfo;
-  showMetaAdminGuide: boolean;
   flashParams?: { connected?: string; error?: string };
 }) {
   const router = useRouter();
@@ -147,12 +130,14 @@ export function IntegrationsClient({
     if (!brandId) return;
 
     if (platform === "linkedin") {
-      window.location.href = `/api/social/linkedin/connect?brandId=${brandId}`;
+      window.location.assign(`/api/social/linkedin/connect?brandId=${encodeURIComponent(brandId)}`);
       return;
     }
 
     if (platform === "instagram" || platform === "facebook") {
-      window.location.href = `/api/social/meta/connect?brandId=${brandId}&platform=${platform}`;
+      window.location.assign(
+        `/api/social/meta/connect?brandId=${encodeURIComponent(brandId)}&platform=${platform}`,
+      );
     }
   }
 
@@ -190,12 +175,17 @@ export function IntegrationsClient({
   return (
     <div className="space-y-6">
       {flash ? (
-        <div className="rounded-xl border border-gold/25 bg-cream/60 px-4 py-3 text-sm text-near-black">
+        <div
+          className={cn(
+            "rounded-xl px-4 py-3 text-sm",
+            flashParams?.error
+              ? "border border-amber-300/80 bg-amber-50 text-near-black"
+              : "border border-gold/25 bg-cream/60 text-near-black",
+          )}
+        >
           {flash}
         </div>
       ) : null}
-
-      <MetaSetupGuide setup={metaSetup} showAdminGuide={showMetaAdminGuide} />
 
       <div className="grid gap-4 md:grid-cols-3">
         <div className="rounded-2xl border border-black/[0.06] bg-white p-5 shadow-card">
@@ -331,12 +321,6 @@ export function IntegrationsClient({
                     </span>
                   </div>
 
-                  {platform.id === "instagram" && !connection ? (
-                    <p className="mt-3 text-xs text-gray-body">
-                      Requires an Instagram Business or Creator account.
-                    </p>
-                  ) : null}
-
                   {connection ? (
                     <div className="mt-5 flex flex-1 flex-col justify-end space-y-3">
                       <p className="text-sm text-near-black">
@@ -367,25 +351,16 @@ export function IntegrationsClient({
                   ) : (
                     <div className="mt-5 flex flex-1 flex-col justify-end gap-2">
                       {platform.oauthProvider || platform.id === "linkedin" ? (
-                        <>
-                          <TextureButton
-                            type="button"
-                            variant="primary"
-                            size="sm"
-                            disabled={isLoading || !oauthReady(platform.id)}
-                            onClick={() => connectOAuth(platform.id)}
-                          >
-                            <Link2 className="mr-2 h-4 w-4" />
-                            Connect {platform.name}
-                          </TextureButton>
-                          {!oauthReady(platform.id) ? (
-                            <p className="text-xs text-gray-body">
-                              {platform.id === "instagram" || platform.id === "facebook"
-                                ? "Live connect isn't enabled yet. Use demo mode below to preview."
-                                : "Live connect isn't enabled yet. Use demo mode below to preview."}
-                            </p>
-                          ) : null}
-                        </>
+                        <TextureButton
+                          type="button"
+                          variant="primary"
+                          size="sm"
+                          disabled={isLoading || !oauthReady(platform.id)}
+                          onClick={() => connectOAuth(platform.id)}
+                        >
+                          <Link2 className="mr-2 h-4 w-4" />
+                          Connect {platform.name}
+                        </TextureButton>
                       ) : null}
                       {platform.demoAvailable ? (
                         <TextureButton
