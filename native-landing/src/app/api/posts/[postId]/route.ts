@@ -1,7 +1,12 @@
 import { auth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import { updatePostDraft, updatePostStatus, scheduleApprovedPost } from "@/lib/db";
+import {
+  reschedulePost,
+  scheduleApprovedPost,
+  updatePostDraft,
+  updatePostStatus,
+} from "@/lib/db";
 
 const actionSchema = z.object({
   action: z.enum(["approve", "skip"]),
@@ -10,6 +15,12 @@ const actionSchema = z.object({
 const patchSchema = z.object({
   content: z.string().trim().min(1).max(3000).optional(),
   imageUrl: z.union([z.string().url(), z.string().startsWith("/")]).nullable().optional(),
+  scheduledAt: z
+    .string()
+    .refine((value) => !Number.isNaN(Date.parse(value)), {
+      message: "Invalid schedule date",
+    })
+    .optional(),
 });
 
 export async function PATCH(
@@ -25,16 +36,44 @@ export async function PATCH(
     const body = await req.json();
     const data = patchSchema.parse(body);
 
-    if (data.content === undefined && data.imageUrl === undefined) {
+    if (
+      data.content === undefined &&
+      data.imageUrl === undefined &&
+      data.scheduledAt === undefined
+    ) {
       return NextResponse.json({ error: "Nothing to update" }, { status: 400 });
     }
 
-    const post = await updatePostDraft(params.postId, userId, data);
-    if (!post) {
-      return NextResponse.json({ error: "Not found" }, { status: 404 });
+    if (data.scheduledAt !== undefined) {
+      try {
+        const post = await reschedulePost(params.postId, userId, data.scheduledAt);
+        if (!post) {
+          return NextResponse.json({ error: "Not found" }, { status: 404 });
+        }
+
+        if (data.content === undefined && data.imageUrl === undefined) {
+          return NextResponse.json(post);
+        }
+      } catch (error) {
+        return NextResponse.json(
+          { error: error instanceof Error ? error.message : "Failed to reschedule post" },
+          { status: 400 },
+        );
+      }
     }
 
-    return NextResponse.json(post);
+    if (data.content !== undefined || data.imageUrl !== undefined) {
+      const post = await updatePostDraft(params.postId, userId, {
+        content: data.content,
+        imageUrl: data.imageUrl,
+      });
+      if (!post) {
+        return NextResponse.json({ error: "Not found" }, { status: 404 });
+      }
+      return NextResponse.json(post);
+    }
+
+    return NextResponse.json({ error: "Failed to update post" }, { status: 500 });
   } catch (error) {
     if (error instanceof z.ZodError) {
       return NextResponse.json({ error: error.issues }, { status: 400 });

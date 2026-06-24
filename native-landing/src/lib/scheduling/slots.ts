@@ -1,5 +1,5 @@
+export const SLOT_HOUR = 10;
 const SLOT_DAYS = [1, 3, 5]; // Monday, Wednesday, Friday
-const SLOT_HOUR = 10;
 
 function isSlotDay(date: Date) {
   return SLOT_DAYS.includes(date.getDay());
@@ -19,6 +19,12 @@ function startOfDay(date: Date) {
 
 function sameDay(a: Date, b: Date) {
   return startOfDay(a).getTime() === startOfDay(b).getTime();
+}
+
+export function scheduleSlotOnDay(day: Date, hour = SLOT_HOUR) {
+  const slot = new Date(day);
+  slot.setHours(hour, 0, 0, 0);
+  return slot.toISOString();
 }
 
 export function getNextScheduleSlot(existingScheduledAt: string[]): string {

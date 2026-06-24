@@ -486,6 +486,44 @@ export async function scheduleApprovedPost(postId: string, userId: string) {
   return updated ? parsePost(updated) : null;
 }
 
+export async function reschedulePost(
+  postId: string,
+  userId: string,
+  scheduledAt: string,
+) {
+  const db = await getDb();
+  const row = await db
+    .select({ post: posts })
+    .from(posts)
+    .innerJoin(brands, eq(brands.id, posts.brandId))
+    .where(and(eq(posts.id, postId), eq(brands.userId, userId)))
+    .limit(1);
+
+  if (row.length === 0) return null;
+
+  const post = parsePost(row[0]!.post);
+  if (post.status !== "approved") {
+    throw new Error("Only approved posts waiting to publish can be rescheduled");
+  }
+
+  const slot = new Date(scheduledAt);
+  if (Number.isNaN(slot.getTime())) {
+    throw new Error("Invalid schedule date");
+  }
+  if (slot.getTime() <= Date.now()) {
+    throw new Error("Choose a future date and time");
+  }
+
+  const now = nowIso();
+  await db
+    .update(posts)
+    .set({ scheduledAt, updatedAt: now })
+    .where(eq(posts.id, postId));
+
+  const updated = await db.query.posts.findFirst({ where: eq(posts.id, postId) });
+  return updated ? parsePost(updated) : null;
+}
+
 export async function getDuePosts(userId: string) {
   const db = await getDb();
   const now = nowIso();

@@ -22,14 +22,14 @@ export default async function CalendarPage() {
     <>
       <AppHeader
         title="Calendar"
-        description="See what autopilot will publish and when."
+        description="See what's scheduled and drag approved posts to any day."
       />
-      <div className="flex flex-1 flex-col gap-6 p-6 md:p-8">
+      <div className="flex flex-1 flex-col gap-6 px-4 py-4 sm:px-6 sm:py-6 md:px-8 md:py-8">
         {posts.length === 0 ? (
           <EmptyState
             icon={CalendarDays}
             title="No scheduled posts"
-            description="Approve posts in your queue and they will land here on Mon, Wed, and Fri at 10:00 AM."
+            description="Approve posts in your queue, then drag them on the calendar to pick any day."
             action={
               <TextureButton asChild variant="primary" size="default">
                 <Link href="/queue">Open approval queue</Link>
