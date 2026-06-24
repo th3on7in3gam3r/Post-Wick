@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { Menu } from "lucide-react";
 import { AppSidebar } from "@/components/app/app-sidebar";
-import { BrandLogo } from "@/components/brand-logo";
+import { ClientSwitcher } from "@/components/app/client-switcher";
 import { cn } from "@/lib/utils";
 
 export function AppShell({
@@ -60,7 +60,7 @@ export function AppShell({
             <Menu className="h-5 w-5" />
           </button>
           <div className="min-w-0 flex-1">
-            <BrandLogo href="/dashboard" variant="wordmark" />
+            <ClientSwitcher />
           </div>
         </div>
         {children}

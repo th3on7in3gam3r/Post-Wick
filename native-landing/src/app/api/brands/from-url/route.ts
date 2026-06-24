@@ -2,9 +2,7 @@ import { randomUUID } from "node:crypto";
 import { auth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import { createPostsWithOptionalImages, countPostsWithImages } from "@/lib/ai/create-posts";
-import { getImageGenerationProviders, imageGenerationHint, isImageGenerationConfigured } from "@/lib/ai/images";
-import { generatePostsWithAI } from "@/lib/ai/generate";
+import { generateInitialPostsForBrand } from "@/lib/brands/generate-initial-posts";
 import { crawlBrandWebsite } from "@/lib/crawl";
 import { buildResearchFromCrawl } from "@/lib/crawl/website";
 import {
@@ -14,12 +12,12 @@ import {
   getUserById,
   updateBrand,
 } from "@/lib/db";
-import { getPlanLimits } from "@/lib/plans";
 import { normalizeWebsiteUrl, websiteHostname } from "@/lib/website-url";
 
 const fromUrlSchema = z.object({
   websiteUrl: z.string().min(1),
   name: z.string().min(1).max(255).optional(),
+  analyzeOnly: z.boolean().optional().default(false),
 });
 
 export const maxDuration = 300;
@@ -32,7 +30,7 @@ export async function POST(req: Request) {
 
   try {
     const body = await req.json();
-    const { websiteUrl: rawUrl, name } = fromUrlSchema.parse(body);
+    const { websiteUrl: rawUrl, name, analyzeOnly } = fromUrlSchema.parse(body);
     const websiteUrl = normalizeWebsiteUrl(rawUrl);
 
     if (!websiteUrl) {
@@ -62,23 +60,40 @@ export async function POST(req: Request) {
 
     await updateBrand(brand.id, userId, { crawlStatus: "running" });
 
+    const { pages, engine } = await crawlBrandWebsite(websiteUrl, 12);
+    const crawledResearch = buildResearchFromCrawl(websiteUrl, brandName, pages);
+    const research = {
+      ...crawledResearch,
+      source: engine === "pro" ? "web-crawler" : "website-crawl",
+      voiceDescription: crawledResearch.summary ?? "",
+      thingsToAvoid: [] as string[],
+    };
+
+    if (analyzeOnly) {
+      const updatedBrand = await updateBrand(brand.id, userId, {
+        crawlStatus: "review",
+        researchData: research,
+        description: research.summary,
+        name: research.companyName || brandName,
+      });
+
+      return NextResponse.json(
+        {
+          brand: {
+            ...updatedBrand,
+            researchData: research,
+          },
+          created: true,
+          requiresReview: true,
+          crawledPages: pages.length,
+          crawlEngine: engine,
+        },
+        { status: 201 },
+      );
+    }
+
     await getOrCreateUser(userId);
     const user = (await getUserById(userId))!;
-    const limits = getPlanLimits(user.subscriptionTier);
-
-    const { pages, engine } = await crawlBrandWebsite(websiteUrl, 12);
-    const research = {
-      ...buildResearchFromCrawl(websiteUrl, brandName, pages),
-      source: engine === "pro" ? "web-crawler" : "website-crawl",
-    };
-    const linkedinCount = Math.max(1, Math.ceil(limits.initialPosts * 0.6));
-    const instagramCount = Math.max(0, limits.initialPosts - linkedinCount);
-
-    const linkedinGenerated = await generatePostsWithAI(
-      research,
-      linkedinCount,
-      "linkedin",
-    );
 
     const updatedBrand = await updateBrand(brand.id, userId, {
       crawlStatus: "completed",
@@ -87,33 +102,11 @@ export async function POST(req: Request) {
       name: research.companyName || brandName,
     });
 
-    const linkedinBatch = await createPostsWithOptionalImages({
-      brandId: brand.id,
-      platform: "linkedin",
-      contents: linkedinGenerated.posts,
+    const generation = await generateInitialPostsForBrand(
+      brand.id,
       research,
-    });
-
-    let instagramBatch = { posts: [] as typeof linkedinBatch.posts, imageError: null as string | null };
-    if (instagramCount >= 2) {
-      const instagramGenerated = await generatePostsWithAI(
-        research,
-        instagramCount,
-        "instagram",
-      );
-      instagramBatch = await createPostsWithOptionalImages({
-        brandId: brand.id,
-        platform: "instagram",
-        contents: instagramGenerated.posts,
-        research,
-        withImages: true,
-      });
-    }
-
-    const posts = [...linkedinBatch.posts, ...instagramBatch.posts];
-    const imageError = linkedinBatch.imageError ?? instagramBatch.imageError;
-    const imagesGenerated = countPostsWithImages(posts);
-    const imagesConfigured = isImageGenerationConfigured();
+      user.subscriptionTier,
+    );
 
     return NextResponse.json(
       {
@@ -121,21 +114,10 @@ export async function POST(req: Request) {
           ...updatedBrand,
           researchData: research,
         },
-        posts,
+        ...generation,
         created: true,
         crawledPages: pages.length,
         crawlEngine: engine,
-        generationSource: linkedinGenerated.source,
-        instagramPosts: instagramBatch.posts.length,
-        imagesGenerated,
-        imagesConfigured,
-        imageProviders: getImageGenerationProviders(),
-        imageHint: imageGenerationHint({
-          configured: imagesConfigured,
-          generated: imagesGenerated,
-          error: imageError,
-          isVercel: Boolean(process.env.VERCEL),
-        }),
       },
       { status: 201 },
     );

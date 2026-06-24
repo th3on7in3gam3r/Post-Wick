@@ -10,6 +10,7 @@ import {
   Sparkles,
 } from "lucide-react";
 import { AppHeader } from "@/components/app/app-header";
+import { BrandClientIndicator } from "@/components/app/client-scoped";
 import { BrandSitePreview } from "@/components/app/brand-site-preview";
 import { GenerateImagesButton } from "@/components/app/generate-images-button";
 import { GeneratePostsButton } from "@/components/app/generate-posts-button";
@@ -68,6 +69,7 @@ export default async function BrandPage({
     .sort((a, b) => new Date(a.scheduledAt!).getTime() - new Date(b.scheduledAt!).getTime());
   const missingImageCount = posts.filter((post) => !post.imageUrl).length;
   const assets = await resolveBrandAssets(brand.websiteUrl, research);
+  const industry = research?.industry?.trim() || "Business";
 
   return (
     <>
@@ -77,6 +79,13 @@ export default async function BrandPage({
       />
 
       <div className="flex-1 space-y-6 overflow-y-auto px-4 py-4 sm:px-6 sm:py-6 md:px-8 md:py-8">
+        <BrandClientIndicator
+          brandId={brand.id}
+          name={brand.name}
+          logoUrl={assets.logoUrl || null}
+          industry={industry}
+        />
+
         <BrandSitePreview
           variant="identity"
           name={brand.name}

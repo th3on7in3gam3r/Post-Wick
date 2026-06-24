@@ -1,8 +1,8 @@
 import Link from "next/link";
 import { ListChecks } from "lucide-react";
-import { AppHeader } from "@/components/app/app-header";
+import { AppHeaderWithClient } from "@/components/app/client-scoped";
+import { ClientScopedQueue } from "@/components/app/client-scoped-queue";
 import { EmptyState } from "@/components/app/empty-state";
-import { QueueClient } from "@/components/app/queue-client";
 import { TextureButton } from "@/components/ui/texture-button";
 import { getBrandsByUserId, getPendingPostsByUserId } from "@/lib/db";
 import { requireUserId } from "@/lib/server/app-data";
@@ -18,13 +18,13 @@ export default async function QueuePage() {
 
   return (
     <>
-      <AppHeader
+      <AppHeaderWithClient
         title="Approval queue"
-        description="Review AI drafts, refine in plain words, and approve what feels right."
+        description="review AI drafts, refine in plain words, and approve"
       />
       <div className="flex flex-1 flex-col p-6 md:p-8">
         {pendingPosts.length > 0 ? (
-          <QueueClient initialPosts={pendingPosts} />
+          <ClientScopedQueue initialPosts={pendingPosts} />
         ) : (
           <EmptyState
             icon={ListChecks}
@@ -36,8 +36,8 @@ export default async function QueuePage() {
             }
             action={
               <TextureButton asChild variant="primary" size="default">
-                <Link href={brands.length > 0 ? "/brands" : "/onboarding"}>
-                  {brands.length > 0 ? "View brands" : "Set up your brand"}
+                <Link href={brands.length > 0 ? "/onboarding?add=1" : "/onboarding"}>
+                  {brands.length > 0 ? "Add new client +" : "Set up your brand"}
                 </Link>
               </TextureButton>
             }

@@ -142,9 +142,19 @@ export function buildGenerationPrompt(input: {
   charLimit: number;
 }): string {
   const { research: rawResearch, count, platform, charLimit } = input;
+  const extendedResearch = rawResearch as BrandResearch & {
+    tone?: string;
+    voiceDescription?: string;
+    thingsToAvoid?: string[];
+  };
   const research = normalizeBrandResearch(rawResearch);
   const counts = distributePillarCounts(count);
   const assignments = pillarAssignmentList(count);
+  const tone = String(extendedResearch.tone ?? "Professional, approachable, and helpful").trim();
+  const voiceDescription = String(extendedResearch.voiceDescription ?? "").trim();
+  const thingsToAvoid = Array.isArray(extendedResearch.thingsToAvoid)
+    ? extendedResearch.thingsToAvoid.filter(Boolean)
+    : [];
 
   const pillarSections = PILLAR_ORDER.filter((pillar) => counts[pillar] > 0).map(
     (pillar) => pillarBlock(pillar, counts[pillar]),
@@ -154,6 +164,11 @@ export function buildGenerationPrompt(input: {
 
 Brand research:
 ${JSON.stringify(research, null, 2)}
+
+Brand voice:
+- Tone: ${tone}
+${voiceDescription ? `- Voice notes: ${voiceDescription}` : ""}
+${thingsToAvoid.length ? `- Avoid: ${thingsToAvoid.join(", ")}` : ""}
 
 Brand tagline (use in SEO and GEO posts where natural):
 "${research.tagline}"

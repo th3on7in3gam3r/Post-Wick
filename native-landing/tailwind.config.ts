@@ -41,7 +41,7 @@ const config: Config = {
         },
       },
       animation: {
-        carousel: "carousel 50s linear infinite",
+        carousel: "carousel 80s linear infinite",
         "fade-drop": "fadeDrop 0.8s cubic-bezier(0.22, 1, 0.36, 1) both",
         "fade-drop-delay-1": "fadeDrop 0.8s cubic-bezier(0.22, 1, 0.36, 1) 0.14s both",
         "fade-drop-delay-2": "fadeDrop 0.8s cubic-bezier(0.22, 1, 0.36, 1) 0.28s both",

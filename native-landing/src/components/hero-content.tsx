@@ -5,6 +5,7 @@ import { AnimatePresence, motion, useAnimationControls } from "framer-motion";
 import { useCallback, useEffect, useState, type FormEvent } from "react";
 import { TextureButton } from "@/components/ui/texture-button";
 import { normalizeWebsiteUrl } from "@/lib/website-url";
+import { savePendingWebsiteUrl } from "@/lib/pending-website-url";
 import { SITE_TAGLINE } from "@/lib/brand";
 import {
   type ImagePlacement,
@@ -134,7 +135,7 @@ export function HeroContent() {
     [],
   );
 
-  function handleGenerate(event: FormEvent<HTMLFormElement>) {
+  function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const normalized = normalizeWebsiteUrl(websiteUrl);
 
@@ -144,7 +145,7 @@ export function HeroContent() {
     }
 
     setUrlError("");
-    sessionStorage.setItem("postwick_website_url", normalized);
+    savePendingWebsiteUrl(normalized);
     router.push(`/sign-up?url=${encodeURIComponent(normalized)}`);
   }
 
@@ -164,7 +165,7 @@ export function HeroContent() {
         </p>
 
         <form
-          onSubmit={handleGenerate}
+          onSubmit={handleSubmit}
           className="mt-8 w-full max-w-[520px]"
           noValidate
         >
@@ -182,17 +183,15 @@ export function HeroContent() {
               className="min-w-0 flex-1 bg-transparent px-5 py-[14px] text-left text-base text-near-black outline-none placeholder:text-gray-label"
             />
             <TextureButton type="submit" variant="primary" size="default" className="shrink-0">
-              Generate →
+              Get started free →
             </TextureButton>
           </div>
           {urlError ? (
             <p className="mt-2 text-left text-sm text-[#b45309]">{urlError}</p>
-          ) : null}
+          ) : (
+            <p className="mt-2.5 text-sm text-gray-label">No credit card required</p>
+          )}
         </form>
-
-        <p className="mt-3 font-playfair text-[0.9rem] italic text-[#666666]">
-          Drop your URL and we&apos;ll generate 50 posts for you.
-        </p>
       </div>
     </>
   );

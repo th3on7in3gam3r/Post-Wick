@@ -12,9 +12,9 @@ export const OG_DEFAULT_DESCRIPTION =
   "Drop your URL. We research your brand and generate a month of posts. Swipe to approve. Publish on autopilot.";
 
 export const OG_IMAGE = {
-  url: "/images/og.png",
-  width: 1920,
-  height: 1080,
+  url: "/opengraph-image",
+  width: 1200,
+  height: 630,
   alt: "Post-Wick — Social media on autopilot for local businesses",
 } as const;
 

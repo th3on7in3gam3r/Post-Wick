@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Check, Loader2, Sparkles, X } from "lucide-react";
+import { Check, Loader2, RotateCcw, Sparkles, X } from "lucide-react";
 import { TextureButton } from "@/components/ui/texture-button";
 import { formatScheduleLabel } from "@/lib/scheduling/slots";
 import { REFINE_QUICK_PICKS } from "@/lib/ai/prompts";
@@ -29,6 +29,96 @@ type RefineResult = {
   imageWarning?: string | null;
 };
 
+function PostCardSkeleton() {
+  return (
+    <div
+      className="animate-pulse rounded-2xl border border-black/[0.06] bg-cream/40 p-6 shadow-card"
+      aria-busy="true"
+      aria-label="Generating a new version"
+    >
+      <div className="h-3 w-20 rounded bg-black/[0.08]" />
+      <div className="mt-4 aspect-square w-full rounded-xl bg-black/[0.06]" />
+      <div className="mt-4 space-y-2">
+        <div className="h-3 w-full rounded bg-black/[0.06]" />
+        <div className="h-3 w-full rounded bg-black/[0.06]" />
+        <div className="h-3 w-[80%] rounded bg-black/[0.06]" />
+      </div>
+      <p className="mt-5 flex items-center justify-center gap-2 text-sm text-gray-body">
+        <Loader2 className="h-4 w-4 animate-spin text-gold" />
+        Writing a new version…
+      </p>
+    </div>
+  );
+}
+
+async function regeneratePost(
+  post: QueuePost,
+  instruction: string,
+): Promise<Pick<QueuePost, "content" | "imageUrl">> {
+  const refineInstruction =
+    instruction.trim() ||
+    "Write a completely fresh version of this post with a new angle.";
+
+  const refineResponse = await fetch(`/api/posts/${post.id}/refine`, {
+    method: "POST",
+    credentials: "same-origin",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      instruction: refineInstruction,
+      regenerateImage: post.platform.toLowerCase() === "instagram",
+    }),
+  });
+
+  const refineData = (await refineResponse.json().catch(() => ({}))) as RefineResult & {
+    error?: string;
+  };
+
+  if (!refineResponse.ok) {
+    throw new Error(
+      typeof refineData.error === "string"
+        ? refineData.error
+        : "Could not regenerate this post",
+    );
+  }
+
+  const caption = refineData.captions[0];
+  if (!caption) {
+    throw new Error("No regenerated caption was returned");
+  }
+
+  const newImage = refineData.images.find((image) => image.id === "new" && image.url);
+  const imageUrl = newImage?.url ?? refineData.images[0]?.url ?? post.imageUrl ?? null;
+
+  const patchResponse = await fetch(`/api/posts/${post.id}`, {
+    method: "PATCH",
+    credentials: "same-origin",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      content: caption,
+      imageUrl,
+    }),
+  });
+
+  const patchData = (await patchResponse.json().catch(() => ({}))) as {
+    content?: string;
+    imageUrl?: string | null;
+    error?: string;
+  };
+
+  if (!patchResponse.ok) {
+    throw new Error(
+      typeof patchData.error === "string"
+        ? patchData.error
+        : "Could not save the regenerated post",
+    );
+  }
+
+  return {
+    content: patchData.content ?? caption,
+    imageUrl: patchData.imageUrl ?? imageUrl,
+  };
+}
+
 export function QueueClient({ initialPosts }: { initialPosts: QueuePost[] }) {
   const router = useRouter();
   const [posts, setPosts] = useState(initialPosts);
@@ -44,6 +134,10 @@ export function QueueClient({ initialPosts }: { initialPosts: QueuePost[] }) {
   const [selectedImageId, setSelectedImageId] = useState<"current" | "new">(
     "current",
   );
+  const [regenerateOpen, setRegenerateOpen] = useState(false);
+  const [regenerateInstruction, setRegenerateInstruction] = useState("");
+  const [regenerating, setRegenerating] = useState(false);
+  const regeneratePopoverRef = useRef<HTMLDivElement>(null);
   const current = posts[0];
   const currentImageSrc = resolvePostImageUrl(current?.imageUrl);
 
@@ -57,8 +151,26 @@ export function QueueClient({ initialPosts }: { initialPosts: QueuePost[] }) {
     setRefineResult(null);
     setSelectedCaption(0);
     setSelectedImageId("current");
+    setRegenerateOpen(false);
+    setRegenerateInstruction("");
     setError(null);
   }, [current?.id]);
+
+  useEffect(() => {
+    if (!regenerateOpen) return;
+
+    function handlePointerDown(event: MouseEvent) {
+      if (
+        regeneratePopoverRef.current &&
+        !regeneratePopoverRef.current.contains(event.target as Node)
+      ) {
+        setRegenerateOpen(false);
+      }
+    }
+
+    window.addEventListener("mousedown", handlePointerDown);
+    return () => window.removeEventListener("mousedown", handlePointerDown);
+  }, [regenerateOpen]);
 
   async function handleAction(action: "approve" | "skip") {
     if (!current || acting) return;
@@ -207,6 +319,41 @@ export function QueueClient({ initialPosts }: { initialPosts: QueuePost[] }) {
     }
   }
 
+  async function handleRegenerate() {
+    if (!current || regenerating) return;
+
+    setRegenerateOpen(false);
+    setRegenerating(true);
+    setError(null);
+    setRefineResult(null);
+
+    try {
+      const next = await regeneratePost(current, regenerateInstruction);
+
+      setPosts((prev) =>
+        prev.map((post) =>
+          post.id === current.id
+            ? {
+                ...post,
+                content: next.content,
+                imageUrl: next.imageUrl ?? post.imageUrl,
+              }
+            : post,
+        ),
+      );
+      setRegenerateInstruction("");
+      router.refresh();
+    } catch (regenerateError) {
+      setError(
+        regenerateError instanceof Error
+          ? regenerateError.message
+          : "Could not regenerate this post. Try again.",
+      );
+    } finally {
+      setRegenerating(false);
+    }
+  }
+
   if (!current) {
     return (
       <p className="text-center text-sm text-gray-body">
@@ -215,29 +362,38 @@ export function QueueClient({ initialPosts }: { initialPosts: QueuePost[] }) {
     );
   }
 
-  const busy = acting || refining || applying;
+  const busy = acting || refining || applying || regenerating;
 
   return (
     <div className="mx-auto max-w-xl">
-      <article className="rounded-2xl border border-black/[0.06] bg-cream/40 p-6 shadow-card">
-        <p className="text-xs font-semibold uppercase tracking-[0.12em] text-gold">
-          {current.platform}
-        </p>
-        {currentImageSrc ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
-            src={currentImageSrc}
-            alt=""
-            className="mt-4 aspect-square w-full rounded-xl border border-black/[0.06] object-cover"
-            referrerPolicy="no-referrer"
-          />
-        ) : (
-          <p className="mt-3 text-xs text-gray-label">No image for this draft</p>
-        )}
-        <p className="mt-4 text-sm leading-relaxed text-near-black">{current.content}</p>
-      </article>
+      {regenerating ? (
+        <PostCardSkeleton />
+      ) : (
+        <article className="rounded-2xl border border-black/[0.06] bg-cream/40 p-6 shadow-card">
+          <p className="text-xs font-semibold uppercase tracking-[0.12em] text-gold">
+            {current.platform}
+          </p>
+          {currentImageSrc ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={currentImageSrc}
+              alt=""
+              className="mt-4 aspect-square w-full rounded-xl border border-black/[0.06] object-cover"
+              referrerPolicy="no-referrer"
+            />
+          ) : (
+            <p className="mt-3 text-xs text-gray-label">No image for this draft</p>
+          )}
+          <p className="mt-4 text-sm leading-relaxed text-near-black">{current.content}</p>
+        </article>
+      )}
 
-      <section className="mt-6 rounded-2xl border border-black/[0.06] bg-white p-5 shadow-card">
+      <section
+        className={cn(
+          "mt-6 rounded-2xl border border-black/[0.06] bg-white p-5 shadow-card transition-opacity",
+          regenerating && "pointer-events-none opacity-50",
+        )}
+      >
         <div className="flex items-center gap-2">
           <Sparkles className="h-4 w-4 text-gold" />
           <p className="text-sm font-medium text-near-black">Refine with Post-Wick</p>
@@ -378,7 +534,51 @@ export function QueueClient({ initialPosts }: { initialPosts: QueuePost[] }) {
         ) : null}
       </section>
 
-      <div className="mt-6 flex justify-center gap-3">
+      <div className="relative mt-6 flex flex-wrap justify-center gap-3" ref={regeneratePopoverRef}>
+        {regenerateOpen ? (
+          <div className="absolute bottom-full left-1/2 z-20 mb-3 w-[min(100%,20rem)] -translate-x-1/2 rounded-2xl border border-black/[0.06] bg-white p-4 shadow-card">
+            <p className="text-sm font-medium text-near-black">
+              Any direction for the new version?
+            </p>
+            <p className="mt-1 text-xs text-gray-label">Optional — leave blank for a fresh rewrite.</p>
+            <input
+              type="text"
+              value={regenerateInstruction}
+              onChange={(event) => setRegenerateInstruction(event.target.value)}
+              placeholder="Shorter, more playful, mention our sale…"
+              disabled={busy}
+              className="mt-3 w-full rounded-xl border border-black/[0.1] bg-cream/50 px-4 py-2.5 text-sm text-near-black outline-none placeholder:text-gray-label focus:border-gold/50 focus:ring-2 focus:ring-gold/20"
+              onKeyDown={(event) => {
+                if (event.key === "Enter") {
+                  event.preventDefault();
+                  void handleRegenerate();
+                }
+              }}
+            />
+            <div className="mt-3 flex gap-2">
+              <TextureButton
+                type="button"
+                variant="primary"
+                size="sm"
+                className="flex-1"
+                disabled={busy}
+                onClick={() => void handleRegenerate()}
+              >
+                Regenerate
+              </TextureButton>
+              <TextureButton
+                type="button"
+                variant="secondary"
+                size="sm"
+                disabled={busy}
+                onClick={() => setRegenerateOpen(false)}
+              >
+                Cancel
+              </TextureButton>
+            </div>
+          </div>
+        ) : null}
+
         <TextureButton
           type="button"
           variant="secondary"
@@ -388,6 +588,17 @@ export function QueueClient({ initialPosts }: { initialPosts: QueuePost[] }) {
         >
           <X className="mr-2 h-4 w-4" />
           Skip
+        </TextureButton>
+        <TextureButton
+          type="button"
+          variant="secondary"
+          size="default"
+          disabled={busy}
+          onClick={() => setRegenerateOpen((open) => !open)}
+          aria-expanded={regenerateOpen}
+        >
+          <RotateCcw className="mr-2 h-4 w-4" />
+          Regenerate ↺
         </TextureButton>
         <TextureButton
           type="button"

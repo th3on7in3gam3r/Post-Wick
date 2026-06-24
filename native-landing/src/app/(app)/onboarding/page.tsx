@@ -12,7 +12,11 @@ export default async function OnboardingPage({
   const addingAnother = searchParams.add === "1";
   const { websiteUrl, brands } = await getAppContext(searchParams.url);
 
-  if (brands.length > 0 && !searchParams.url && !addingAnother) {
+  if (
+    brands.some((brand) => brand.crawlStatus === "completed") &&
+    !searchParams.url &&
+    !addingAnother
+  ) {
     redirect("/dashboard");
   }
 
@@ -24,8 +28,8 @@ export default async function OnboardingPage({
         title={addingAnother ? "Add another brand" : "Welcome to Post-Wick"}
         description={
           addingAnother
-            ? "Enter a new website and we will crawl it, build a profile, and draft posts."
-            : "Let's learn your business and draft your first posts."
+            ? "Enter a new website and we will crawl it, confirm your brand voice, and draft posts."
+            : "We'll learn your business, confirm your brand voice, then draft your first posts."
         }
       />
       <div className="flex flex-1 items-center justify-center overflow-y-auto px-6 py-10">

@@ -2,10 +2,14 @@ import { Navbar } from "@/components/navbar";
 import { Hero } from "@/components/hero";
 import { PostCarousel } from "@/components/post-carousel";
 import { HowItWorks } from "@/components/how-it-works";
+import { SocialProofSection } from "@/components/social-proof-section";
 import { Pricing } from "@/components/pricing";
 import { Comparison, ComparisonTable } from "@/components/comparison";
 import { TestimonialsSection } from "@/components/testimonials-section";
 import { FAQ, Guides, CTASection, Footer } from "@/components/sections";
+import { createPageMetadata } from "@/lib/metadata";
+
+export const metadata = createPageMetadata({ path: "/" });
 
 export default function Home() {
   return (
@@ -15,6 +19,7 @@ export default function Home() {
         <Hero />
         <PostCarousel />
         <HowItWorks />
+        <SocialProofSection />
         <Pricing />
         <Comparison />
         <TestimonialsSection />

@@ -27,7 +27,40 @@ const ADMIN_CHECKLIST = [
   "In App roles, add your Instagram account as Admin, Developer, or Tester while the app is in Development mode.",
 ];
 
-export function MetaSetupGuide({ setup }: { setup: MetaSetupInfo }) {
+function CustomerConnectGuide({ configured }: { configured: boolean }) {
+  return (
+    <div className="rounded-xl border border-black/[0.06] bg-white px-4 py-4">
+      <p className="text-sm font-medium text-near-black">How to connect Instagram</p>
+      <p className="mt-1 text-sm text-gray-body">
+        You do <span className="font-medium text-near-black">not</span> create a Meta
+        developer app. Post-Wick handles that — you only connect your account.
+      </p>
+      <ol className="mt-4 space-y-2 text-sm text-gray-body">
+        {CONNECT_STEPS.map((step, index) => (
+          <li key={step} className="flex gap-2">
+            <span className="font-medium text-gold">{index + 1}.</span>
+            <span>{step}</span>
+          </li>
+        ))}
+      </ol>
+      {!configured ? (
+        <p className="mt-4 text-sm text-gray-body">
+          Live Instagram connect is not enabled on this workspace yet. Use{" "}
+          <span className="font-medium text-near-black">Try demo mode</span> on the card
+          below to preview publishing.
+        </p>
+      ) : null}
+    </div>
+  );
+}
+
+export function MetaSetupGuide({
+  setup,
+  showAdminGuide,
+}: {
+  setup: MetaSetupInfo;
+  showAdminGuide: boolean;
+}) {
   const [copied, setCopied] = useState(false);
 
   async function copyRedirectUri() {
@@ -36,29 +69,14 @@ export function MetaSetupGuide({ setup }: { setup: MetaSetupInfo }) {
     window.setTimeout(() => setCopied(false), 2000);
   }
 
+  if (!showAdminGuide) {
+    return <CustomerConnectGuide configured={setup.configured} />;
+  }
+
   return (
     <div className="space-y-4">
       {!setup.configured ? (
-        <div className="rounded-xl border border-black/[0.06] bg-white px-4 py-4">
-          <p className="text-sm font-medium text-near-black">How to connect Instagram</p>
-          <p className="mt-1 text-sm text-gray-body">
-            You do <span className="font-medium text-near-black">not</span> create a Meta
-            developer app. Post-Wick handles that — you only connect your account.
-          </p>
-          <ol className="mt-4 space-y-2 text-sm text-gray-body">
-            {CONNECT_STEPS.map((step, index) => (
-              <li key={step} className="flex gap-2">
-                <span className="font-medium text-gold">{index + 1}.</span>
-                <span>{step}</span>
-              </li>
-            ))}
-          </ol>
-          <p className="mt-4 text-sm text-gray-body">
-            Live Instagram connect is not enabled on this workspace yet. Use{" "}
-            <span className="font-medium text-near-black">Try demo mode</span> on the card
-            below to preview publishing.
-          </p>
-        </div>
+        <CustomerConnectGuide configured={false} />
       ) : (
         <div className="rounded-xl border border-amber-200/80 bg-amber-50/60 px-4 py-4">
           <p className="text-sm font-medium text-near-black">

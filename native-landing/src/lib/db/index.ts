@@ -21,7 +21,7 @@ export type BrandRecord = {
   name: string;
   websiteUrl: string;
   description: string | null;
-  crawlStatus: "pending" | "running" | "completed" | "failed";
+  crawlStatus: "pending" | "running" | "review" | "completed" | "failed";
   researchData: string | null;
   postingFrequency: number;
   createdAt: string;
@@ -265,12 +265,15 @@ export async function getPostsByBrandId(brandId: string) {
 export async function getPendingPostsByUserId(userId: string) {
   const db = await getDb();
   const rows = await db
-    .select({ post: posts })
+    .select({ post: posts, brandName: brands.name })
     .from(posts)
     .innerJoin(brands, eq(brands.id, posts.brandId))
     .where(and(eq(brands.userId, userId), eq(posts.status, "pending")))
     .orderBy(desc(posts.createdAt));
-  return rows.map((row) => parsePost(row.post));
+  return rows.map((row) => ({
+    ...parsePost(row.post),
+    brandName: row.brandName,
+  }));
 }
 
 export async function getScheduledPostsByUserId(userId: string, limit = 8) {

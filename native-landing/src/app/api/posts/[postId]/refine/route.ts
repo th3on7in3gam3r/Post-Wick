@@ -81,6 +81,8 @@ export async function POST(
           industry: "Small business",
           targetAudience: brand.name,
           tone: "Professional, approachable, and helpful",
+          voiceDescription: brand.description ?? "",
+          thingsToAvoid: [],
           keyTopics: [brand.name],
           uniqueValueProposition: brand.description ?? brand.name,
           tagline: brand.description ?? `${brand.name} — growing with consistent social presence.`,

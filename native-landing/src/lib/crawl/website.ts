@@ -129,6 +129,8 @@ export function buildResearchFromCrawl(
     industry: inferIndustry(snippets.join(" ")),
     targetAudience: "Business owners and customers interested in " + brandName,
     tone: "Professional, approachable, and helpful",
+    voiceDescription: snippets.slice(0, 2).join(" "),
+    thingsToAvoid: [] as string[],
     keyTopics: topics.length ? topics : ["Your services", "Customer success", "Behind the scenes"],
     uniqueValueProposition,
     tagline,

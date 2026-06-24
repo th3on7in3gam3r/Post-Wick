@@ -77,12 +77,14 @@ export function IntegrationsClient({
   initialConnections,
   runtimeConfig,
   metaSetup,
+  showMetaAdminGuide,
   flashParams,
 }: {
   brands: Brand[];
   initialConnections: Connection[];
   runtimeConfig: PlatformRuntimeConfig[];
   metaSetup: MetaSetupInfo;
+  showMetaAdminGuide: boolean;
   flashParams?: { connected?: string; error?: string };
 }) {
   const router = useRouter();
@@ -193,7 +195,7 @@ export function IntegrationsClient({
         </div>
       ) : null}
 
-      <MetaSetupGuide setup={metaSetup} />
+      <MetaSetupGuide setup={metaSetup} showAdminGuide={showMetaAdminGuide} />
 
       <div className="grid gap-4 md:grid-cols-3">
         <div className="rounded-2xl border border-black/[0.06] bg-white p-5 shadow-card">

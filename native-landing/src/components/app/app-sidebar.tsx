@@ -11,6 +11,7 @@ import {
   Settings,
   Sparkles,
 } from "lucide-react";
+import { ClientSwitcher } from "@/components/app/client-switcher";
 import { BrandLogo } from "@/components/brand-logo";
 import { SITE_TAGLINE } from "@/lib/brand";
 import { cn } from "@/lib/utils";
@@ -49,11 +50,14 @@ export function AppSidebar({
         className,
       )}
     >
-      <div className="shrink-0 border-b border-black/[0.06] px-6 py-5">
-        <BrandLogo href="/dashboard" variant="wordmark" priority />
-        <p className="mt-2 text-[0.65rem] font-medium uppercase tracking-[0.18em] text-gray-label">
-          {SITE_TAGLINE}
-        </p>
+      <div className="shrink-0 space-y-4 border-b border-black/[0.06] px-4 py-5">
+        <div className="px-2">
+          <BrandLogo href="/dashboard" variant="wordmark" priority />
+          <p className="mt-2 text-[0.65rem] font-medium uppercase tracking-[0.18em] text-gray-label">
+            {SITE_TAGLINE}
+          </p>
+        </div>
+        <ClientSwitcher />
       </div>
 
       <nav className="min-h-0 flex-1 space-y-1 overflow-y-auto p-4 pb-6">

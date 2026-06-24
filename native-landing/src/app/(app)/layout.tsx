@@ -1,14 +1,14 @@
-"use client";
+import { AppLayoutClient } from "@/components/app/app-layout-client";
+import { getClientsForUser } from "@/lib/server/clients";
+import { requireUserId } from "@/lib/server/app-data";
 
-import { usePathname } from "next/navigation";
-import { AppShell } from "@/components/app/app-shell";
-
-export default function AppLayout({
+export default async function AppLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const pathname = usePathname();
+  const userId = await requireUserId();
+  const clients = await getClientsForUser(userId);
 
-  return <AppShell pathname={pathname}>{children}</AppShell>;
+  return <AppLayoutClient clients={clients}>{children}</AppLayoutClient>;
 }

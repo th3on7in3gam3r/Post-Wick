@@ -1,6 +1,17 @@
 import { AuthPageShell } from "@/components/auth-page-shell";
 import { AuthPrivacyFooter } from "@/components/auth-privacy-footer";
 import { AuthScrollLock } from "@/components/auth-scroll-lock";
+import { createPageMetadata } from "@/lib/metadata";
+
+const description = "Sign in to Post-Wick and manage your social content on autopilot.";
+
+export const metadata = createPageMetadata({
+  title: "Sign in",
+  description,
+  ogTitle: "Sign in | Post-Wick",
+  ogDescription: description,
+  path: "/sign-in",
+});
 
 export default function SignInLayout({
   children,
