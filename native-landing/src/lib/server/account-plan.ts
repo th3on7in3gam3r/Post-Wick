@@ -1,7 +1,14 @@
 import { getOrCreateUser } from "@/lib/db";
-import { getPlanLimits } from "@/lib/plans";
+import { getPlanLimits, type SubscriptionTier } from "@/lib/plans";
 
-export async function getAccountPlan(userId: string) {
+export type AccountPlan = ReturnType<typeof getPlanLimits> & {
+  tier: SubscriptionTier;
+};
+
+export async function getAccountPlan(userId: string): Promise<AccountPlan> {
   const user = await getOrCreateUser(userId);
-  return getPlanLimits(user.subscriptionTier);
+  return {
+    tier: user.subscriptionTier,
+    ...getPlanLimits(user.subscriptionTier),
+  };
 }

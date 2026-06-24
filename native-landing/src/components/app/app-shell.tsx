@@ -4,19 +4,23 @@ import { useEffect, useState } from "react";
 import { Menu } from "lucide-react";
 import { AppSidebar } from "@/components/app/app-sidebar";
 import { ClientSwitcher } from "@/components/app/client-switcher";
+import type { SubscriptionTier } from "@/lib/plans";
 import { cn } from "@/lib/utils";
 
 export function AppShell({
   children,
   pathname,
   plan,
+  hasBrands,
 }: {
   children: React.ReactNode;
   pathname: string;
   plan: {
+    tier: SubscriptionTier;
     label: string;
     generateMax: number;
   };
+  hasBrands: boolean;
 }) {
   const [mobileOpen, setMobileOpen] = useState(false);
 
@@ -33,7 +37,7 @@ export function AppShell({
 
   return (
     <div className="flex min-h-screen overflow-x-hidden bg-cream">
-      <AppSidebar pathname={pathname} plan={plan} className="hidden lg:flex" />
+      <AppSidebar pathname={pathname} plan={plan} hasBrands={hasBrands} className="hidden lg:flex" />
 
       {mobileOpen ? (
         <button
@@ -47,6 +51,7 @@ export function AppShell({
       <AppSidebar
         pathname={pathname}
         plan={plan}
+        hasBrands={hasBrands}
         onNavigate={() => setMobileOpen(false)}
         className={cn(
           "fixed inset-y-0 left-0 z-50 w-[min(100%,18rem)] shadow-xl transition-transform duration-200 ease-out lg:hidden",

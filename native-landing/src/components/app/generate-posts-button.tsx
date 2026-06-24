@@ -16,10 +16,12 @@ export function GeneratePostsButton({
   brandId,
   generateMax,
   platform: initialPlatform = "linkedin",
+  layout = "stacked",
 }: {
   brandId: string;
   generateMax: number;
   platform?: string;
+  layout?: "stacked" | "toolbar";
 }) {
   const router = useRouter();
   const [platform, setPlatform] = useState(
@@ -69,40 +71,56 @@ export function GeneratePostsButton({
     }
   }
 
+  const controls = (
+    <>
+      <label className="sr-only" htmlFor={`generate-platform-${brandId}`}>
+        Platform
+      </label>
+      <select
+        id={`generate-platform-${brandId}`}
+        value={platform}
+        disabled={loading}
+        onChange={(event) => setPlatform(event.target.value)}
+        className={
+          layout === "toolbar"
+            ? "min-w-[8.5rem] flex-1 rounded-xl border border-black/[0.08] bg-white px-3 py-2 text-sm text-near-black outline-none focus:border-gold/50 sm:flex-none"
+            : "w-full rounded-full border border-black/[0.1] bg-cream/50 px-3 py-2 text-sm text-near-black outline-none focus:border-gold/50 sm:w-auto"
+        }
+      >
+        {GENERATE_PLATFORMS.map((item) => (
+          <option key={item} value={item}>
+            {PLATFORM_LABELS[item]}
+          </option>
+        ))}
+      </select>
+      <TextureButton
+        type="button"
+        variant="primary"
+        size={layout === "toolbar" ? "sm" : "default"}
+        disabled={loading}
+        className={layout === "toolbar" ? "shrink-0" : "w-full sm:w-auto"}
+        onClick={() => void handleGenerate()}
+      >
+        {loading ? (
+          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+        ) : (
+          <Sparkles className="mr-2 h-4 w-4" />
+        )}
+        {loading ? "Generating…" : `Generate ${generateMax}`}
+      </TextureButton>
+    </>
+  );
+
   return (
     <div className="flex w-full flex-col items-stretch gap-2">
-      <div className="flex w-full flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center">
-        <label className="sr-only" htmlFor={`generate-platform-${brandId}`}>
-          Platform
-        </label>
-        <select
-          id={`generate-platform-${brandId}`}
-          value={platform}
-          disabled={loading}
-          onChange={(event) => setPlatform(event.target.value)}
-          className="w-full rounded-full border border-black/[0.1] bg-cream/50 px-3 py-2 text-sm text-near-black outline-none focus:border-gold/50 sm:w-auto"
-        >
-          {GENERATE_PLATFORMS.map((item) => (
-            <option key={item} value={item}>
-              {PLATFORM_LABELS[item]}
-            </option>
-          ))}
-        </select>
-        <TextureButton
-          type="button"
-          variant="primary"
-          size="default"
-          disabled={loading}
-          className="w-full sm:w-auto"
-          onClick={() => void handleGenerate()}
-        >
-          {loading ? (
-            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-          ) : (
-            <Sparkles className="mr-2 h-4 w-4" />
-          )}
-          {loading ? "Generating…" : `Generate ${generateMax}`}
-        </TextureButton>
+      <div
+        className={
+          layout === "toolbar"
+            ? "flex flex-col gap-2 sm:flex-row sm:items-center"
+            : "flex w-full flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center"
+        }
+      >
+        {controls}
       </div>
       {platform === "instagram" ? (
         <p className="text-xs text-gray-body">

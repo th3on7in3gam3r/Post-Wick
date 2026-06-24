@@ -1,7 +1,9 @@
 "use client";
 
-import { useState } from "react";
-import { Globe } from "lucide-react";
+import { useState, type ReactNode } from "react";
+import Link from "next/link";
+import { CheckCircle2, Globe, Sparkles } from "lucide-react";
+import { useActiveClient } from "@/components/app/client-context";
 import { cn } from "@/lib/utils";
 
 function isLikelyIconAsset(url: string) {
@@ -15,6 +17,8 @@ export function BrandSitePreview({
   siteImageUrl,
   className,
   variant = "card",
+  brandId,
+  industry,
   children,
 }: {
   name: string;
@@ -23,9 +27,13 @@ export function BrandSitePreview({
   siteImageUrl: string | null;
   className?: string;
   variant?: "card" | "identity";
-  children?: React.ReactNode;
+  brandId?: string;
+  industry?: string;
+  children?: ReactNode;
 }) {
   const [heroFailed, setHeroFailed] = useState(false);
+  const { activeClient, setActiveClientId } = useActiveClient();
+  const isActiveClient = Boolean(brandId && activeClient.id === brandId);
   const heroUrl =
     siteImageUrl && !isLikelyIconAsset(siteImageUrl) && !heroFailed ? siteImageUrl : null;
 
@@ -33,7 +41,8 @@ export function BrandSitePreview({
     return (
       <div
         className={cn(
-          "relative overflow-hidden rounded-2xl border border-black/[0.06] bg-white shadow-card",
+          "relative overflow-hidden rounded-2xl border shadow-card",
+          isActiveClient ? "border-gold/30 bg-white" : "border-black/[0.06] bg-white",
           className,
         )}
       >
@@ -67,13 +76,48 @@ export function BrandSitePreview({
               </div>
             )}
             <div className="min-w-0">
-              <p className="truncate font-playfair text-xl italic text-near-black">{name}</p>
+              <div className="flex flex-wrap items-center gap-2">
+                <p className="truncate font-playfair text-xl italic text-near-black">{name}</p>
+                {isActiveClient ? (
+                  <span className="inline-flex items-center gap-1 rounded-full bg-gold/10 px-2 py-0.5 text-[0.65rem] font-semibold uppercase tracking-[0.08em] text-gold">
+                    <CheckCircle2 className="h-3 w-3" />
+                    Active client
+                  </span>
+                ) : null}
+              </div>
               <p className="mt-0.5 truncate text-sm text-gray-body">{websiteUrl}</p>
+              {industry ? (
+                <p className="mt-1 truncate text-xs text-gray-label">{industry}</p>
+              ) : null}
+              {brandId && !isActiveClient ? (
+                <p className="mt-1 text-xs text-gray-body">
+                  Active client is {activeClient.name}. Switch to generate for {name}.
+                </p>
+              ) : null}
             </div>
           </div>
-          {children ? (
-            <div className="flex flex-wrap items-center gap-2 sm:justify-end">{children}</div>
-          ) : null}
+          <div className="flex flex-wrap items-center gap-2 sm:justify-end">
+            {children}
+            {brandId ? (
+              isActiveClient ? (
+                <Link
+                  href="/queue"
+                  className="inline-flex items-center justify-center rounded-xl border border-black/[0.06] bg-cream/70 px-3 py-2 text-sm font-medium text-near-black transition hover:bg-cream"
+                >
+                  Open queue
+                </Link>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => setActiveClientId(brandId)}
+                  className="inline-flex items-center justify-center gap-1.5 rounded-xl border border-gold/30 bg-white px-3 py-2 text-sm font-medium text-gold transition hover:bg-cream"
+                >
+                  <Sparkles className="h-3.5 w-3.5" />
+                  Set as active
+                </button>
+              )
+            ) : null}
+          </div>
         </div>
       </div>
     );

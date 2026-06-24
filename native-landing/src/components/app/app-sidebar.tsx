@@ -12,14 +12,16 @@ import {
   Sparkles,
 } from "lucide-react";
 import { ClientSwitcher } from "@/components/app/client-switcher";
-import { SidebarPlanCard } from "@/components/app/sidebar-plan-card";
+import { SidebarQuickActions } from "@/components/app/sidebar-quick-actions";
+import { SidebarUpgradeNudge } from "@/components/app/sidebar-upgrade-nudge";
 import { BrandLogo } from "@/components/brand-logo";
 import { SITE_TAGLINE } from "@/lib/brand";
+import type { SubscriptionTier } from "@/lib/plans";
 import { cn } from "@/lib/utils";
 
-const navItems = [
+const baseNavItems = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard, exact: true },
-  { href: "/onboarding", label: "Onboarding", icon: Sparkles },
+  { href: "/onboarding", label: "Onboarding", icon: Sparkles, onboarding: true },
   { href: "/brands", label: "Brands", icon: Building2 },
   { href: "/queue", label: "Approval queue", icon: ListChecks },
   { href: "/calendar", label: "Calendar", icon: CalendarDays },
@@ -30,25 +32,38 @@ const navItems = [
   { href: "/settings/billing", label: "Billing", icon: CreditCard },
 ];
 
-function isActive(pathname: string, href: string, exact?: boolean) {
+function isActive(pathname: string, href: string, exact?: boolean, onboarding?: boolean) {
+  if (onboarding) return pathname === "/onboarding";
   if (exact) return pathname === href;
   return pathname === href || pathname.startsWith(`${href}/`);
+}
+
+function navItemsForUser(hasBrands: boolean) {
+  return baseNavItems.map((item) =>
+    item.onboarding
+      ? { ...item, href: hasBrands ? "/onboarding?add=1" : "/onboarding" }
+      : item,
+  );
 }
 
 export function AppSidebar({
   pathname,
   plan,
+  hasBrands,
   className,
   onNavigate,
 }: {
   pathname: string;
   plan: {
+    tier: SubscriptionTier;
     label: string;
     generateMax: number;
   };
+  hasBrands: boolean;
   className?: string;
   onNavigate?: () => void;
 }) {
+  const navItems = navItemsForUser(hasBrands);
   return (
     <aside
       className={cn(
@@ -64,12 +79,12 @@ export function AppSidebar({
           </p>
         </div>
         <ClientSwitcher />
-        <SidebarPlanCard plan={plan} />
+        <SidebarQuickActions />
       </div>
 
       <nav className="min-h-0 flex-1 space-y-1 overflow-y-auto p-4 pb-6">
-        {navItems.map(({ href, label, icon: Icon, exact }) => {
-          const active = isActive(pathname, href, exact);
+        {navItems.map(({ href, label, icon: Icon, exact, onboarding }) => {
+          const active = isActive(pathname, href, exact, onboarding);
           return (
             <Link
               key={href}
@@ -90,22 +105,17 @@ export function AppSidebar({
       </nav>
 
       <div className="shrink-0 border-t border-black/[0.06] p-4">
-        <a
-          href="mailto:hello@postwick.com"
-          className="text-xs text-gray-label hover:text-gold"
-        >
-          Questions? hello@postwick.com
-        </a>
-        <div
-          className="relative mt-3 hidden h-20 overflow-hidden rounded-xl border border-black/[0.06] md:block"
-          aria-hidden
-        >
-          <div
-            className="h-full w-full bg-cover bg-center"
-            style={{ backgroundImage: "url('/images/sign-in-forest-hammock.png')" }}
-          />
-          <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-white/90 via-white/30 to-transparent" />
-        </div>
+        {plan.tier === "free" ? (
+          <SidebarUpgradeNudge generateMax={plan.generateMax} />
+        ) : (
+          <a
+            href="mailto:hello@postwick.com"
+            className="block rounded-xl border border-black/[0.06] bg-cream/40 px-3 py-2.5 transition hover:border-gold/25 hover:bg-cream/70"
+          >
+            <p className="text-xs font-medium text-near-black">Need help?</p>
+            <p className="mt-0.5 text-xs text-gray-body">hello@postwick.com</p>
+          </a>
+        )}
       </div>
     </aside>
   );

@@ -10,10 +10,9 @@ import {
   Sparkles,
 } from "lucide-react";
 import { AppHeader } from "@/components/app/app-header";
-import { BrandClientIndicator } from "@/components/app/client-scoped";
+import { BrandProfileCard } from "@/components/app/brand-profile-card";
 import { BrandSitePreview } from "@/components/app/brand-site-preview";
 import { GenerateImagesButton } from "@/components/app/generate-images-button";
-import { GeneratePostsButton } from "@/components/app/generate-posts-button";
 import { PanelCard } from "@/components/app/panel-card";
 import { PostPreviewRow } from "@/components/app/post-preview-row";
 import { StatCard } from "@/components/app/stat-card";
@@ -79,19 +78,14 @@ export default async function BrandPage({
       />
 
       <div className="flex-1 space-y-6 overflow-y-auto px-4 py-4 sm:px-6 sm:py-6 md:px-8 md:py-8">
-        <BrandClientIndicator
-          brandId={brand.id}
-          name={brand.name}
-          logoUrl={assets.logoUrl || null}
-          industry={industry}
-        />
-
         <BrandSitePreview
           variant="identity"
           name={brand.name}
           websiteUrl={brand.websiteUrl}
           logoUrl={assets.logoUrl}
           siteImageUrl={assets.siteImageUrl}
+          brandId={brand.id}
+          industry={industry}
         >
           <TextureButton asChild variant="minimal" size="sm">
             <a href={brand.websiteUrl} target="_blank" rel="noreferrer">
@@ -141,66 +135,25 @@ export default async function BrandPage({
         </div>
 
         <div className="grid items-start gap-6 xl:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)]">
-          <PanelCard
-            title="Brand profile"
-            description="Built from your website crawl."
-            action={
-              <div className="flex w-full flex-col gap-3">
-                <GeneratePostsButton brandId={brand.id} generateMax={plan.generateMax} />
-                <TextureButton asChild variant="secondary" size="sm" className="w-full sm:w-fit">
-                  <Link href="/queue">Open queue</Link>
-                </TextureButton>
-              </div>
+          <BrandProfileCard
+            brandId={brand.id}
+            generateMax={plan.generateMax}
+            research={
+              research
+                ? {
+                    source: research.source ? String(research.source) : undefined,
+                    industry: research.industry ? String(research.industry) : undefined,
+                    tone: research.tone ? String(research.tone) : undefined,
+                    uniqueValueProposition: research.uniqueValueProposition
+                      ? String(research.uniqueValueProposition)
+                      : undefined,
+                    keyTopics: Array.isArray(research.keyTopics)
+                      ? (research.keyTopics as string[])
+                      : undefined,
+                  }
+                : null
             }
-          >
-            {research ? (
-              <dl className="grid gap-4 text-sm sm:grid-cols-2">
-                {research.source ? (
-                  <div>
-                    <dt className="text-xs font-semibold uppercase tracking-[0.12em] text-gray-label">
-                      Research source
-                    </dt>
-                    <dd className="mt-1 text-gray-body">{String(research.source)}</dd>
-                  </div>
-                ) : null}
-                <div>
-                  <dt className="text-xs font-semibold uppercase tracking-[0.12em] text-gray-label">
-                    Industry
-                  </dt>
-                  <dd className="mt-1 text-gray-body">{research.industry}</dd>
-                </div>
-                <div className="sm:col-span-2">
-                  <dt className="text-xs font-semibold uppercase tracking-[0.12em] text-gray-label">
-                    Tone
-                  </dt>
-                  <dd className="mt-1 text-gray-body">{research.tone}</dd>
-                </div>
-                <div className="sm:col-span-2">
-                  <dt className="text-xs font-semibold uppercase tracking-[0.12em] text-gray-label">
-                    Value proposition
-                  </dt>
-                  <dd className="mt-1 text-gray-body">{research.uniqueValueProposition}</dd>
-                </div>
-                <div className="sm:col-span-2">
-                  <dt className="text-xs font-semibold uppercase tracking-[0.12em] text-gray-label">
-                    Key topics
-                  </dt>
-                  <dd className="mt-2 flex flex-wrap gap-2">
-                    {(research.keyTopics as string[]).map((topic: string) => (
-                      <span
-                        key={topic}
-                        className="rounded-full border border-black/[0.06] bg-cream/70 px-3 py-1 text-xs text-near-black"
-                      >
-                        {topic}
-                      </span>
-                    ))}
-                  </dd>
-                </div>
-              </dl>
-            ) : (
-              <p className="text-sm text-gray-body">No research data yet.</p>
-            )}
-          </PanelCard>
+          />
 
           <div className="space-y-6">
             <PanelCard title="Connections" description="Channels linked to this brand.">

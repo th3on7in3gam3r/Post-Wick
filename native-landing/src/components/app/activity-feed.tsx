@@ -7,7 +7,7 @@ import {
   Sparkles,
   XCircle,
 } from "lucide-react";
-import { formatScheduleLabel } from "@/lib/scheduling/slots";
+import { RelativeScheduleTime } from "@/components/app/relative-schedule-time";
 import type { ActivityItem } from "@/lib/db";
 import { ExternalPostLink } from "@/components/app/external-post-link";
 import { cn } from "@/lib/utils";
@@ -74,7 +74,9 @@ export function ActivityFeed({ items }: { items: ActivityItem[] }) {
               <p className="mt-1 line-clamp-2 text-sm text-gray-body">{item.content}</p>
               <div className="mt-2 flex flex-wrap items-center gap-3 text-xs text-gray-label">
                 <span>{item.brandName}</span>
-                {timestamp ? <span>{formatScheduleLabel(timestamp)}</span> : null}
+                {timestamp ? (
+                  <RelativeScheduleTime iso={timestamp} />
+                ) : null}
                 {item.action === "published" ? (
                   <ExternalPostLink
                     platform={item.platform}

@@ -61,3 +61,41 @@ export function formatScheduleLabel(iso: string) {
     minute: "2-digit",
   });
 }
+
+function formatScheduleTime(iso: string) {
+  const date = new Date(iso);
+  return date.toLocaleString(undefined, {
+    hour: "numeric",
+    minute: "2-digit",
+  });
+}
+
+/** Relative label within ±7 calendar days; absolute date beyond that. */
+export function formatRelativeScheduleLabel(iso: string, now = new Date()) {
+  const date = new Date(iso);
+  if (Number.isNaN(date.getTime())) return "";
+
+  const diffDays = Math.round(
+    (startOfDay(date).getTime() - startOfDay(now).getTime()) / (24 * 60 * 60 * 1000),
+  );
+  const absDiff = Math.abs(diffDays);
+
+  if (absDiff > 7) {
+    return formatScheduleLabel(iso);
+  }
+
+  const time = formatScheduleTime(iso);
+
+  if (diffDays === 0) return `Today, ${time}`;
+  if (diffDays === 1) return `Tomorrow, ${time}`;
+  if (diffDays === -1) return `Yesterday, ${time}`;
+  if (diffDays > 1) return `In ${diffDays} days`;
+  return `${absDiff} days ago`;
+}
+
+export function formatUpdatedAgo(updatedAt: number, now = Date.now()) {
+  const minutes = Math.floor((now - updatedAt) / 60_000);
+  if (minutes < 1) return "Updated just now";
+  if (minutes === 1) return "Updated 1 min ago";
+  return `Updated ${minutes} min ago`;
+}
