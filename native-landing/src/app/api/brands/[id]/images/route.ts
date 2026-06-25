@@ -2,6 +2,7 @@ import { auth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { buildImagePrompt, generatePostImage, imageGenerationHint, isImageGenerationConfigured } from "@/lib/ai/images";
+import { postNeedsImageGeneration } from "@/lib/posts/image-url";
 import { getBrandById, getPostsByBrandId, updatePostImageUrl } from "@/lib/db";
 
 const bodySchema = z.object({
@@ -46,7 +47,9 @@ export async function POST(
           keyTopics: [brand.name],
         };
 
-    const posts = (await getPostsByBrandId(brand.id)).filter((post) => !post.imageUrl);
+    const posts = (await getPostsByBrandId(brand.id)).filter((post) =>
+      postNeedsImageGeneration(post.imageUrl),
+    );
     const targets = posts.slice(0, limit);
 
     let updated = 0;

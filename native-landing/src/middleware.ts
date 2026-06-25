@@ -18,6 +18,7 @@ const isPublicRoute = createRouteMatcher([
   "/api/health/linkedin",
   "/api/health/meta",
   "/api/cron/publish",
+  "/api/generated/(.*)",
   "/api/social/linkedin/callback",
   "/api/social/meta/callback",
 ]);

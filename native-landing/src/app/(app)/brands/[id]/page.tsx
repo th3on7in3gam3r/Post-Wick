@@ -25,6 +25,7 @@ import {
   getOrCreateUser,
 } from "@/lib/db";
 import { getPlanLimits } from "@/lib/plans";
+import { postNeedsImageGeneration } from "@/lib/posts/image-url";
 import { requireUserId } from "@/lib/server/app-data";
 import { websiteHostname } from "@/lib/website-url";
 
@@ -66,7 +67,9 @@ export default async function BrandPage({
   const scheduledPosts = posts
     .filter((post) => post.scheduledAt && ["approved", "published"].includes(post.status))
     .sort((a, b) => new Date(a.scheduledAt!).getTime() - new Date(b.scheduledAt!).getTime());
-  const missingImageCount = posts.filter((post) => !post.imageUrl).length;
+  const missingImageCount = posts.filter((post) =>
+    postNeedsImageGeneration(post.imageUrl),
+  ).length;
   const assets = await resolveBrandAssets(brand.websiteUrl, research);
   const industry = research?.industry?.trim() || "Business";
 

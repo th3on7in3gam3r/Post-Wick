@@ -20,6 +20,12 @@ async function readLocalGenerated(filename: string) {
   return readFile(filePath);
 }
 
+async function readBlobBytes(blobUrl: string) {
+  const response = await fetch(blobUrl);
+  if (!response.ok) return null;
+  return Buffer.from(await response.arrayBuffer());
+}
+
 export async function GET(
   _req: Request,
   { params }: { params: { filename: string } },
@@ -32,7 +38,15 @@ export async function GET(
   try {
     const blobUrl = await findBlobUrl(filename);
     if (blobUrl) {
-      return NextResponse.redirect(blobUrl, 307);
+      const buffer = await readBlobBytes(blobUrl);
+      if (buffer) {
+        return new NextResponse(buffer, {
+          headers: {
+            "Content-Type": "image/png",
+            "Cache-Control": "public, max-age=31536000, immutable",
+          },
+        });
+      }
     }
   } catch {
     // Fall through to local dev files.

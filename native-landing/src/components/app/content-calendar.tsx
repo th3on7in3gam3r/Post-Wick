@@ -120,8 +120,11 @@ function PostDetailModal({
             onError={() => setImageFailed(true)}
           />
         ) : (
-          <div className="mt-4 flex aspect-[4/3] w-full items-center justify-center rounded-xl border border-dashed border-black/[0.08] bg-cream/60 text-sm text-gray-label">
-            No image
+          <div className="mt-4 flex aspect-[4/3] w-full flex-col items-center justify-center gap-1 rounded-xl border border-dashed border-black/[0.08] bg-cream/60 px-4 text-center text-sm text-gray-label">
+            <span>{imageSrc ? "Image unavailable" : "No image"}</span>
+            {imageSrc ? (
+              <span className="text-xs">Regenerate from the brand page → Add images</span>
+            ) : null}
           </div>
         )}
 
