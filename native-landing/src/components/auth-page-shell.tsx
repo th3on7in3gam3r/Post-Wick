@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { BrandLogo } from "@/components/brand-logo";
-import { SITE_SLOGAN_PARTS } from "@/lib/brand";
+import { SITE_SLOGAN_PARTS, SITE_TAGLINE } from "@/lib/brand";
 import { cn } from "@/lib/utils";
 
 type AuthPageShellProps = {
@@ -16,15 +16,8 @@ type AuthPageShellProps = {
 
 function AuthSlogan({ className }: { className?: string }) {
   return (
-    <h1
-      className={cn(
-        "flex flex-wrap items-baseline justify-center gap-x-3 gap-y-1 font-playfair italic leading-tight text-near-black",
-        className,
-      )}
-    >
-      {SITE_SLOGAN_PARTS.map((part) => (
-        <span key={part}>{part}.</span>
-      ))}
+    <h1 className={cn("font-playfair italic leading-snug text-near-black", className)}>
+      {SITE_TAGLINE}
     </h1>
   );
 }
@@ -81,15 +74,15 @@ export function AuthPageShell({
       </header>
 
       {isCentered ? (
-        <main className="relative z-10 flex min-h-0 flex-1 items-center justify-center overflow-hidden px-4 py-6">
-          <div className={`flex w-full ${contentMaxWidth} flex-col items-center text-center`}>
-            <div className="mb-5 shrink-0">
-              <AuthSlogan className="text-[clamp(1.5rem,3.5vw,1.875rem)]" />
-              <p className="mt-2 text-sm text-gray-body md:text-[0.95rem]">
-                Drop your URL and we&apos;ll generate posts for your brand.
-              </p>
-            </div>
-            <div className="flex w-full justify-center">{children}</div>
+        <main className="relative z-10 flex min-h-0 flex-1 flex-col items-center justify-center gap-4 overflow-y-auto px-4 py-6 sm:py-8">
+          <div className="w-full max-w-xl shrink-0 text-center">
+            <AuthSlogan className="text-[clamp(1.25rem,3vw,1.75rem)]" />
+            <p className="mt-2 text-sm text-gray-body md:text-[0.95rem]">
+              Drop your URL and we&apos;ll generate posts for your brand.
+            </p>
+          </div>
+          <div className={`flex w-full shrink-0 justify-center ${contentMaxWidth}`}>
+            {children}
           </div>
         </main>
       ) : (

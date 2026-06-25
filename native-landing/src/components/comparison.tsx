@@ -68,12 +68,13 @@ export function ComparisonTable() {
   return (
     <section className="bg-cream px-10 py-24">
       <div className="mx-auto max-w-[1100px]">
-        <div className="relative overflow-hidden rounded-3xl border border-[#4A3058]/25 shadow-[0_16px_48px_rgba(45,27,69,0.18)]">
+        <div className="relative overflow-hidden rounded-3xl border border-black/[0.06] shadow-[0_16px_48px_rgba(61,90,69,0.12)]">
           <div
-            className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-            style={{ backgroundImage: "url('/images/comparison-landscape.svg')" }}
+            className="absolute inset-0 bg-cover bg-[50%_42%] bg-no-repeat"
+            style={{ backgroundImage: "url('/images/comparison-autopilot-watercolor.png')" }}
           />
-          <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-[#F0EDE4]/30 via-[#3D2463]/20 to-[#F0EDE4]/92" />
+          <div className="pointer-events-none absolute inset-0 bg-[#F2EBD9]/15" />
+          <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-[#F2EBD9]/35 via-[#F2EBD9]/10 to-[#F2EBD9]/88" />
 
           <div className="relative z-10 px-6 py-12 md:px-12 md:py-16">
             <h2 className="text-center font-playfair text-[clamp(1.75rem,3vw,2.5rem)] italic text-near-black">

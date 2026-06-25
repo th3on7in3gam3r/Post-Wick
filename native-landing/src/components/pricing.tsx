@@ -35,17 +35,17 @@ export function Pricing() {
       <div className="mx-auto max-w-[1200px]">
         <div className="relative overflow-hidden rounded-3xl">
           <div
-            className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-            style={{ backgroundImage: "url('/images/pricing-landscape.svg')" }}
+            className="absolute inset-0 bg-cover bg-[50%_35%] bg-no-repeat"
+            style={{ backgroundImage: "url('/images/pricing-autopilot-watercolor.png')" }}
           />
-          <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-white/25 via-cream/40 to-cream-dark/85" />
+          <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-[#1E1035]/20 via-[#3D2463]/10 to-cream-dark/92" />
 
           <div className="relative z-10 px-6 py-12 md:px-12 md:py-16">
-            <p className="step-label">Pricing</p>
-            <h2 className="mt-3 font-playfair text-[clamp(2rem,4vw,3rem)] italic text-near-black">
+            <p className="step-label text-[#E9D5FF]">Pricing</p>
+            <h2 className="mt-3 font-playfair text-[clamp(2rem,4vw,3rem)] italic text-[#F2EBD9] drop-shadow-md">
               One plan for autopilot.
             </h2>
-            <p className="body-copy mt-3">
+            <p className="body-copy mt-3 max-w-xl text-[#EDE8F5]">
               Pick the AI allowance that matches your growth ambitions.
             </p>
 
