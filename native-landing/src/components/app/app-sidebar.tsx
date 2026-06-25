@@ -105,11 +105,11 @@ export function AppSidebar({
           <SidebarUpgradeNudge generateMax={plan.generateMax} />
         ) : (
           <a
-            href="mailto:hello@postwick.com"
+            href="mailto:hello@kerygmasocial.com"
             className="block rounded-xl border border-black/[0.06] bg-cream/40 px-3 py-2.5 transition hover:border-gold/25 hover:bg-cream/70"
           >
             <p className="text-xs font-medium text-near-black">Need help?</p>
-            <p className="mt-0.5 text-xs text-gray-body">hello@postwick.com</p>
+            <p className="mt-0.5 text-xs text-gray-body">hello@kerygmasocial.com</p>
           </a>
         )}
       </div>

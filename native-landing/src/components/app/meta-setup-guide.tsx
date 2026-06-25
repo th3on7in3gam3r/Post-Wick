@@ -16,7 +16,7 @@ export type MetaSetupInfo = {
 const INSTAGRAM_CONNECT_STEPS = [
   "Use an Instagram Business or Creator account.",
   "Click Connect Instagram and sign in with Instagram.",
-  "Approve Post-Wick when Meta asks for permissions.",
+  "Approve Kerygma Social when Meta asks for permissions.",
 ];
 
 const FACEBOOK_CONNECT_STEPS = [
@@ -122,7 +122,7 @@ export function MetaSetupGuide({
       </div>
 
       <AdminChecklist
-        title="Instagram setup (Post-Wick team)"
+        title="Instagram setup (Kerygma Social team)"
         steps={INSTAGRAM_ADMIN_CHECKLIST}
         configured={setup.instagramConfigured}
         redirectUri={setup.redirectUri}
@@ -135,7 +135,7 @@ export function MetaSetupGuide({
       />
 
       <AdminChecklist
-        title="Facebook Page setup (Post-Wick team)"
+        title="Facebook Page setup (Kerygma Social team)"
         steps={FACEBOOK_ADMIN_CHECKLIST}
         configured={setup.facebookConfigured}
         redirectUri={setup.redirectUri}

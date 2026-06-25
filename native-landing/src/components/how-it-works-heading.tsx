@@ -3,7 +3,7 @@
 import { Typewriter } from "@/components/ui/typewriter-text";
 
 const LABEL = "How it works";
-const HEADING = "See how Post-Wick works in four steps.";
+const HEADING = "See how Kerygma Social works in four steps.";
 
 export function HowItWorksHeading() {
   const headingStartDelay = LABEL.length * 55 + 400;

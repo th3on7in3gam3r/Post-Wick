@@ -7,7 +7,7 @@ const steps = [
     number: "1",
     label: "Add your website",
     title: "Add your website.",
-    body: "You add your website. Post-Wick does the research on your business, your industry, and your competitors. The rest runs on autopilot.",
+    body: "You add your website. Kerygma Social does the research on your business, your industry, and your competitors. The rest runs on autopilot.",
     panel: (
       <div className="space-y-4 rounded-2xl bg-panel-bg p-6">
         <div className="rounded-full border border-[#ddd] bg-white px-4 py-3 text-sm text-gray-label">
@@ -46,7 +46,7 @@ const steps = [
     number: "2",
     label: "Analysis and content",
     title: "We do the work.",
-    body: "While you wait, Post-Wick does the research on your business, your industry, and your competitors. We set up a tailored content plan and generate posts for each of your channels.",
+    body: "While you wait, Kerygma Social does the research on your business, your industry, and your competitors. We set up a tailored content plan and generate posts for each of your channels.",
     panel: (
       <div className="space-y-3 rounded-2xl bg-panel-bg p-6">
         <div className="flex flex-wrap gap-2">
@@ -88,7 +88,7 @@ const steps = [
     number: "3",
     label: "Approve and publish",
     title: "You approve. We publish.",
-    body: "Post-Wick drafts the posts. You swipe right to approve, left to skip. The rest runs on autopilot.",
+    body: "Kerygma Social drafts the posts. You swipe right to approve, left to skip. The rest runs on autopilot.",
     panel: (
       <div className="grid gap-3 sm:grid-cols-3">
         {[
@@ -129,8 +129,8 @@ const steps = [
   {
     number: "4",
     label: "Refine",
-    title: "Tell Post-Wick what to change. It does it.",
-    body: "Almost love the post, but not quite? Describe it in plain words. Post-Wick rewrites the caption, generates new image variations, and lets you pick your favorite.",
+    title: "Tell Kerygma Social what to change. It does it.",
+    body: "Almost love the post, but not quite? Describe it in plain words. Kerygma Social rewrites the caption, generates new image variations, and lets you pick your favorite.",
     panel: (
       <div className="rounded-2xl bg-panel-bg p-6">
         <div className="mb-4 flex items-center gap-2 text-sm text-gray-label">
@@ -145,7 +145,7 @@ const steps = [
         </p>
         <div className="mt-4 rounded-xl border border-[#ddd] bg-white p-4">
           <p className="text-[0.7rem] font-semibold uppercase tracking-wider text-gold">
-            Refine · Post-Wick AI
+            Refine · Kerygma Social AI
           </p>
           <p className="mt-2 text-sm text-gray-label">
             Describe what you&apos;d like to change…

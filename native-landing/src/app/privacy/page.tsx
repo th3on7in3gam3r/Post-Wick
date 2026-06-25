@@ -3,12 +3,12 @@ import { MarketingShell } from "@/components/marketing-shell";
 import { createPageMetadata } from "@/lib/metadata";
 
 const description =
-  "How Post-Wick collects, uses, stores, and protects your personal information.";
+  "How Kerygma Social collects, uses, stores, and protects your personal information.";
 
 export const metadata = createPageMetadata({
   title: "Privacy Policy",
   description,
-  ogTitle: "Privacy Policy | Post-Wick",
+  ogTitle: "Privacy Policy | Kerygma Social",
   ogDescription: description,
   path: "/privacy",
 });
@@ -39,8 +39,8 @@ export default function PrivacyPage() {
         Last updated: June 22, 2026
       </p>
       <p className="body-copy mt-6 max-w-[720px] leading-relaxed">
-        This Privacy Policy explains how <strong className="font-medium text-near-black">Post-Wick</strong>{" "}
-        (&ldquo;Post-Wick,&rdquo; &ldquo;we,&rdquo; &ldquo;us,&rdquo; or &ldquo;our&rdquo;), operated by{" "}
+        This Privacy Policy explains how <strong className="font-medium text-near-black">Kerygma Social</strong>{" "}
+        (&ldquo;Kerygma Social,&rdquo; &ldquo;we,&rdquo; &ldquo;us,&rdquo; or &ldquo;our&rdquo;), operated by{" "}
         <strong className="font-medium text-near-black">Biblefunland Studios</strong>, collects, uses,
         discloses, and protects information when you visit our website, create an account, or use our
         social media automation services (the &ldquo;Service&rdquo;).
@@ -57,7 +57,7 @@ export default function PrivacyPage() {
           </p>
           <p>
             <strong className="font-medium text-near-black">Business and brand information.</strong>{" "}
-            When you use Post-Wick, you may provide your website URL, business name, industry,
+            When you use Kerygma Social, you may provide your website URL, business name, industry,
             brand voice preferences, and other details used to research your business and generate
             content. We may automatically collect publicly available information from websites you
             submit to improve content relevance.
@@ -125,7 +125,7 @@ export default function PrivacyPage() {
 
         <Section title="3. AI and automated processing">
           <p>
-            Post-Wick uses artificial intelligence to research businesses, draft posts, refine copy,
+            Kerygma Social uses artificial intelligence to research businesses, draft posts, refine copy,
             and in some cases generate images. To provide these features, we may send relevant inputs
             (such as your website URL, brand details, and post instructions) to AI providers including{" "}
             <strong className="font-medium text-near-black">Anthropic</strong> and{" "}
@@ -144,7 +144,7 @@ export default function PrivacyPage() {
           <ul className="list-disc space-y-2 pl-5">
             <li>
               <strong className="font-medium text-near-black">Service providers</strong> who help us
-              operate Post-Wick (hosting, database, authentication, payments, email, AI, analytics),
+              operate Kerygma Social (hosting, database, authentication, payments, email, AI, analytics),
               bound by contractual obligations to protect your data
             </li>
             <li>
@@ -165,7 +165,7 @@ export default function PrivacyPage() {
 
         <Section title="5. Third-party services">
           <p>
-            Post-Wick relies on trusted third parties. Their handling of data is also governed by
+            Kerygma Social relies on trusted third parties. Their handling of data is also governed by
             their own policies. Key providers may include:
           </p>
           <ul className="list-disc space-y-2 pl-5">
@@ -210,7 +210,7 @@ export default function PrivacyPage() {
 
         <Section title="8. International data transfers">
           <p>
-            Post-Wick may process and store information in the United States and other countries
+            Kerygma Social may process and store information in the United States and other countries
             where we or our service providers operate. If you access the Service from outside the
             United States, your information may be transferred to jurisdictions with different data
             protection laws.
@@ -233,8 +233,8 @@ export default function PrivacyPage() {
           </ul>
           <p>
             To exercise these rights, email{" "}
-            <a href="mailto:hello@postwick.com" className="text-gold hover:opacity-80">
-              hello@postwick.com
+            <a href="mailto:hello@kerygmasocial.com" className="text-gold hover:opacity-80">
+              hello@kerygmasocial.com
             </a>
             . We may need to verify your identity before fulfilling a request. We will respond within
             the timeframe required by applicable law.
@@ -256,10 +256,10 @@ export default function PrivacyPage() {
             we collect, request deletion, and opt out of the sale or sharing of personal information.
           </p>
           <p>
-            Post-Wick does not sell personal information. To submit a California privacy request,
+            Kerygma Social does not sell personal information. To submit a California privacy request,
             contact{" "}
-            <a href="mailto:hello@postwick.com" className="text-gold hover:opacity-80">
-              hello@postwick.com
+            <a href="mailto:hello@kerygmasocial.com" className="text-gold hover:opacity-80">
+              hello@kerygmasocial.com
             </a>
             .
           </p>
@@ -279,7 +279,7 @@ export default function PrivacyPage() {
 
         <Section title="12. Children's privacy">
           <p>
-            Post-Wick is not intended for children under 16 (or the minimum age required in your
+            Kerygma Social is not intended for children under 16 (or the minimum age required in your
             jurisdiction). We do not knowingly collect personal information from children. If you
             believe a child has provided us data, contact us and we will delete it promptly.
           </p>
@@ -301,14 +301,14 @@ export default function PrivacyPage() {
           <p>
             <strong className="font-medium text-near-black">Biblefunland Studios</strong>
             <br />
-            Post-Wick Privacy
+            Kerygma Social Privacy
             <br />
             Email:{" "}
             <a
-              href="mailto:hello@postwick.com"
+              href="mailto:hello@kerygmasocial.com"
               className="font-medium text-gold underline decoration-gold/40 underline-offset-2 hover:decoration-gold"
             >
-              hello@postwick.com
+              hello@kerygmasocial.com
             </a>
           </p>
         </Section>

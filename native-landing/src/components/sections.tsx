@@ -7,18 +7,18 @@ import { SITE_TAGLINE } from "@/lib/brand";
 const faqs = [
   {
     q: "Do I need to be good at creating content to use this?",
-    a: "Not at all. You don't need to write anything. Just add your website, and Post-Wick handles the rest — we research your business, create the content, and publish it automatically. You just approve what looks good.",
+    a: "Not at all. You don't need to write anything. Just add your website, and Kerygma Social handles the rest — we research your business, create the content, and publish it automatically. You just approve what looks good.",
   },
   {
     q: "Will the content actually sound like my brand?",
-    a: "Yes. Post-Wick researches your website, your industry, and your competitors to create content that fits your business. No generic templates. Just relevant, high-quality posts tailored to your brand.",
+    a: "Yes. Kerygma Social researches your website, your industry, and your competitors to create content that fits your business. No generic templates. Just relevant, high-quality posts tailored to your brand.",
   },
   {
     q: "Will this work if I don't have a big following yet?",
-    a: "Absolutely. Whether you have 200 followers or 20,000, Post-Wick helps you show up consistently across all your channels. That consistency is how you grow in the first place.",
+    a: "Absolutely. Whether you have 200 followers or 20,000, Kerygma Social helps you show up consistently across all your channels. That consistency is how you grow in the first place.",
   },
   {
-    q: "What kind of content does Post-Wick create?",
+    q: "What kind of content does Kerygma Social create?",
     a: "Posts for Facebook, Instagram, LinkedIn, X, and more. We create a tailored content plan based on your business and generate posts optimized for each platform. Everything runs on autopilot.",
   },
   {
@@ -27,7 +27,7 @@ const faqs = [
   },
   {
     q: "Will this actually help my business?",
-    a: "Most likely, yes. Consistent social media presence builds visibility, trust, and reach. That leads to more customers, more partnerships, and more growth. Post-Wick just makes it effortless.",
+    a: "Most likely, yes. Consistent social media presence builds visibility, trust, and reach. That leads to more customers, more partnerships, and more growth. Kerygma Social just makes it effortless.",
   },
 ];
 
@@ -101,7 +101,7 @@ export function CTASection() {
               Take control of your social media.
             </h2>
             <p className="mt-4 max-w-md text-left text-[0.95rem] leading-relaxed text-white/85">
-              Stop creating content yourself. Post-Wick does the work for you, around the
+              Stop creating content yourself. Kerygma Social does the work for you, around the
               clock.
             </p>
             <div className="mt-8 flex flex-wrap gap-3">

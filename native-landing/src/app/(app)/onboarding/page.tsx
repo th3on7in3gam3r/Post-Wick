@@ -30,7 +30,7 @@ export default async function OnboardingPage({
         <OnboardingHeroBootstrap />
       </Suspense>
       <AppHeader
-        title={addingAnother ? "Add another brand" : "Welcome to Post-Wick"}
+        title={addingAnother ? "Add another brand" : "Welcome to Kerygma Social"}
         description={
           addingAnother
             ? "Enter a new website and we will crawl it, confirm your brand voice, and draft posts."

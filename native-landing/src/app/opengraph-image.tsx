@@ -3,13 +3,13 @@ import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 import { OG_DEFAULT_DESCRIPTION, SITE_TAGLINE } from "@/lib/brand";
 
-export const alt = "Post-Wick — Social media on autopilot for local businesses";
+export const alt = "Kerygma Social — Social media on autopilot for local businesses";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
 export default async function Image() {
   const logoBuffer = await readFile(
-    join(process.cwd(), "public/images/post-wick-logo.png"),
+    join(process.cwd(), "public/images/kerygma-social-logo.png"),
   );
   const logoSrc = `data:image/png;base64,${logoBuffer.toString("base64")}`;
 
@@ -31,7 +31,7 @@ export default async function Image() {
         <img
           src={logoSrc}
           width={560}
-          height={162}
+          height={134}
           alt=""
           style={{ objectFit: "contain" }}
         />

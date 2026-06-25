@@ -15,18 +15,18 @@ const hearAboutOptions = [
 const contactFaqs = [
   {
     q: "Do I need to be good at creating content to use this?",
-    a: "Not at all. You don't need to write anything. Just add your website, and Post-Wick handles the rest — we research your business, create the content, and publish it automatically. You just approve what looks good.",
+    a: "Not at all. You don't need to write anything. Just add your website, and Kerygma Social handles the rest — we research your business, create the content, and publish it automatically. You just approve what looks good.",
   },
   {
     q: "Will the content actually sound like my brand?",
-    a: "Yes. Post-Wick researches your website, your industry, and your competitors to create content that fits your business. No generic templates — just relevant, high-quality posts tailored to your brand.",
+    a: "Yes. Kerygma Social researches your website, your industry, and your competitors to create content that fits your business. No generic templates — just relevant, high-quality posts tailored to your brand.",
   },
   {
     q: "Will this work if I don't have a big following yet?",
-    a: "Absolutely. Whether you have 200 followers or 20,000, Post-Wick helps you show up consistently across all your channels. That consistency is how you grow in the first place.",
+    a: "Absolutely. Whether you have 200 followers or 20,000, Kerygma Social helps you show up consistently across all your channels. That consistency is how you grow in the first place.",
   },
   {
-    q: "What kind of content does Post-Wick create?",
+    q: "What kind of content does Kerygma Social create?",
     a: "Posts for Facebook, Instagram, LinkedIn, X, and more. We create a tailored content plan based on your business and generate posts optimized for each platform.",
   },
   {
@@ -35,11 +35,11 @@ const contactFaqs = [
   },
   {
     q: "Will this actually help my business?",
-    a: "Most likely, yes. Consistent social media presence builds visibility, trust, and reach. That leads to more customers, more partnerships, and more growth. Post-Wick just makes it effortless.",
+    a: "Most likely, yes. Consistent social media presence builds visibility, trust, and reach. That leads to more customers, more partnerships, and more growth. Kerygma Social just makes it effortless.",
   },
   {
     q: "Can I use this for my whole company?",
-    a: "Yes. Post-Wick works for solo owners and teams. Connect multiple brands, approve posts from one place, and keep every channel on schedule.",
+    a: "Yes. Kerygma Social works for solo owners and teams. Connect multiple brands, approve posts from one place, and keep every channel on schedule.",
   },
 ];
 
@@ -61,12 +61,12 @@ export function ContactPageClient() {
     const message = String(data.get("message") ?? "");
     const source = String(data.get("source") ?? "");
 
-    const subject = encodeURIComponent(`Post-Wick contact from ${name}`);
+    const subject = encodeURIComponent(`Kerygma Social contact from ${name}`);
     const body = encodeURIComponent(
       `Name: ${name}\nEmail: ${email}\nHeard about us: ${source}\n\n${message}`,
     );
 
-    window.location.href = `mailto:hello@postwick.com?subject=${subject}&body=${body}`;
+    window.location.href = `mailto:hello@kerygmasocial.com?subject=${subject}&body=${body}`;
     setSubmitted(true);
   }
 
@@ -94,14 +94,14 @@ export function ContactPageClient() {
             For anything urgent, use the email below.
           </p>
           <a
-            href="mailto:hello@postwick.com"
+            href="mailto:hello@kerygmasocial.com"
             className="mt-8 inline-flex items-center gap-3 group"
           >
             <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-near-black text-white transition group-hover:bg-[#222]">
               <Mail className="h-5 w-5" strokeWidth={1.75} />
             </span>
             <span className="font-playfair text-[1.35rem] italic text-near-black group-hover:text-gold">
-              hello@postwick.com
+              hello@kerygmasocial.com
             </span>
           </a>
         </div>

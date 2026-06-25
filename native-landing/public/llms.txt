@@ -1,10 +1,10 @@
-# Post-Wick
+# Kerygma Social
 
-> One URL. Endless Content
+> Proclaim. Publish. Multiply.
 
-Post-Wick is a social media automation platform for small businesses. Drop your website URL and Post-Wick researches your brand, generates SEO-, GEO-, and conversion-focused posts, and publishes to LinkedIn, Instagram, Facebook, and more after you approve.
+Kerygma Social is a social media automation platform for small businesses. Drop your website URL and Kerygma Social researches your brand, generates SEO-, GEO-, and conversion-focused posts, and publishes to LinkedIn, Instagram, Facebook, and more after you approve.
 
-## What Post-Wick does
+## What Kerygma Social does
 
 - Crawls your website to learn your brand, industry, and topics
 - Generates a balanced mix of SEO, GEO (AI-discoverability), and money (conversion) posts
@@ -21,7 +21,7 @@ Post-Wick is a social media automation platform for small businesses. Drop your 
 
 ## Tagline
 
-One URL. Endless Content
+Proclaim. Publish. Multiply.
 
 ## Contact
 

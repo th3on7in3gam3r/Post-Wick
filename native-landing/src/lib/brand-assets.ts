@@ -80,7 +80,7 @@ async function isValidImageUrl(url: string) {
       timeout: 8_000,
       maxRedirects: 5,
       headers: {
-        "User-Agent": "PostWickCrawler/1.0 (+https://postwick.com)",
+        "User-Agent": "KerygmaSocialCrawler/1.0 (+https://kerygmasocial.com)",
         Accept: "image/*,*/*;q=0.8",
       },
       validateStatus: (status) => status >= 200 && status < 400,
@@ -143,7 +143,7 @@ export async function fetchBrandAssetsFromWebsite(
     const response = await axios.get<string>(normalized, {
       timeout: 12_000,
       headers: {
-        "User-Agent": "PostWickCrawler/1.0 (+https://postwick.com)",
+        "User-Agent": "KerygmaSocialCrawler/1.0 (+https://kerygmasocial.com)",
         Accept: "text/html,application/xhtml+xml",
       },
       validateStatus: (status) => status >= 200 && status < 400,

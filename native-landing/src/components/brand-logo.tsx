@@ -4,9 +4,9 @@ import { SITE_NAME, SITE_TAGLINE } from "@/lib/brand";
 import { cn } from "@/lib/utils";
 
 const LOGO = {
-  src: "/images/post-wick-logo.png",
-  width: 929,
-  height: 268,
+  src: "/images/kerygma-social-logo.png",
+  width: 1021,
+  height: 244,
   alt: `${SITE_NAME} — ${SITE_TAGLINE}`,
 } as const;
 
@@ -21,9 +21,9 @@ type BrandLogoProps = {
 };
 
 const variantHeights: Record<BrandLogoVariant, string> = {
-  wordmark: "h-8 md:h-9",
-  full: "h-10 md:h-11",
-  mark: "h-9 w-9",
+  wordmark: "h-10 md:h-12",
+  full: "h-12 md:h-14",
+  mark: "h-10 w-10",
 };
 
 export function BrandLogo({
@@ -40,11 +40,11 @@ export function BrandLogo({
       <div className={cn("overflow-hidden rounded-sm", heightClass)}>
         <Image
           src={LOGO.src}
-          alt="Post-Wick"
+          alt={SITE_NAME}
           width={LOGO.width}
           height={LOGO.height}
           priority={priority}
-          className={cn("block h-full w-auto max-w-none object-left", imageClassName)}
+          className={cn("block h-full w-auto max-w-none object-left object-contain", imageClassName)}
         />
       </div>
     ) : (

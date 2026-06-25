@@ -10,7 +10,7 @@ const description =
 export const metadata = createPageMetadata({
   title: "Pricing",
   description,
-  ogTitle: "Pricing | Post-Wick | Social media on autopilot for local businesses",
+  ogTitle: "Pricing | Kerygma Social | Social media on autopilot for local businesses",
   ogDescription: description,
   path: "/pricing",
 });

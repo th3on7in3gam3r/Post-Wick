@@ -4,12 +4,12 @@ import { MarketingShell } from "@/components/marketing-shell";
 import { createPageMetadata } from "@/lib/metadata";
 
 const description =
-  "How Post-Wick uses cookies, local storage, and similar technologies on our website and app.";
+  "How Kerygma Social uses cookies, local storage, and similar technologies on our website and app.";
 
 export const metadata = createPageMetadata({
   title: "Cookie Policy",
   description,
-  ogTitle: "Cookie Policy | Post-Wick",
+  ogTitle: "Cookie Policy | Kerygma Social",
   ogDescription: description,
   path: "/cookies",
 });
@@ -43,8 +43,8 @@ export default function CookiesPage() {
         Last updated: June 22, 2026
       </p>
       <p className="body-copy mt-6 max-w-[720px] leading-relaxed">
-        This Cookie Policy explains how <strong className="font-medium text-near-black">Post-Wick</strong>{" "}
-        (&ldquo;Post-Wick,&rdquo; &ldquo;we,&rdquo; &ldquo;us,&rdquo; or &ldquo;our&rdquo;), operated by{" "}
+        This Cookie Policy explains how <strong className="font-medium text-near-black">Kerygma Social</strong>{" "}
+        (&ldquo;Kerygma Social,&rdquo; &ldquo;we,&rdquo; &ldquo;us,&rdquo; or &ldquo;our&rdquo;), operated by{" "}
         <strong className="font-medium text-near-black">Biblefunland Studios</strong>, uses cookies,
         local storage, session storage, and similar technologies when you visit our marketing site,
         sign in, or use our social media automation services (the &ldquo;Service&rdquo;).
@@ -76,12 +76,12 @@ export default function CookiesPage() {
             </li>
             <li>
               <strong className="font-medium text-near-black">Analytics.</strong> Optional. Help us
-              understand traffic, feature usage, and errors so we can improve Post-Wick. We only
+              understand traffic, feature usage, and errors so we can improve Kerygma Social. We only
               enable these if you consent.
             </li>
             <li>
               <strong className="font-medium text-near-black">Marketing.</strong> Optional. Not
-              currently used on Post-Wick. If we introduce advertising or remarketing cookies in the
+              currently used on Kerygma Social. If we introduce advertising or remarketing cookies in the
               future, you will be able to control them through the same preference center.
             </li>
           </ul>
@@ -153,7 +153,7 @@ export default function CookiesPage() {
 
         <Section title="4. Third-party providers">
           <p>
-            Post-Wick relies on service providers that may set their own cookies or process data
+            Kerygma Social relies on service providers that may set their own cookies or process data
             when you use the Service:
           </p>
           <ul className="list-disc space-y-2 pl-5">
@@ -181,7 +181,7 @@ export default function CookiesPage() {
 
         <Section title="5. Your choices and consent">
           <p>
-            When you first visit Post-Wick, we show a cookie banner. You can{" "}
+            When you first visit Kerygma Social, we show a cookie banner. You can{" "}
             <strong className="font-medium text-near-black">accept all</strong> optional cookies,{" "}
             <strong className="font-medium text-near-black">reject optional</strong> cookies (keeping
             only essential technologies), or{" "}
@@ -242,15 +242,15 @@ export default function CookiesPage() {
         <Section title="10. Contact us">
           <p>
             Questions about cookies or your choices? Email{" "}
-            <a href="mailto:hello@postwick.com" className={linkClass}>
-              hello@postwick.com
+            <a href="mailto:hello@kerygmasocial.com" className={linkClass}>
+              hello@kerygmasocial.com
             </a>
             .
           </p>
           <p>
-            Post-Wick · Biblefunland Studios ·{" "}
-            <a href="https://postwick.com" className={linkClass}>
-              postwick.com
+            Kerygma Social · Biblefunland Studios ·{" "}
+            <a href="https://kerygmasocial.com" className={linkClass}>
+              kerygmasocial.com
             </a>
           </p>
         </Section>

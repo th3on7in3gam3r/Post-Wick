@@ -46,7 +46,7 @@ export async function crawlWebsite(seedUrl: string, maxPages = 6): Promise<Crawl
       const response = await axios.get<string>(current, {
         timeout: 20_000,
         headers: {
-          "User-Agent": "PostWickCrawler/1.0 (+https://postwick.com)",
+          "User-Agent": "KerygmaSocialCrawler/1.0 (+https://kerygmasocial.com)",
           Accept: "text/html,application/xhtml+xml",
         },
         validateStatus: (status) => status >= 200 && status < 400,

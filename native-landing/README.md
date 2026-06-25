@@ -1,6 +1,6 @@
-# Post-Wick Landing Page
+# Kerygma Social Landing Page
 
-Marketing landing page for Post-Wick — social media on autopilot.
+Marketing landing page for Kerygma Social — social media on autopilot.
 
 ## Stack
 

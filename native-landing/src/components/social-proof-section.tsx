@@ -2,7 +2,7 @@
 const placeholderTestimonials = [
   {
     quote:
-      "I run morning classes and evening sessions — I don't have time to write captions. Post-Wick drafts promos and member spotlights that actually sound like our studio.",
+      "I run morning classes and evening sessions — I don't have time to write captions. Kerygma Social drafts promos and member spotlights that actually sound like our studio.",
     name: "Elena Vasquez",
     role: "Owner · Harbor Pilates Studio",
     initials: "EV",

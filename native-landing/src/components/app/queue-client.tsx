@@ -466,7 +466,7 @@ export function QueueClient({ initialPosts }: { initialPosts: QueuePost[] }) {
       >
         <div className="flex items-center gap-2">
           <Sparkles className="h-4 w-4 text-gold" />
-          <p className="text-sm font-medium text-near-black">Refine with Post-Wick</p>
+          <p className="text-sm font-medium text-near-black">Refine with Kerygma Social</p>
         </div>
         <p className="mt-2 text-sm text-gray-body">
           Almost there? Give specific instructions and pick your favorite version. (Keeps

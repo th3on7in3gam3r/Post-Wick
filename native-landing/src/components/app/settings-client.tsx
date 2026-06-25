@@ -244,7 +244,7 @@ export function SettingsClient({
             </div>
             <div className="min-w-0">
               <p className="font-medium text-near-black">
-                {profile.fullName ?? "Post-Wick user"}
+                {profile.fullName ?? "Kerygma Social user"}
               </p>
               <p className="mt-1 text-sm text-gray-body">
                 {profile.email ?? "No email on file"}
@@ -398,7 +398,7 @@ export function SettingsClient({
 
         <PanelCard
           title="Notifications"
-          description="Choose what Post-Wick should email you about."
+          description="Choose what Kerygma Social should email you about."
         >
           <div className="space-y-4">
             {[
@@ -447,7 +447,7 @@ export function SettingsClient({
 
       <PanelCard
         title="Privacy & cookies"
-        description="Control how Post-Wick uses optional cookies and review legal policies."
+        description="Control how Kerygma Social uses optional cookies and review legal policies."
       >
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-start gap-3">

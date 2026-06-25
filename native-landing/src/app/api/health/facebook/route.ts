@@ -39,7 +39,7 @@ export async function GET() {
       "Facebook Login for Business → Settings → Valid OAuth Redirect URIs:",
       redirectUri,
       "Set META_APP_ID and META_APP_SECRET from App settings → Basic.",
-      "Redeploy, then Connect Facebook in Post-Wick.",
+      "Redeploy, then Connect Facebook in Kerygma Social.",
     ],
   });
 }

@@ -4,12 +4,12 @@ import { MarketingShell } from "@/components/marketing-shell";
 import { createPageMetadata } from "@/lib/metadata";
 
 const description =
-  "Terms and conditions governing your use of Post-Wick social media automation.";
+  "Terms and conditions governing your use of Kerygma Social social media automation.";
 
 export const metadata = createPageMetadata({
   title: "Terms of Service",
   description,
-  ogTitle: "Terms of Service | Post-Wick",
+  ogTitle: "Terms of Service | Kerygma Social",
   ogDescription: description,
   path: "/terms",
 });
@@ -29,7 +29,7 @@ export default function TermsPage() {
       </p>
       <p className="body-copy mt-6 max-w-[720px] leading-relaxed">
         These Terms of Service (&ldquo;Terms&rdquo;) govern your access to and use of{" "}
-        <strong className="font-medium text-near-black">Post-Wick</strong> (&ldquo;Post-Wick,&rdquo;
+        <strong className="font-medium text-near-black">Kerygma Social</strong> (&ldquo;Kerygma Social,&rdquo;
         &ldquo;we,&rdquo; &ldquo;us,&rdquo; or &ldquo;our&rdquo;), operated by{" "}
         <strong className="font-medium text-near-black">Biblefunland Studios</strong>, including our
         website, applications, and social media automation services (collectively, the
@@ -44,7 +44,7 @@ export default function TermsPage() {
       <div className="body-copy mt-12 max-w-[720px] space-y-10">
         <LegalSection title="1. The Service">
           <p>
-            Post-Wick helps businesses research their brand, generate social media content using
+            Kerygma Social helps businesses research their brand, generate social media content using
             artificial intelligence, review and approve posts, schedule publishing, and connect to
             third-party social platforms. Features may vary by plan and may change over time as we
             improve the product.
@@ -58,7 +58,7 @@ export default function TermsPage() {
         <LegalSection title="2. Eligibility">
           <p>
             You must be at least 18 years old (or the age of majority in your jurisdiction) and
-            able to form a binding contract to use the Service. If you use Post-Wick on behalf of a
+            able to form a binding contract to use the Service. If you use Kerygma Social on behalf of a
             business or organization, you represent that you have authority to bind that entity to
             these Terms.
           </p>
@@ -76,8 +76,8 @@ export default function TermsPage() {
           </p>
           <p>
             Notify us immediately at{" "}
-            <a href="mailto:hello@postwick.com" className={linkClass}>
-              hello@postwick.com
+            <a href="mailto:hello@kerygmasocial.com" className={linkClass}>
+              hello@kerygmasocial.com
             </a>{" "}
             if you suspect unauthorized access. We are not liable for losses caused by unauthorized
             use of your account where you failed to safeguard your credentials.
@@ -120,7 +120,7 @@ export default function TermsPage() {
           <p>
             You may submit website URLs, brand information, instructions, images, and other materials
             (&ldquo;Customer Content&rdquo;). You retain ownership of Customer Content. You grant
-            Post-Wick a worldwide, non-exclusive license to use, reproduce, modify, and process
+            Kerygma Social a worldwide, non-exclusive license to use, reproduce, modify, and process
             Customer Content solely to operate, provide, and improve the Service — including
             generating and publishing social posts on your behalf as you direct.
           </p>
@@ -133,7 +133,7 @@ export default function TermsPage() {
 
         <LegalSection title="6. AI-generated content">
           <p>
-            Post-Wick uses artificial intelligence to research brands and draft posts, captions, and
+            Kerygma Social uses artificial intelligence to research brands and draft posts, captions, and
             related media. AI output may be inaccurate, incomplete, offensive, or inappropriate.
             You must review all generated content before approval or publication.
           </p>
@@ -146,7 +146,7 @@ export default function TermsPage() {
 
         <LegalSection title="7. Publishing and connected platforms">
           <p>
-            When you connect social media accounts and approve posts, you authorize Post-Wick to
+            When you connect social media accounts and approve posts, you authorize Kerygma Social to
             transmit content to those platforms on your behalf. Your use of third-party platforms
             (such as Facebook, Instagram, LinkedIn, X, TikTok, Pinterest, Reddit, or Bluesky) is
             also subject to each platform&apos;s own terms and policies.
@@ -172,13 +172,13 @@ export default function TermsPage() {
           </ul>
           <p>
             We may investigate violations and suspend or terminate accounts that abuse the Service
-            or pose risk to other users, platforms, or Post-Wick.
+            or pose risk to other users, platforms, or Kerygma Social.
           </p>
         </LegalSection>
 
         <LegalSection title="9. Intellectual property">
           <p>
-            Post-Wick and its software, design, branding, documentation, and underlying technology
+            Kerygma Social and its software, design, branding, documentation, and underlying technology
             are owned by Biblefunland Studios or its licensors and are protected by intellectual
             property laws. These Terms do not grant you any right to our trademarks, logos, or brand
             features except as needed to use the Service.
@@ -200,7 +200,7 @@ export default function TermsPage() {
 
         <LegalSection title="11. Service availability and changes">
           <p>
-            We strive to keep Post-Wick reliable but do not guarantee uninterrupted or error-free
+            We strive to keep Kerygma Social reliable but do not guarantee uninterrupted or error-free
             operation. The Service may be unavailable during maintenance, updates, or events outside
             our control.
           </p>
@@ -274,12 +274,12 @@ export default function TermsPage() {
           <p>
             Any dispute arising from these Terms or the Service will be resolved in the state or
             federal courts located in Delaware, unless applicable law requires otherwise. You and
-            Post-Wick consent to personal jurisdiction in those courts.
+            Kerygma Social consent to personal jurisdiction in those courts.
           </p>
           <p>
             Before filing a claim, you agree to contact us at{" "}
-            <a href="mailto:hello@postwick.com" className={linkClass}>
-              hello@postwick.com
+            <a href="mailto:hello@kerygmasocial.com" className={linkClass}>
+              hello@kerygmasocial.com
             </a>{" "}
             and attempt to resolve the dispute informally.
           </p>
@@ -298,7 +298,7 @@ export default function TermsPage() {
           <p>
             <strong className="font-medium text-near-black">Entire agreement.</strong> These Terms,
             together with the Privacy Policy and any plan-specific terms shown at checkout, form the
-            entire agreement between you and Post-Wick regarding the Service.
+            entire agreement between you and Kerygma Social regarding the Service.
           </p>
           <p>
             <strong className="font-medium text-near-black">Severability.</strong> If any provision
@@ -320,11 +320,11 @@ export default function TermsPage() {
           <p>
             <strong className="font-medium text-near-black">Biblefunland Studios</strong>
             <br />
-            Post-Wick Legal
+            Kerygma Social Legal
             <br />
             Email:{" "}
-            <a href="mailto:hello@postwick.com" className={linkClass}>
-              hello@postwick.com
+            <a href="mailto:hello@kerygmasocial.com" className={linkClass}>
+              hello@kerygmasocial.com
             </a>
           </p>
           <p>

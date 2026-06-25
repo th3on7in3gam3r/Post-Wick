@@ -30,7 +30,7 @@ export default async function IntegrationsPage({
   return (
     <SettingsShell
       title="Integrations"
-      description="Connect the channels Post-Wick publishes to after you approve posts."
+      description="Connect the channels Kerygma Social publishes to after you approve posts."
     >
       {brands.length === 0 ? (
         <EmptyState

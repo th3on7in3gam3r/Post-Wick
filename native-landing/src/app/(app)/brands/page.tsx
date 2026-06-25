@@ -36,7 +36,7 @@ export default async function BrandsPage() {
           <EmptyState
             icon={Building2}
             title="No brands yet"
-            description="Add your website and Post-Wick will crawl it, build a profile, and draft your first posts."
+            description="Add your website and Kerygma Social will crawl it, build a profile, and draft your first posts."
             action={
               <TextureButton asChild variant="primary" size="default">
                 <Link href="/onboarding">Set up your brand</Link>

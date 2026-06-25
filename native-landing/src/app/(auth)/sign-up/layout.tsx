@@ -4,12 +4,12 @@ import { AuthScrollLock } from "@/components/auth-scroll-lock";
 import { createPageMetadata } from "@/lib/metadata";
 
 const description =
-  "Create your Post-Wick account and generate a month of social posts from your URL.";
+  "Create your Kerygma Social account and generate a month of social posts from your URL.";
 
 export const metadata = createPageMetadata({
   title: "Sign up",
   description,
-  ogTitle: "Sign up | Post-Wick",
+  ogTitle: "Sign up | Kerygma Social",
   ogDescription: description,
   path: "/sign-up",
 });

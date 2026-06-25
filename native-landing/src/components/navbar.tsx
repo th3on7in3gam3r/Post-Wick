@@ -37,7 +37,7 @@ export function Navbar() {
         className="fixed inset-x-0 top-0 z-50 px-4 pt-4 will-change-transform md:px-6"
       >
         <div className="mx-auto max-w-[1400px]">
-          <div className="flex min-h-11 items-center justify-between gap-4 rounded-full border border-white/60 bg-white/50 px-4 py-2.5 shadow-[0_8px_32px_rgba(0,0,0,0.08)] backdrop-blur-xl backdrop-saturate-150 md:min-h-12 md:px-6 md:py-3">
+          <div className="flex min-h-12 items-center justify-between gap-4 rounded-full border border-white/60 bg-white/50 px-4 py-2.5 shadow-[0_8px_32px_rgba(0,0,0,0.08)] backdrop-blur-xl backdrop-saturate-150 md:min-h-14 md:px-6 md:py-3">
             <BrandLogo className="self-center" />
 
             <nav className="hidden items-center gap-8 md:flex">

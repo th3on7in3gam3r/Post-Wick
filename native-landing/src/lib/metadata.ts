@@ -9,7 +9,7 @@ import {
 } from "@/lib/brand";
 
 type PageMetadataOptions = {
-  /** Short title for the browser tab (uses root template → "Pricing | Post-Wick"). */
+  /** Short title for the browser tab (uses root template → "Pricing | Kerygma Social"). */
   title?: string;
   description?: string;
   ogTitle?: string;

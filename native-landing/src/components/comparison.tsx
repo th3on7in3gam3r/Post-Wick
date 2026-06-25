@@ -25,7 +25,7 @@ export function Comparison() {
         <h2 className="font-playfair text-[clamp(1.75rem,3.5vw,2.75rem)] italic leading-snug text-near-black">
           Traditional marketing is a full-time job
           <br />
-          <span className="text-gold">Post-Wick does it for you</span>
+          <span className="text-gold">Kerygma Social does it for you</span>
         </h2>
 
         <div className="mt-14 grid gap-6 md:grid-cols-2">
@@ -42,7 +42,7 @@ export function Comparison() {
           </div>
           <div className="rounded-2xl bg-panel-bg p-8 text-left ring-1 ring-gold/30">
             <p className="step-label">After</p>
-            <h3 className="mt-2 font-playfair text-xl italic text-gold">With Post-Wick</h3>
+            <h3 className="mt-2 font-playfair text-xl italic text-gold">With Kerygma Social</h3>
             <ul className="mt-6 space-y-3">
               {after.map((item) => (
                 <li key={item} className="flex gap-2 text-sm text-gray-body">
@@ -80,7 +80,7 @@ export function ComparisonTable() {
               All your marketing, on autopilot
             </h2>
             <p className="body-copy mt-3 text-center">
-              See how Post-Wick compares to the alternatives
+              See how Kerygma Social compares to the alternatives
             </p>
 
             <div className="mt-12 overflow-x-auto rounded-2xl border border-black/[0.06] bg-white/95 shadow-card backdrop-blur-sm">
@@ -95,7 +95,7 @@ export function ComparisonTable() {
                   <tr className="border-b border-[#eee]">
                     <th className="p-4 text-left font-medium text-gray-label" />
                     <th className="p-4 text-left font-playfair text-lg italic text-gold">
-                      Post-Wick
+                      Kerygma Social
                     </th>
                     <th className="p-4 text-left font-medium text-near-black">Agency</th>
                     <th className="p-4 text-left font-medium text-near-black">Employee</th>

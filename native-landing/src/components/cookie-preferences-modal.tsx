@@ -126,7 +126,7 @@ export function CookiePreferencesModal() {
                 <p className="font-medium text-near-black">Essential</p>
                 <p className="mt-1 text-sm text-gray-body">
                   Sign-in, security, and saving your consent choice. Required
-                  for Post-Wick to function.
+                  for Kerygma Social to function.
                 </p>
               </div>
               <Toggle checked label="Essential cookies" disabled onChange={() => {}} />
@@ -139,7 +139,7 @@ export function CookiePreferencesModal() {
                 <p className="font-medium text-near-black">Analytics</p>
                 <p className="mt-1 text-sm text-gray-body">
                   Help us understand how the site is used so we can improve
-                  Post-Wick. No advertising profiles are built from this data.
+                  Kerygma Social. No advertising profiles are built from this data.
                 </p>
               </div>
               <Toggle
@@ -155,7 +155,7 @@ export function CookiePreferencesModal() {
               <div>
                 <p className="font-medium text-near-black">Marketing</p>
                 <p className="mt-1 text-sm text-gray-body">
-                  Not currently used on Post-Wick. You can leave this off. If we
+                  Not currently used on Kerygma Social. You can leave this off. If we
                   add marketing cookies later, this setting will control them.
                 </p>
               </div>

@@ -29,7 +29,7 @@ export function AboutPageClient() {
           >
             👋
           </motion.span>{" "}
-          We&apos;re Post-Wick!
+          We&apos;re Kerygma Social!
         </h1>
 
         <p className="body-copy animate-fade-drop-delay-1 mx-auto mt-5 max-w-[520px] text-[1.05rem]">
@@ -41,7 +41,7 @@ export function AboutPageClient() {
         <div className="relative overflow-hidden rounded-2xl bg-[#fef6c8] shadow-card">
           <Image
             src="/images/founder.png"
-            alt="Founder of Post-Wick"
+            alt="Founder of Kerygma Social"
             width={769}
             height={1024}
             sizes="(max-width: 440px) 100vw, 440px"
@@ -69,7 +69,7 @@ export function AboutPageClient() {
             you staring at a blank caption at 9pm on a Sunday.
           </p>
           <p>
-            Post-Wick is the product I wished existed — drop your URL, let the
+            Kerygma Social is the product I wished existed — drop your URL, let the
             system research your brand, generate a month of posts, and approve
             what feels right. Swipe right. Skip the rest. Publish on autopilot.
           </p>
@@ -83,7 +83,7 @@ export function AboutPageClient() {
 
         <div className="mt-10 flex flex-wrap justify-center gap-3 sm:justify-start">
           <TextureButton asChild variant="primary" size="lg">
-            <Link href="/sign-up">Try Post-Wick →</Link>
+            <Link href="/sign-up">Try Kerygma Social →</Link>
           </TextureButton>
           <TextureButton asChild variant="secondary" size="lg">
             <Link href="/contact">Get in touch</Link>

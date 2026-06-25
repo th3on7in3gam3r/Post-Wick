@@ -3,12 +3,12 @@ import { AuthPrivacyFooter } from "@/components/auth-privacy-footer";
 import { AuthScrollLock } from "@/components/auth-scroll-lock";
 import { createPageMetadata } from "@/lib/metadata";
 
-const description = "Sign in to Post-Wick and manage your social content on autopilot.";
+const description = "Sign in to Kerygma Social and manage your social content on autopilot.";
 
 export const metadata = createPageMetadata({
   title: "Sign in",
   description,
-  ogTitle: "Sign in | Post-Wick",
+  ogTitle: "Sign in | Kerygma Social",
   ogDescription: description,
   path: "/sign-in",
 });
