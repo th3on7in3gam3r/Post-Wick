@@ -2,6 +2,10 @@ import {
   INTEGRATION_PLATFORMS,
   type IntegrationPlatformId,
 } from "@/lib/integrations/catalog";
+import {
+  isFacebookConfigured,
+  isInstagramConfigured,
+} from "@/lib/social/meta";
 
 export type PlatformConnectionMode = "oauth" | "demo" | "unavailable";
 
@@ -18,10 +22,10 @@ function isLinkedInConfigured() {
   );
 }
 
-function isMetaConfigured() {
-  return Boolean(
-    process.env.META_APP_ID?.trim() && process.env.META_APP_SECRET?.trim(),
-  );
+function isMetaOAuthConfigured(platformId: IntegrationPlatformId) {
+  if (platformId === "instagram") return isInstagramConfigured();
+  if (platformId === "facebook") return isFacebookConfigured();
+  return false;
 }
 
 export function getPlatformRuntimeConfig(
@@ -39,7 +43,7 @@ export function getPlatformRuntimeConfig(
   }
 
   if (platform.oauthProvider === "meta") {
-    const oauthConfigured = isMetaConfigured();
+    const oauthConfigured = isMetaOAuthConfigured(platformId);
     return {
       id: platformId,
       oauthConfigured,
@@ -63,6 +67,7 @@ export function getIntegrationsRuntimeConfig() {
 export function getIntegrationProvidersSummary() {
   return {
     linkedin: isLinkedInConfigured(),
-    meta: isMetaConfigured(),
+    instagram: isInstagramConfigured(),
+    facebook: isFacebookConfigured(),
   };
 }

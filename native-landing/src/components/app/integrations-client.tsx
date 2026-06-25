@@ -55,10 +55,13 @@ function flashMessage(searchParams: {
     return "Instagram connected. Image posts can publish to your Business account.";
   }
   if (searchParams.connected === "facebook") {
-    return "Facebook Page connected. Approved posts can publish when they are due.";
+    return "Facebook Page connected. Text and image posts can publish when they are due.";
   }
   if (searchParams.error === "linkedin_exchange_failed") {
     return "LinkedIn authorization failed. Try again or use demo mode.";
+  }
+  if (searchParams.error === "meta_no_pages") {
+    return "No Facebook Page was found on this account. Create or admin a Page, then try again.";
   }
   if (searchParams.error === "meta_no_instagram") {
     return "No Instagram Business account is linked to your Facebook Page. Link them in Meta Business Suite, then try again.";
@@ -330,6 +333,13 @@ export function IntegrationsClient({
                           : "Unavailable"}
                     </span>
                   </div>
+
+                  {platform.id === "facebook" && !connection ? (
+                    <p className="mt-3 text-xs text-gray-body">
+                      Requires a Facebook Page you administer. Image posts need Fix images on
+                      the brand page first.
+                    </p>
+                  ) : null}
 
                   {platform.id === "instagram" && !connection ? (
                     <p className="mt-3 text-xs text-gray-body">

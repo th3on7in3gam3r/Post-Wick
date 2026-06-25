@@ -75,7 +75,9 @@ export async function GET(req: Request) {
     const message = error instanceof Error ? error.message.toLowerCase() : "";
     const code = message.includes("instagram business")
       ? "meta_no_instagram"
-      : "meta_exchange_failed";
+      : message.includes("no facebook page")
+        ? "meta_no_pages"
+        : "meta_exchange_failed";
     return NextResponse.redirect(integrationsUrl(req, `error=${code}`));
   }
 }

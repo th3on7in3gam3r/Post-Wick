@@ -27,7 +27,16 @@ function appBaseUrl() {
 }
 
 export function metaRedirectUri() {
+  const override = process.env.META_OAUTH_REDIRECT_URI?.trim();
+  if (override) return override.replace(/\/+$/, "");
   return `${appBaseUrl()}/api/social/meta/callback`;
+}
+
+export function facebookAppCredentials() {
+  return {
+    appId: process.env.META_APP_ID?.trim() ?? "",
+    appSecret: process.env.META_APP_SECRET?.trim() ?? "",
+  };
 }
 
 export function instagramAppCredentials() {
@@ -41,9 +50,27 @@ export function instagramAppCredentials() {
   };
 }
 
-export function isMetaConfigured() {
+export function isInstagramConfigured() {
   const { appId, appSecret } = instagramAppCredentials();
   return Boolean(appId && appSecret);
+}
+
+export function facebookLoginConfigId() {
+  return process.env.META_FB_LOGIN_CONFIG_ID?.trim() ?? "";
+}
+
+export function facebookOAuthScopes() {
+  return ["pages_show_list", "pages_manage_posts", "pages_read_engagement"];
+}
+
+export function isFacebookConfigured() {
+  const { appId, appSecret } = facebookAppCredentials();
+  return Boolean(appId && appSecret && facebookLoginConfigId());
+}
+
+/** @deprecated Use isInstagramConfigured() */
+export function isMetaConfigured() {
+  return isInstagramConfigured();
 }
 
 export function instagramOAuthScopes() {
@@ -70,17 +97,24 @@ export function getMetaAuthUrl(brandId: string, platform: MetaPlatform) {
 
   const appId = process.env.META_APP_ID;
   if (!appId) {
-    throw new Error("Meta OAuth is not configured");
+    throw new Error("Facebook OAuth is not configured");
   }
 
-  const scopes = ["pages_show_list", "pages_manage_posts", "pages_read_engagement"];
+  const configId = facebookLoginConfigId();
   const params = new URLSearchParams({
     client_id: appId,
     redirect_uri: metaRedirectUri(),
     state: `${brandId}:${platform}`,
-    scope: scopes.join(","),
     response_type: "code",
   });
+
+  // Facebook Login for Business apps must use config_id — scope alone triggers
+  // "Invalid Scopes" for pages_manage_posts / pages_read_engagement.
+  if (configId) {
+    params.set("config_id", configId);
+  } else {
+    params.set("scope", facebookOAuthScopes().join(","));
+  }
 
   return `https://www.facebook.com/${GRAPH_VERSION}/dialog/oauth?${params}`;
 }
@@ -155,10 +189,9 @@ export async function exchangeInstagramCode(code: string) {
 }
 
 export async function exchangeMetaCode(code: string) {
-  const appId = process.env.META_APP_ID;
-  const appSecret = process.env.META_APP_SECRET;
+  const { appId, appSecret } = facebookAppCredentials();
   if (!appId || !appSecret) {
-    throw new Error("Meta OAuth is not configured");
+    throw new Error("Facebook OAuth is not configured");
   }
 
   const params = new URLSearchParams({
@@ -300,7 +333,33 @@ export async function publishToFacebookPage(
   pageAccessToken: string,
   pageId: string,
   content: string,
+  imageUrl?: string | null,
 ) {
+  if (imageUrl) {
+    const response = await fetch(
+      `https://graph.facebook.com/${GRAPH_VERSION}/${pageId}/photos`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          url: imageUrl,
+          caption: content,
+          access_token: pageAccessToken,
+        }),
+      },
+    );
+
+    if (!response.ok) {
+      const detail = await readGraphError(response);
+      throw new Error(`Facebook photo publish failed: ${detail}`);
+    }
+
+    const payload = (await response.json()) as { id?: string; post_id?: string };
+    const postId = payload.post_id ?? payload.id;
+    if (!postId) return "facebook-post";
+    return fetchFacebookPermalink(postId, pageAccessToken);
+  }
+
   const response = await fetch(
     `https://graph.facebook.com/${GRAPH_VERSION}/${pageId}/feed`,
     {
@@ -319,7 +378,23 @@ export async function publishToFacebookPage(
   }
 
   const payload = (await response.json()) as { id?: string };
-  return payload.id ?? "facebook-post";
+  const postId = payload.id;
+  if (!postId) return "facebook-post";
+  return fetchFacebookPermalink(postId, pageAccessToken);
+}
+
+async function fetchFacebookPermalink(postId: string, accessToken: string) {
+  const url = new URL(`https://graph.facebook.com/${GRAPH_VERSION}/${postId}`);
+  url.searchParams.set("fields", "permalink_url");
+  url.searchParams.set("access_token", accessToken);
+
+  const response = await fetch(url);
+  if (!response.ok) {
+    return postId;
+  }
+
+  const payload = (await response.json()) as { permalink_url?: string };
+  return payload.permalink_url ?? postId;
 }
 
 function sleep(ms: number) {

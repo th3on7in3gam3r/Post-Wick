@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import {
   instagramAppCredentials,
   instagramOAuthScopes,
-  isMetaConfigured,
+  isInstagramConfigured,
   metaRedirectUri,
 } from "@/lib/social/meta";
 import { siteUrl } from "@/lib/brand";
@@ -13,7 +13,7 @@ export async function GET() {
   const appUrl = siteUrl();
 
   return NextResponse.json({
-    ok: isMetaConfigured(),
+    ok: isInstagramConfigured(),
     appIdConfigured: Boolean(appId),
     secretConfigured: Boolean(instagramAppCredentials().appSecret),
     usesInstagramAppId: Boolean(process.env.INSTAGRAM_APP_ID?.trim()),

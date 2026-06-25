@@ -6,7 +6,11 @@ import { getBrandsByUserId, getConnectionsByUserId } from "@/lib/db";
 import {
   getIntegrationsRuntimeConfig,
 } from "@/lib/integrations/config";
-import { isMetaConfigured, metaRedirectUri } from "@/lib/social/meta";
+import {
+  isFacebookConfigured,
+  isInstagramConfigured,
+  metaRedirectUri,
+} from "@/lib/social/meta";
 import { isPlatformAdmin } from "@/lib/server/platform-admin";
 import { siteUrl } from "@/lib/brand";
 import { requireUserId } from "@/lib/server/app-data";
@@ -46,7 +50,8 @@ export default async function IntegrationsPage({
           }))}
           runtimeConfig={getIntegrationsRuntimeConfig()}
           metaSetup={{
-            configured: isMetaConfigured(),
+            instagramConfigured: isInstagramConfigured(),
+            facebookConfigured: isFacebookConfigured(),
             redirectUri: metaRedirectUri(),
             appUrl: siteUrl(),
             usesInstagramAppId: Boolean(process.env.INSTAGRAM_APP_ID?.trim()),
