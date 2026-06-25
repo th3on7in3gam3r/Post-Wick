@@ -10,7 +10,7 @@ const LOGO = {
   alt: `${SITE_NAME} — ${SITE_TAGLINE}`,
 } as const;
 
-type BrandLogoVariant = "wordmark" | "full" | "mark";
+type BrandLogoVariant = "wordmark" | "wordmark-only" | "full" | "mark";
 
 type BrandLogoProps = {
   href?: string;
@@ -22,8 +22,14 @@ type BrandLogoProps = {
 
 const variantHeights: Record<BrandLogoVariant, string> = {
   wordmark: "h-10 md:h-12",
+  "wordmark-only": "h-9 md:h-10",
   full: "h-12 md:h-14",
   mark: "h-10 w-10",
+};
+
+const wordmarkOnlyImageHeights: Record<"sm" | "md", string> = {
+  sm: "h-12",
+  md: "md:h-[3.25rem]",
 };
 
 export function BrandLogo({
@@ -45,6 +51,22 @@ export function BrandLogo({
           height={LOGO.height}
           priority={priority}
           className={cn("block h-full w-auto max-w-none object-left object-contain", imageClassName)}
+        />
+      </div>
+    ) : variant === "wordmark-only" ? (
+      <div className={cn("overflow-hidden", heightClass)}>
+        <Image
+          src={LOGO.src}
+          alt={SITE_NAME}
+          width={LOGO.width}
+          height={LOGO.height}
+          priority={priority}
+          className={cn(
+            "block w-auto max-w-none object-left object-top",
+            wordmarkOnlyImageHeights.sm,
+            wordmarkOnlyImageHeights.md,
+            imageClassName,
+          )}
         />
       </div>
     ) : (

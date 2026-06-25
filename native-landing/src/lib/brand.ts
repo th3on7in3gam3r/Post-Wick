@@ -2,6 +2,8 @@ export const SITE_NAME = "Kerygma Social";
 
 export const SITE_TAGLINE = "Proclaim. Publish. Multiply.";
 
+export const SITE_SLOGAN_PARTS = ["Proclaim", "Publish", "Multiply"] as const;
+
 export const SITE_DESCRIPTION =
   "Drop your URL and we'll generate 50 posts for you. Proclaim. Publish. Multiply.";
 

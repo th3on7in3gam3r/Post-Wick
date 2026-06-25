@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { BrandLogo } from "@/components/brand-logo";
-import { SITE_TAGLINE } from "@/lib/brand";
+import { SITE_SLOGAN_PARTS } from "@/lib/brand";
+import { cn } from "@/lib/utils";
 
 type AuthPageShellProps = {
   children: React.ReactNode;
@@ -12,6 +13,21 @@ type AuthPageShellProps = {
   layout?: "split" | "centered";
   contentMaxWidth?: string;
 };
+
+function AuthSlogan({ className }: { className?: string }) {
+  return (
+    <h1
+      className={cn(
+        "flex flex-wrap items-baseline justify-center gap-x-3 gap-y-1 font-playfair italic leading-tight text-near-black",
+        className,
+      )}
+    >
+      {SITE_SLOGAN_PARTS.map((part) => (
+        <span key={part}>{part}.</span>
+      ))}
+    </h1>
+  );
+}
 
 export function AuthPageShell({
   children,
@@ -48,8 +64,13 @@ export function AuthPageShell({
       )}
 
       <header className="relative z-10 shrink-0 border-b border-black/[0.06] bg-white/60 backdrop-blur-sm">
-        <div className="mx-auto flex h-16 max-w-[1400px] items-center justify-between px-6 md:px-10">
-          <BrandLogo priority />
+        <div className="mx-auto flex h-16 max-w-[1400px] items-center justify-between gap-4 px-6 md:px-10">
+          <div className="flex min-w-0 items-center gap-3 sm:gap-4">
+            <BrandLogo variant="wordmark-only" priority />
+            <p className="hidden text-[0.62rem] font-semibold uppercase tracking-[0.2em] text-[#5c6b58] min-[420px]:block sm:text-[0.68rem]">
+              {SITE_SLOGAN_PARTS.join(" · ")}
+            </p>
+          </div>
           <Link
             href="/"
             className="text-[0.9rem] font-medium text-near-black hover:opacity-70"
@@ -63,9 +84,7 @@ export function AuthPageShell({
         <main className="relative z-10 flex min-h-0 flex-1 items-center justify-center overflow-hidden px-4 py-6">
           <div className={`flex w-full ${contentMaxWidth} flex-col items-center text-center`}>
             <div className="mb-5 shrink-0">
-              <h1 className="font-playfair text-[clamp(1.5rem,3.5vw,1.875rem)] italic leading-tight text-near-black">
-                {SITE_TAGLINE}
-              </h1>
+              <AuthSlogan className="text-[clamp(1.5rem,3.5vw,1.875rem)]" />
               <p className="mt-2 text-sm text-gray-body md:text-[0.95rem]">
                 Drop your URL and we&apos;ll generate posts for your brand.
               </p>
@@ -77,9 +96,7 @@ export function AuthPageShell({
         <div className="relative z-10 grid min-h-0 flex-1 overflow-hidden lg:grid-cols-[minmax(0,1fr)_minmax(0,1.1fr)]">
           <div className="flex flex-col items-center justify-center px-4 py-8 lg:items-start lg:px-12 lg:py-12 xl:px-16">
             <div className="mb-8 text-center lg:text-left">
-              <h1 className="font-playfair text-[clamp(1.75rem,4vw,2rem)] italic text-near-black">
-                {SITE_TAGLINE}
-              </h1>
+              <AuthSlogan className="justify-center text-[clamp(1.75rem,4vw,2rem)] lg:justify-start" />
               <p className="mt-2 text-[0.95rem] text-gray-body">
                 Drop your URL and we&apos;ll generate posts for your brand.
               </p>
