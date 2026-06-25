@@ -14,7 +14,7 @@ export function PostPreviewRow({
   content,
   imageUrl,
 }: PostPreviewRowProps) {
-  const src = resolvePostImageUrl(imageUrl);
+  const src = resolvePostImageUrl(imageUrl, { display: true });
 
   return (
     <article className="relative flex gap-3 rounded-xl border border-black/[0.06] bg-cream/50 p-3">

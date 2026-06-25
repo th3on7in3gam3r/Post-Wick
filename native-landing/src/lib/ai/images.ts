@@ -85,21 +85,32 @@ export function buildImagePrompt(
   ].join(" ");
 }
 
+function usesCloudDatabase() {
+  const url = process.env.DATABASE_URL?.toLowerCase() ?? "";
+  return (
+    url.includes("neon.tech") ||
+    url.includes("supabase.co") ||
+    url.includes("vercel-storage.com") ||
+    Boolean(process.env.VERCEL)
+  );
+}
+
 async function persistImageBuffer(buffer: Buffer): Promise<string> {
   const filename = `${randomUUID()}.png`;
+  const blobToken = process.env.BLOB_READ_WRITE_TOKEN?.trim();
 
-  if (process.env.BLOB_READ_WRITE_TOKEN?.trim()) {
+  if (blobToken) {
     const blob = await put(`generated/${filename}`, buffer, {
       access: "public",
       contentType: "image/png",
-      token: process.env.BLOB_READ_WRITE_TOKEN.trim(),
+      token: blobToken,
     });
     return blob.url;
   }
 
-  if (process.env.VERCEL) {
+  if (process.env.VERCEL || usesCloudDatabase()) {
     throw new Error(
-      "BLOB_READ_WRITE_TOKEN is required on Vercel to store generated images",
+      "BLOB_READ_WRITE_TOKEN is required when using Neon or deploying to Vercel. Add the token from Vercel → Storage → Blob to .env.local and Vercel env vars so images upload to cloud storage.",
     );
   }
 
@@ -427,11 +438,16 @@ export function imageGenerationHint(options: {
   isVercel?: boolean;
 }) {
   const { configured, generated, error, isVercel } = options;
+  const { blob } = getImageGenerationProviders();
 
   if (!configured) {
     return isVercel
       ? "Add OPENAI_API_KEY (with GEMINI_API_KEY and/or IDEOGRAM_API_KEY as fallbacks) in Vercel → Settings → Environment Variables, then redeploy."
       : "Add OPENAI_API_KEY, GEMINI_API_KEY, or IDEOGRAM_API_KEY to native-landing/.env.local and restart the dev server.";
+  }
+
+  if (!blob && (isVercel || usesCloudDatabase())) {
+    return "Add BLOB_READ_WRITE_TOKEN from Vercel → Storage → Blob to .env.local and Vercel env vars so images upload to cloud storage.";
   }
 
   if (generated > 0) {

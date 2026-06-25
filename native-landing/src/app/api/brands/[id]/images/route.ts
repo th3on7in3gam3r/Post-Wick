@@ -37,7 +37,7 @@ export async function POST(
 
   try {
     const body = await req.json().catch(() => ({}));
-    const { limit = 12 } = bodySchema.parse(body);
+    const { limit = 20 } = bodySchema.parse(body);
 
     const research = brand.researchData
       ? JSON.parse(brand.researchData)

@@ -19,7 +19,7 @@ import {
   type ContentCalendarPost,
 } from "@/lib/calendar/content-calendar";
 import { formatScheduleLabel } from "@/lib/scheduling/slots";
-import { resolvePostImageUrl } from "@/lib/posts/image-url";
+import { postHasBrokenImageUrl, resolvePostImageUrl } from "@/lib/posts/image-url";
 import { cn } from "@/lib/utils";
 
 export type ContentCalendarProps = {
@@ -52,7 +52,8 @@ function PostDetailModal({
   onClose: () => void;
   onMove: () => void;
 }) {
-  const imageSrc = resolvePostImageUrl(post.imageUrl);
+  const imageBroken = postHasBrokenImageUrl(post.imageUrl);
+  const imageSrc = resolvePostImageUrl(post.imageUrl, { display: true });
   const [imageFailed, setImageFailed] = useState(false);
 
   useEffect(() => {
@@ -121,9 +122,9 @@ function PostDetailModal({
           />
         ) : (
           <div className="mt-4 flex aspect-[4/3] w-full flex-col items-center justify-center gap-1 rounded-xl border border-dashed border-black/[0.08] bg-cream/60 px-4 text-center text-sm text-gray-label">
-            <span>{imageSrc ? "Image unavailable" : "No image"}</span>
-            {imageSrc ? (
-              <span className="text-xs">Regenerate from the brand page → Add images</span>
+            <span>{imageBroken ? "Image needs regeneration" : "No image"}</span>
+            {imageBroken ? (
+              <span className="text-xs">Use Fix images on the calendar or brand page</span>
             ) : null}
           </div>
         )}

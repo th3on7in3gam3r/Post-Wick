@@ -8,9 +8,11 @@ import { TextureButton } from "@/components/ui/texture-button";
 export function GenerateImagesButton({
   brandId,
   missingCount,
+  label,
 }: {
   brandId: string;
   missingCount: number;
+  label?: string;
 }) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
@@ -61,7 +63,7 @@ export function GenerateImagesButton({
         ) : (
           <ImagePlus className="mr-2 h-4 w-4" />
         )}
-        {loading ? "Creating images…" : `Add images (${missingCount})`}
+        {loading ? "Creating images…" : `${label ?? "Add images"} (${missingCount})`}
       </TextureButton>
       {message ? <p className="text-xs text-gray-body">{message}</p> : null}
     </div>

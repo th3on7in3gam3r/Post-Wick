@@ -143,7 +143,7 @@ export function QueueClient({ initialPosts }: { initialPosts: QueuePost[] }) {
   const total = useRef(initialPosts.length);
   const reviewed = total.current - posts.length;
   const current = posts[0];
-  const currentImageSrc = resolvePostImageUrl(current?.imageUrl);
+  const currentImageSrc = resolvePostImageUrl(current?.imageUrl, { display: true });
   const busy = acting || refining || applying || regenerating;
 
   useEffect(() => {
