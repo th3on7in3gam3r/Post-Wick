@@ -5,7 +5,8 @@ import { AnimatePresence, motion, useAnimationControls } from "framer-motion";
 import { useCallback, useEffect, useState, type FormEvent } from "react";
 import { TextureButton } from "@/components/ui/texture-button";
 import { normalizeWebsiteUrl } from "@/lib/website-url";
-import { savePendingWebsiteUrl } from "@/lib/pending-website-url";
+import { cn } from "@/lib/utils";
+import { savePendingWebsiteUrl, markHeroOnboardingIntent, onboardingRedirectFromHeroUrl, HERO_LAUNCH_PATHS } from "@/lib/pending-website-url";
 import { SITE_TAGLINE } from "@/lib/brand";
 import {
   type ImagePlacement,
@@ -118,10 +119,13 @@ function HeroIndustryImage({
   );
 }
 
+type LaunchPhase = "preparing" | "ready";
+
 export function HeroContent() {
   const router = useRouter();
   const [websiteUrl, setWebsiteUrl] = useState("");
   const [urlError, setUrlError] = useState("");
+  const [launchPhase, setLaunchPhase] = useState<LaunchPhase | null>(null);
   const [activeIndustry, setActiveIndustry] = useState<Industry>(industries[0]);
   const [placement, setPlacement] = useState<ImagePlacement>(() =>
     randomImagePlacement(),
@@ -146,8 +150,27 @@ export function HeroContent() {
 
     setUrlError("");
     savePendingWebsiteUrl(normalized);
-    router.push(`/sign-up?url=${encodeURIComponent(normalized)}`);
+    markHeroOnboardingIntent();
+    setLaunchPhase("preparing");
+    window.history.replaceState(null, "", HERO_LAUNCH_PATHS.preparing);
+
+    window.setTimeout(() => {
+      setLaunchPhase("ready");
+      window.history.replaceState(null, "", HERO_LAUNCH_PATHS.ready);
+      window.setTimeout(() => {
+        const onboardingTarget = onboardingRedirectFromHeroUrl(normalized);
+        const signUpTarget = `/sign-up?url=${encodeURIComponent(normalized)}&redirect_url=${encodeURIComponent(onboardingTarget)}`;
+        router.push(signUpTarget);
+      }, 900);
+    }, 1400);
   }
+
+  const inputDisplay =
+    launchPhase === "preparing"
+      ? "Preparing your workspace"
+      : launchPhase === "ready"
+        ? "You're In"
+        : websiteUrl;
 
   return (
     <>
@@ -173,16 +196,29 @@ export function HeroContent() {
             <input
               type="text"
               name="url"
-              value={websiteUrl}
+              value={inputDisplay}
+              readOnly={launchPhase !== null}
               onChange={(event) => {
+                if (launchPhase) return;
                 setWebsiteUrl(event.target.value);
                 if (urlError) setUrlError("");
               }}
               placeholder="yourcompany.com"
               autoComplete="url"
-              className="min-w-0 flex-1 bg-transparent px-5 py-[14px] text-left text-base text-near-black outline-none placeholder:text-gray-label"
+              className={cn(
+                "min-w-0 flex-1 bg-transparent px-5 py-[14px] text-left text-base outline-none placeholder:text-gray-label",
+                launchPhase
+                  ? "font-playfair italic text-gold"
+                  : "text-near-black",
+              )}
             />
-            <TextureButton type="submit" variant="primary" size="default" className="shrink-0">
+            <TextureButton
+              type="submit"
+              variant="primary"
+              size="default"
+              className="shrink-0"
+              disabled={launchPhase !== null}
+            >
               Get started free →
             </TextureButton>
           </div>

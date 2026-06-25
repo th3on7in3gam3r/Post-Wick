@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import { AppHeaderWithClient } from "@/components/app/client-scoped";
+import { DashboardHeader } from "@/components/app/dashboard-header";
 import { DashboardClientView } from "@/components/app/dashboard-client-view";
 import { getAppContext } from "@/lib/server/app-data";
 
@@ -18,6 +18,7 @@ export default async function DashboardPage({
     recentActivity,
     analytics,
     hasConnections,
+    dbUser,
   } = await getAppContext(searchParams.url);
 
   if (brands.length === 0) {
@@ -29,10 +30,7 @@ export default async function DashboardPage({
 
   return (
     <>
-      <AppHeaderWithClient
-        clientAsTitle
-        description="Autopilot command center"
-      />
+      <DashboardHeader timeZone={dbUser.timezone} />
       <DashboardClientView
         stats={stats}
         publishedByBrand={publishedByBrand}

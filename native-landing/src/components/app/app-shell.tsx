@@ -36,7 +36,7 @@ export function AppShell({
   }, [mobileOpen]);
 
   return (
-    <div className="flex min-h-screen overflow-x-hidden bg-cream">
+    <div className="flex h-screen overflow-hidden bg-cream">
       <AppSidebar pathname={pathname} plan={plan} hasBrands={hasBrands} className="hidden lg:flex" />
 
       {mobileOpen ? (
@@ -59,7 +59,7 @@ export function AppShell({
         )}
       />
 
-      <div className="flex min-h-screen min-w-0 flex-1 flex-col">
+      <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-y-auto overflow-x-hidden">
         <div className="sticky top-0 z-30 flex shrink-0 items-center gap-3 border-b border-black/[0.06] bg-cream/95 px-4 py-3 backdrop-blur-sm lg:hidden">
           <button
             type="button"

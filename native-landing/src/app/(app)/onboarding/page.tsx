@@ -1,21 +1,23 @@
+import { redirect } from "next/navigation";
+import { Suspense } from "react";
 import { AppHeader } from "@/components/app/app-header";
+import { OnboardingHeroBootstrap } from "@/components/app/onboarding-hero-bootstrap";
 import { OnboardingFlow } from "@/components/app/onboarding-flow";
 import { getAppContext } from "@/lib/server/app-data";
 import { websiteHostname } from "@/lib/website-url";
-import { redirect } from "next/navigation";
 
 export default async function OnboardingPage({
   searchParams,
 }: {
   searchParams: { url?: string; brand?: string; add?: string };
 }) {
-  const addingAnother = searchParams.add === "1";
+  const addingAnother = searchParams.add === "1" && !searchParams.url;
   const { websiteUrl, brands } = await getAppContext(searchParams.url);
 
   if (
     brands.some((brand) => brand.crawlStatus === "completed") &&
     !searchParams.url &&
-    !addingAnother
+    !searchParams.add
   ) {
     redirect("/dashboard");
   }
@@ -24,6 +26,9 @@ export default async function OnboardingPage({
 
   return (
     <>
+      <Suspense fallback={null}>
+        <OnboardingHeroBootstrap />
+      </Suspense>
       <AppHeader
         title={addingAnother ? "Add another brand" : "Welcome to Post-Wick"}
         description={

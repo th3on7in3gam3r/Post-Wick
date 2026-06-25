@@ -10,7 +10,7 @@ import {
   type BrandResearchRecord,
   type BrandVoiceForm,
 } from "@/lib/brand-voice";
-import { clearPendingWebsiteUrl, consumePendingWebsiteUrl } from "@/lib/pending-website-url";
+import { clearPendingWebsiteUrl, consumePendingWebsiteUrl, consumeHeroOnboardingIntent } from "@/lib/pending-website-url";
 import { normalizeWebsiteUrl } from "@/lib/website-url";
 
 type Step = "idle" | "analyzing" | "review" | "generating" | "done" | "error";
@@ -200,12 +200,28 @@ export function OnboardingFlow({
 
   useEffect(() => {
     if (addingAnother) {
+      if (!consumeHeroOnboardingIntent()) {
+        return () => clearPhaseTimers();
+      }
+
+      const stored = consumePendingWebsiteUrl();
+      const normalized = stored ? normalizeWebsiteUrl(stored) : null;
+      if (normalized) {
+        setUrl(normalized);
+        void analyzeWebsite(normalized);
+      }
+
       return () => clearPhaseTimers();
     }
 
     if (websiteUrl) {
+      consumeHeroOnboardingIntent();
       clearPendingWebsiteUrl();
       void analyzeWebsite(websiteUrl);
+      return () => clearPhaseTimers();
+    }
+
+    if (!consumeHeroOnboardingIntent()) {
       return () => clearPhaseTimers();
     }
 

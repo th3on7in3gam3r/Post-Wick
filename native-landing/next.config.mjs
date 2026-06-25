@@ -7,6 +7,12 @@ const nextConfig = {
       { source: "/content-plan.html", destination: "/dashboard", permanent: false },
     ];
   },
+  async rewrites() {
+    return [
+      { source: "/preparing-your-workspace", destination: "/" },
+      { source: "/youre-in", destination: "/" },
+    ];
+  },
 };
 
 export default nextConfig;

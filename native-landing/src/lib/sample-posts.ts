@@ -65,7 +65,7 @@ export const samplePosts: SamplePost[] = [
     brand: "The Gentlemen's Cut",
     status: true,
     showActions: true,
-    image: unsplash("1622286342621-4bd786c7757c"),
+    image: "/images/sample-posts/gentlemens-cut.jpg",
     caption:
       "Classic scissor cuts and straight-razor shaves. Walk-ins welcome before noon — leave looking like you planned it.",
   },
@@ -84,7 +84,7 @@ export const samplePosts: SamplePost[] = [
     type: "facebook",
     brand: "Paws & Polish Grooming",
     copyAbove: true,
-    image: unsplash("1516734212186-a967f81ad0d2"),
+    image: "/images/sample-posts/paws-polish.jpg",
     caption:
       "Spa day for the four-legged members of your family. Bath, brush, nail trim, and all the tail wags you can handle.",
   },
@@ -94,7 +94,7 @@ export const samplePosts: SamplePost[] = [
     brand: "GreenPress Juice Bar",
     status: true,
     showActions: true,
-    image: unsplash("1610970881699-553a35a271ea"),
+    image: "/images/sample-posts/greenpress.jpg",
     caption:
       "Cold-pressed citrus-ginger immunity shots are back on the menu. Made fresh every morning — grab one before your commute.",
   },
@@ -114,7 +114,7 @@ export const samplePosts: SamplePost[] = [
     brand: "StrongForm Fitness",
     timestamp: "1h",
     copyAbove: true,
-    image: unsplash("1571019614242-c5c5dee9f50"),
+    image: "/images/sample-posts/strongform.jpg",
     caption:
       "Progress isn't linear — but showing up is. We build programs around your schedule, your goals, and the life you already have.",
   },
@@ -144,7 +144,7 @@ export const samplePosts: SamplePost[] = [
     brand: "Bloom & Stem Florist",
     status: true,
     showActions: true,
-    image: unsplash("1490759847868-8806c448d42e"),
+    image: "/images/sample-posts/bloom-stem.jpg",
     caption:
       "Farmer's market peonies are in — limited buckets at the shop all weekend. First come, first carried home smiling.",
   },
