@@ -14,7 +14,14 @@ const actionSchema = z.object({
 
 const patchSchema = z.object({
   content: z.string().trim().min(1).max(3000).optional(),
-  imageUrl: z.union([z.string().url(), z.string().startsWith("/")]).nullable().optional(),
+  imageUrl: z
+    .union([
+      z.string().url(),
+      z.string().startsWith("/"),
+      z.string().regex(/^[0-9a-f-]{36}\.png$/i),
+    ])
+    .nullable()
+    .optional(),
   scheduledAt: z
     .string()
     .refine((value) => !Number.isNaN(Date.parse(value)), {

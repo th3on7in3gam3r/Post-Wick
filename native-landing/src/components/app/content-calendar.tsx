@@ -53,6 +53,11 @@ function PostDetailModal({
   onMove: () => void;
 }) {
   const imageSrc = resolvePostImageUrl(post.imageUrl);
+  const [imageFailed, setImageFailed] = useState(false);
+
+  useEffect(() => {
+    setImageFailed(false);
+  }, [post.id, imageSrc]);
 
   useEffect(() => {
     function onKeyDown(event: KeyboardEvent) {
@@ -106,12 +111,13 @@ function PostDetailModal({
           <p className="mt-2 text-sm text-gray-body">{formatScheduleLabel(post.scheduledAt)}</p>
         ) : null}
 
-        {imageSrc ? (
+        {imageSrc && !imageFailed ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img
             src={imageSrc}
             alt=""
             className="mt-4 aspect-[4/3] w-full rounded-xl object-cover"
+            onError={() => setImageFailed(true)}
           />
         ) : (
           <div className="mt-4 flex aspect-[4/3] w-full items-center justify-center rounded-xl border border-dashed border-black/[0.08] bg-cream/60 text-sm text-gray-label">
