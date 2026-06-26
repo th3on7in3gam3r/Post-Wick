@@ -7,6 +7,7 @@ import {
   updatePostDraft,
   updatePostStatus,
 } from "@/lib/db";
+import { WeeklyScheduleLimitError } from "@/lib/usage/schedule-limit";
 
 const actionSchema = z.object({
   action: z.enum(["approve", "skip"]),
@@ -62,6 +63,9 @@ export async function PATCH(
           return NextResponse.json(post);
         }
       } catch (error) {
+        if (error instanceof WeeklyScheduleLimitError) {
+          return NextResponse.json({ error: error.message }, { status: 429 });
+        }
         return NextResponse.json(
           { error: error instanceof Error ? error.message : "Failed to reschedule post" },
           { status: 400 },
@@ -112,7 +116,11 @@ export async function POST(
       try {
         const scheduled = await scheduleApprovedPost(params.postId, userId);
         return NextResponse.json(scheduled ?? post);
-      } catch {
+      } catch (error) {
+        if (error instanceof WeeklyScheduleLimitError) {
+          await updatePostStatus(params.postId, userId, "pending");
+          return NextResponse.json({ error: error.message }, { status: 429 });
+        }
         return NextResponse.json({
           ...post,
           scheduleError: "Approved, but scheduling failed. It will stay approved.",

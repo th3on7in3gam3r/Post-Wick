@@ -15,14 +15,14 @@ export default async function AnalyticsPage() {
     <>
       <AppHeader
         title="Analytics"
-        description="Proof that autopilot is working for your brand."
+        description="Post history and publishing status across your brands."
       />
       <div className="flex-1 overflow-y-auto p-6 md:p-8">
         {analytics.totalPosts === 0 ? (
           <EmptyState
             icon={BarChart3}
-            title="No analytics yet"
-            description="Generate and approve your first posts to start tracking performance."
+            title="No activity yet"
+            description="Generate and approve your first posts to see publishing history here."
             action={
               <TextureButton asChild variant="primary" size="default">
                 <Link href="/queue">Open approval queue</Link>

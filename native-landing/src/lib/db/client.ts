@@ -1,9 +1,85 @@
 import { neon } from "@neondatabase/serverless";
 import { drizzle, type NeonHttpDatabase } from "drizzle-orm/neon-http";
+import { encrypt, isEncrypted } from "@/lib/crypto";
 import * as schema from "./schema";
 
 let db: NeonHttpDatabase<typeof schema> | null = null;
 let schemaReady: Promise<void> | null = null;
+let tokenMigrationReady: Promise<void> | null = null;
+
+type MetaOauthPendingPageRow = {
+  id: string;
+  name: string;
+  accessToken: string;
+  pictureUrl: string | null;
+};
+
+async function migratePlaintextTokens(databaseUrl: string) {
+  if (!process.env.ENCRYPTION_KEY?.trim()) {
+    return;
+  }
+
+  const sql = neon(databaseUrl);
+  const connectionRows = (await sql`
+    SELECT id, access_token
+    FROM connections
+    WHERE access_token IS NOT NULL
+  `) as Array<{ id: string; access_token: string | null }>;
+
+  for (const row of connectionRows) {
+    const token = row.access_token;
+    if (typeof token !== "string" || isEncrypted(token)) {
+      continue;
+    }
+
+    await sql`
+      UPDATE connections
+      SET access_token = ${encrypt(token)}
+      WHERE id = ${row.id}
+    `;
+  }
+
+  const pendingRows = (await sql`
+    SELECT id, pages_data
+    FROM meta_oauth_pending
+  `) as Array<{ id: string; pages_data: string }>;
+
+  for (const row of pendingRows) {
+    const raw = row.pages_data;
+    if (typeof raw !== "string") {
+      continue;
+    }
+
+    let pages: MetaOauthPendingPageRow[];
+    try {
+      pages = JSON.parse(raw) as MetaOauthPendingPageRow[];
+    } catch {
+      continue;
+    }
+
+    let changed = false;
+    const encryptedPages = pages.map((page) => {
+      if (!page.accessToken || isEncrypted(page.accessToken)) {
+        return page;
+      }
+      changed = true;
+      return {
+        ...page,
+        accessToken: encrypt(page.accessToken),
+      };
+    });
+
+    if (!changed) {
+      continue;
+    }
+
+    await sql`
+      UPDATE meta_oauth_pending
+      SET pages_data = ${JSON.stringify(encryptedPages)}
+      WHERE id = ${row.id}
+    `;
+  }
+}
 
 async function ensureSchema() {
   if (!process.env.DATABASE_URL) {
@@ -72,12 +148,37 @@ async function ensureSchema() {
   await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS notify_queue BOOLEAN NOT NULL DEFAULT TRUE`;
   await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS notify_publish BOOLEAN NOT NULL DEFAULT TRUE`;
   await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS notify_weekly_digest BOOLEAN NOT NULL DEFAULT FALSE`;
+  await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS refine_usage_count INTEGER NOT NULL DEFAULT 0`;
+  await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS refine_usage_period TEXT`;
   await sql`ALTER TABLE connections ADD COLUMN IF NOT EXISTS metadata TEXT`;
   await sql`CREATE INDEX IF NOT EXISTS idx_brands_user_id ON brands(user_id)`;
   await sql`CREATE INDEX IF NOT EXISTS idx_posts_brand_id ON posts(brand_id)`;
   await sql`CREATE INDEX IF NOT EXISTS idx_posts_status ON posts(status)`;
   await sql`CREATE INDEX IF NOT EXISTS idx_posts_scheduled_at ON posts(scheduled_at)`;
   await sql`CREATE INDEX IF NOT EXISTS idx_connections_user_id ON connections(user_id)`;
+  await sql`
+    CREATE TABLE IF NOT EXISTS meta_oauth_pending (
+      id TEXT PRIMARY KEY,
+      user_id TEXT NOT NULL,
+      brand_id TEXT NOT NULL REFERENCES brands(id) ON DELETE CASCADE,
+      platform TEXT NOT NULL,
+      pages_data TEXT NOT NULL,
+      expires_at TIMESTAMPTZ NOT NULL,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+      UNIQUE (user_id, brand_id, platform)
+    )`;
+}
+
+async function ensureTokenMigration() {
+  if (!process.env.DATABASE_URL) {
+    throw new Error("DATABASE_URL is not set");
+  }
+
+  if (!tokenMigrationReady) {
+    tokenMigrationReady = migratePlaintextTokens(process.env.DATABASE_URL!);
+  }
+
+  await tokenMigrationReady;
 }
 
 export async function getDb() {
@@ -89,6 +190,7 @@ export async function getDb() {
     schemaReady = ensureSchema();
   }
   await schemaReady;
+  await ensureTokenMigration();
 
   if (!db) {
     const sql = neon(process.env.DATABASE_URL);

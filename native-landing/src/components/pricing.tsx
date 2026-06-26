@@ -3,18 +3,12 @@
 import Link from "next/link";
 import { useState } from "react";
 import { TextureButton } from "@/components/ui/texture-button";
+import { PLAN_LIMITS } from "@/lib/plans";
 import { plans } from "@/lib/pricing";
+import { cn } from "@/lib/utils";
 
-const channels = [
-  "Facebook",
-  "Instagram",
-  "LinkedIn",
-  "X",
-  "TikTok",
-  "Pinterest",
-  "Reddit",
-  "Bluesky",
-];
+const ACTIVE_CHANNELS = ["Facebook", "Instagram", "LinkedIn"] as const;
+const COMING_SOON_CHANNELS = ["X", "TikTok", "Pinterest", "Reddit", "Bluesky"] as const;
 
 type BillingCycle = "monthly" | "yearly";
 
@@ -46,7 +40,8 @@ export function Pricing() {
               One plan for autopilot.
             </h2>
             <p className="body-copy mt-3 max-w-xl text-[#EDE8F5]">
-              Pick the AI allowance that matches your growth ambitions.
+              Pick the batch size that matches your posting rhythm. Free includes{" "}
+              {PLAN_LIMITS.free.generateMax} posts to try the workflow.
             </p>
 
             <div className="mt-6 inline-flex gap-1 rounded-full bg-white/90 p-1 text-sm shadow-card backdrop-blur-sm">
@@ -75,18 +70,21 @@ export function Pricing() {
                 </p>
                 <h3 className="mt-2 font-playfair text-2xl italic">Pro</h3>
                 <p className="mt-2 text-sm text-gray-body">
-                  A whole month of content, ready for your approval.
+                  Up to {PLAN_LIMITS.pro.generateMax} posts per generation batch.
                 </p>
                 <p className="mt-6 font-playfair text-5xl italic text-near-black">
                   ${proPrice}
                 </p>
                 <p className="text-sm text-gray-label">{billingNote}</p>
                 <ul className="mt-6 space-y-2 text-sm text-gray-body">
-                  <li>50+ posts a month, ready for approval</li>
+                  <li>
+                    Up to {PLAN_LIMITS.pro.generateMax} posts per batch, ready for approval
+                  </li>
+                  <li>Up to {PLAN_LIMITS.pro.postsPerWeek} posts/week on autopilot</li>
                   <li>Tailored to your tone and industry</li>
-                  <li>All your channels: Facebook, Instagram, LinkedIn and 5 more</li>
+                  <li>Live publishing: Facebook, Instagram, LinkedIn</li>
                   <li>Auto-publishing once you approve</li>
-                  <li>Analytics on what&apos;s working</li>
+                  <li>Post history and publishing status</li>
                 </ul>
                 <TextureButton asChild variant="primary" size="lg" className="mt-8 flex w-full">
                   <Link href="/sign-up" className="w-full">
@@ -101,8 +99,7 @@ export function Pricing() {
                 </p>
                 <h3 className="mt-2 font-playfair text-2xl italic">Max</h3>
                 <p className="mt-2 text-sm text-gray-body">
-                  Higher AI allowance and priority support for teams running multiple
-                  brands.
+                  Up to {PLAN_LIMITS.max.generateMax} posts per generation batch.
                 </p>
                 <p className="mt-6 font-playfair text-5xl italic text-near-black">
                   ${maxPrice}
@@ -110,7 +107,10 @@ export function Pricing() {
                 <p className="text-sm text-gray-label">{billingNote}</p>
                 <ul className="mt-6 space-y-2 text-sm text-gray-body">
                   <li>Everything in Pro, plus</li>
-                  <li>5× AI usage</li>
+                  <li>
+                    Up to {PLAN_LIMITS.max.generateMax} posts per batch (
+                    {PLAN_LIMITS.max.postsPerWeek}/week on autopilot)
+                  </li>
                   <li>Priority support</li>
                   <li>Early access to new features</li>
                 </ul>
@@ -126,19 +126,33 @@ export function Pricing() {
 
         <div className="mt-10 rounded-2xl border border-black/[0.08] bg-white/80 p-8 shadow-card">
           <p className="text-center text-sm text-gray-body">
-            All these channels can be connected to every brand
+            Live publishing is available on the channels marked active. Others are on the roadmap.
           </p>
           <div className="mt-5 flex flex-wrap justify-center gap-3">
-            {channels.map((ch) => (
+            {ACTIVE_CHANNELS.map((channel) => (
               <TextureButton
-                key={ch}
+                key={channel}
                 type="button"
                 variant="secondary"
                 size="sm"
                 className="pointer-events-none"
               >
-                {ch}
+                {channel}
               </TextureButton>
+            ))}
+            {COMING_SOON_CHANNELS.map((channel) => (
+              <span
+                key={channel}
+                className={cn(
+                  "inline-flex items-center gap-2 rounded-full border border-black/[0.08]",
+                  "bg-white px-4 py-2 text-sm text-gray-body shadow-sm",
+                )}
+              >
+                {channel}
+                <span className="rounded-full bg-cream px-2 py-0.5 text-[0.65rem] font-semibold uppercase tracking-wide text-gray-label">
+                  Coming soon
+                </span>
+              </span>
             ))}
           </div>
         </div>

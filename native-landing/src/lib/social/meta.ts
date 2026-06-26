@@ -270,11 +270,49 @@ type MetaPage = {
   id: string;
   name: string;
   access_token: string;
+  picture?: { data?: { url?: string } };
   instagram_business_account?: {
     id: string;
     username?: string;
   };
 };
+
+export type MetaPageOption = {
+  id: string;
+  name: string;
+  accessToken: string;
+  pictureUrl: string | null;
+};
+
+export async function fetchMetaPagesForSelection(
+  userAccessToken: string,
+): Promise<MetaPageOption[]> {
+  const pages = await graphGet<{ data: MetaPage[] }>(
+    "me/accounts?fields=id,name,access_token,picture{url}",
+    userAccessToken,
+  );
+
+  return pages.data.map((page) => ({
+    id: page.id,
+    name: page.name,
+    accessToken: page.access_token,
+    pictureUrl: page.picture?.data?.url ?? null,
+  }));
+}
+
+export function buildFacebookConnectionFromPage(
+  page: MetaPageOption,
+): MetaConnectionDetails {
+  return {
+    accountName: page.name,
+    accessToken: page.accessToken,
+    metadata: {
+      pageId: page.id,
+      pageName: page.name,
+      authFlow: "facebook_login",
+    },
+  };
+}
 
 export async function resolveMetaConnection(
   userAccessToken: string,
@@ -318,15 +356,12 @@ export async function resolveMetaConnection(
     };
   }
 
-  return {
-    accountName: page.name,
+  return buildFacebookConnectionFromPage({
+    id: page.id,
+    name: page.name,
     accessToken: page.access_token,
-    metadata: {
-      pageId: page.id,
-      pageName: page.name,
-      authFlow: "facebook_login",
-    },
-  };
+    pictureUrl: page.picture?.data?.url ?? null,
+  });
 }
 
 export async function publishToFacebookPage(

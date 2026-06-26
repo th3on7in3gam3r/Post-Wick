@@ -27,6 +27,20 @@ export function scheduleSlotOnDay(day: Date, hour = SLOT_HOUR) {
   return slot.toISOString();
 }
 
+/** UTC week window: Monday 00:00 through the following Monday 00:00 (exclusive end). */
+export function getUtcWeekRange(date: Date): { start: Date; end: Date } {
+  const day = new Date(
+    Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate()),
+  );
+  const daysFromMonday = (day.getUTCDay() + 6) % 7;
+  const start = new Date(day);
+  start.setUTCDate(start.getUTCDate() - daysFromMonday);
+  start.setUTCHours(0, 0, 0, 0);
+  const end = new Date(start);
+  end.setUTCDate(end.getUTCDate() + 7);
+  return { start, end };
+}
+
 export function getNextScheduleSlot(existingScheduledAt: string[]): string {
   const taken = existingScheduledAt
     .map((value) => new Date(value))
@@ -49,6 +63,34 @@ export function getNextScheduleSlot(existingScheduledAt: string[]): string {
   const fallback = atSlotTime(new Date());
   fallback.setDate(fallback.getDate() + 7);
   return fallback.toISOString();
+}
+
+export async function getNextScheduleSlotWithWeeklyCap(
+  existingScheduledAt: string[],
+  weekHasCapacity: (weekStart: Date, weekEnd: Date) => Promise<boolean>,
+): Promise<string | null> {
+  const taken = existingScheduledAt
+    .map((value) => new Date(value))
+    .filter((date) => !Number.isNaN(date.getTime()));
+
+  const cursor = new Date();
+  cursor.setDate(cursor.getDate() + 1);
+
+  for (let i = 0; i < 120; i += 1) {
+    if (isSlotDay(cursor)) {
+      const slot = atSlotTime(cursor);
+      const occupied = taken.some((date) => sameDay(date, slot));
+      if (!occupied && slot.getTime() > Date.now()) {
+        const { start, end } = getUtcWeekRange(slot);
+        if (await weekHasCapacity(start, end)) {
+          return slot.toISOString();
+        }
+      }
+    }
+    cursor.setDate(cursor.getDate() + 1);
+  }
+
+  return null;
 }
 
 export function formatScheduleLabel(iso: string) {

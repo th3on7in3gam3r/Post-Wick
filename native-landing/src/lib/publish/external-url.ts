@@ -8,11 +8,15 @@ export function platformLabel(platform: string) {
   return PLATFORM_LABELS[platform.toLowerCase()] ?? platform;
 }
 
+function isInternalPostId(externalPostId: string) {
+  return externalPostId.startsWith("demo-") || externalPostId === "__publishing__";
+}
+
 export function resolveExternalPostUrl(
   platform: string,
   externalPostId: string | null | undefined,
 ): string | null {
-  if (!externalPostId || externalPostId.startsWith("demo-")) {
+  if (!externalPostId || isInternalPostId(externalPostId)) {
     return null;
   }
 

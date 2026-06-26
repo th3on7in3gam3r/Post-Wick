@@ -2,14 +2,7 @@
 
 import { motion, useAnimationControls } from "framer-motion";
 import { useEffect, useState } from "react";
-
-const industries = [
-  "sauna makers",
-  "yoga studios",
-  "coffee roasters",
-  "design agencies",
-  "boutique hotels",
-];
+import { industries } from "@/lib/industries";
 
 type TypingTextProps = {
   words?: string[];
@@ -19,7 +12,7 @@ type TypingTextProps = {
 };
 
 function TypingText({
-  words = industries,
+  words = [...industries],
   typingSpeed = 80,
   deleteSpeed = 45,
   delayBetweenWords = 1800,

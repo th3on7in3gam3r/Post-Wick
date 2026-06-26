@@ -5,6 +5,7 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import { useEffect } from "react";
 import { TextureButton } from "@/components/ui/texture-button";
+import { BIBLEFUNLAND_STUDIOS_URL } from "@/lib/brand";
 
 export function AboutPageClient() {
   useEffect(() => {
@@ -57,12 +58,12 @@ export function AboutPageClient() {
           <p>
             I run{" "}
             <a
-              href="https://biblefunlandstudio.com"
+              href={BIBLEFUNLAND_STUDIOS_URL}
               target="_blank"
               rel="noopener noreferrer"
               className="font-medium text-gold hover:opacity-80"
             >
-              Biblefunland Studios
+              BibleFunLand Studios
             </a>
             , and I kept seeing the same problem: owners with great businesses
             and zero time to post. Agencies cost a fortune. DIY tools still leave
@@ -78,6 +79,10 @@ export function AboutPageClient() {
             on-brand content for the businesses that keep our neighborhoods
             running — fitness studios, coffee roasters, local shops, and everyone
             in between.
+          </p>
+          <p>
+            Kerygma Social serves businesses of all kinds — from gyms to galleries,
+            cafés to churches.
           </p>
         </div>
 

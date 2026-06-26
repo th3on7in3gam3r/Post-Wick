@@ -1,15 +1,15 @@
 # Kerygma Social
 
-> Proclaim. Publish. Multiply.
+> One URL. Endless Content.
 
-Kerygma Social is a social media automation platform for small businesses. Drop your website URL and Kerygma Social researches your brand, generates SEO-, GEO-, and conversion-focused posts, and publishes to LinkedIn, Instagram, Facebook, and more after you approve.
+Kerygma Social is a social media automation platform for small businesses. Drop your website URL and Kerygma Social researches your brand, generates posts for approval, and publishes to LinkedIn, Instagram, and Facebook.
 
 ## What Kerygma Social does
 
 - Crawls your website to learn your brand, industry, and topics
 - Generates a balanced mix of SEO, GEO (AI-discoverability), and money (conversion) posts
 - Lets you refine captions and images in plain language before publishing
-- Connects to LinkedIn, Instagram, Facebook, and other channels
+- Connects to LinkedIn, Instagram, and Facebook (more channels coming soon)
 
 ## Key pages
 
@@ -21,7 +21,7 @@ Kerygma Social is a social media automation platform for small businesses. Drop 
 
 ## Tagline
 
-Proclaim. Publish. Multiply.
+One URL. Endless Content.
 
 ## Contact
 

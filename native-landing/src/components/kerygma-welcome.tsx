@@ -1,34 +1,22 @@
-import Link from "next/link";
 import { SITE_NAME } from "@/lib/brand";
 
 export const KERYGMA_PRONUNCIATION = "keh-RIG-ma";
-export const KERYGMA_MEANING =
-  "The proclamation or preaching of the Gospel.";
-export const BIBLEFUNLAND_STUDIOS_URL = "https://www.biblefunlandstudios.com/";
 
 export function KerygmaWelcome() {
   return (
-    <div className="mx-auto max-w-lg rounded-2xl border border-black/[0.08] bg-white/90 px-5 py-4 text-center shadow-[0_8px_28px_rgba(61,90,69,0.08)] backdrop-blur-sm">
-      <p className="font-playfair text-[clamp(1.1rem,2.5vw,1.35rem)] italic text-near-black">
-        Welcome to {SITE_NAME}
+    <div className="mx-auto max-w-md rounded-xl border border-black/[0.06] bg-white/95 px-6 py-5 shadow-[0_4px_24px_rgba(26,26,26,0.06)] backdrop-blur-sm">
+      <p className="text-[0.65rem] font-semibold uppercase tracking-[0.2em] text-gray-label">
+        Introducing
       </p>
-      <p className="mt-2 text-sm text-gray-body">
-        <span className="font-medium text-near-black">Pronounced:</span>{" "}
-        <span className="font-medium text-gold">{KERYGMA_PRONUNCIATION}</span>
-      </p>
-      <p className="mt-1 text-sm leading-relaxed text-gray-body">
-        <span className="font-medium text-near-black">Meaning:</span> {KERYGMA_MEANING}
-      </p>
-      <p className="mt-2 text-xs text-gray-label">
-        Another production created by{" "}
-        <Link
-          href={BIBLEFUNLAND_STUDIOS_URL}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="font-medium text-gold underline decoration-gold/30 underline-offset-2 hover:decoration-gold/60"
-        >
-          BibleFunLand Studios
-        </Link>
+      <div className="mt-2 flex flex-col items-center gap-1 sm:flex-row sm:items-baseline sm:justify-center sm:gap-2">
+        <p className="font-playfair text-[clamp(1.25rem,2.8vw,1.5rem)] italic text-near-black">
+          {SITE_NAME}
+        </p>
+        <span className="text-sm text-gray-label">· {KERYGMA_PRONUNCIATION}</span>
+      </div>
+      <div className="mx-auto mt-3 h-px w-12 bg-gold/40" aria-hidden />
+      <p className="mt-3 text-[0.95rem] leading-relaxed text-gray-body">
+        Built to help any business publish consistently — without the effort.
       </p>
     </div>
   );

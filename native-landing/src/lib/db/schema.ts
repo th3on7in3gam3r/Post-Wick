@@ -73,6 +73,30 @@ export const connections = pgTable(
   }),
 );
 
+export const metaOauthPending = pgTable(
+  "meta_oauth_pending",
+  {
+    id: text("id").primaryKey(),
+    userId: text("user_id").notNull(),
+    brandId: text("brand_id")
+      .notNull()
+      .references(() => brands.id, { onDelete: "cascade" }),
+    platform: text("platform").notNull(),
+    pagesData: text("pages_data").notNull(),
+    expiresAt: timestamp("expires_at", { withTimezone: true, mode: "string" }).notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true, mode: "string" })
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => ({
+    userBrandPlatformIdx: uniqueIndex("meta_oauth_pending_user_brand_platform_idx").on(
+      table.userId,
+      table.brandId,
+      table.platform,
+    ),
+  }),
+);
+
 export const users = pgTable("users", {
   id: text("id").primaryKey(),
   email: text("email"),
@@ -83,6 +107,8 @@ export const users = pgTable("users", {
   notifyQueue: boolean("notify_queue").notNull().default(true),
   notifyPublish: boolean("notify_publish").notNull().default(true),
   notifyWeeklyDigest: boolean("notify_weekly_digest").notNull().default(false),
+  refineUsageCount: integer("refine_usage_count").notNull().default(0),
+  refineUsagePeriod: text("refine_usage_period"),
   createdAt: timestamp("created_at", { withTimezone: true, mode: "string" })
     .notNull()
     .defaultNow(),

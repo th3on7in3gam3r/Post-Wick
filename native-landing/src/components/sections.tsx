@@ -2,7 +2,7 @@ import Link from "next/link";
 import { BrandLogo } from "@/components/brand-logo";
 import { CookieSettingsTrigger } from "@/components/cookie-settings-trigger";
 import { TextureButton } from "@/components/ui/texture-button";
-import { SITE_TAGLINE } from "@/lib/brand";
+import { BIBLEFUNLAND_STUDIOS_URL, SITE_TAGLINE } from "@/lib/brand";
 
 const faqs = [
   {
@@ -19,7 +19,7 @@ const faqs = [
   },
   {
     q: "What kind of content does Kerygma Social create?",
-    a: "Posts for Facebook, Instagram, LinkedIn, X, and more. We create a tailored content plan based on your business and generate posts optimized for each platform. Everything runs on autopilot.",
+    a: "Posts for Facebook, Instagram, and LinkedIn today, with more channels on the way. We create a tailored content plan based on your business and generate posts optimized for each platform. Everything runs on autopilot.",
   },
   {
     q: "Is my data secure?",
@@ -127,6 +127,17 @@ export function Footer() {
           <BrandLogo href="/" variant="wordmark" />
           <p className="text-[0.65rem] font-medium uppercase tracking-[0.18em] text-gray-label">
             {SITE_TAGLINE}
+          </p>
+          <p className="text-xs text-gray-label">
+            A production of{" "}
+            <Link
+              href={BIBLEFUNLAND_STUDIOS_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="font-medium text-gold underline decoration-gold/30 underline-offset-2 hover:decoration-gold/60"
+            >
+              BibleFunLand Studios
+            </Link>
           </p>
         </div>
         <nav className="flex flex-wrap justify-center gap-6 text-sm text-gray-body">

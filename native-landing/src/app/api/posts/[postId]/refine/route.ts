@@ -12,6 +12,11 @@ import {
 } from "@/lib/ai/images";
 import type { buildResearchFromCrawl } from "@/lib/crawl/website";
 import { getPendingPostForUser } from "@/lib/db";
+import {
+  assertRefineAllowed,
+  recordRefineUsage,
+  RefineLimitError,
+} from "@/lib/usage/refine";
 
 const refineSchema = z.object({
   instruction: z.string().trim().min(3).max(500),
@@ -46,6 +51,8 @@ export async function POST(
     if (!owned) {
       return NextResponse.json({ error: "Post not found" }, { status: 404 });
     }
+
+    await assertRefineAllowed(userId);
 
     const { post, brand } = owned;
     const research = parseResearch(brand.researchData);
@@ -108,6 +115,8 @@ export async function POST(
       imageWarning = "Add an image API key to generate new variations.";
     }
 
+    await recordRefineUsage(userId);
+
     return NextResponse.json({
       captions: refined.captions,
       images,
@@ -115,6 +124,9 @@ export async function POST(
       imageWarning,
     });
   } catch (error) {
+    if (error instanceof RefineLimitError) {
+      return NextResponse.json({ error: error.message }, { status: 429 });
+    }
     if (error instanceof z.ZodError) {
       return NextResponse.json({ error: error.issues }, { status: 400 });
     }

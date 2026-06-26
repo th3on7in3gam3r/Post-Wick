@@ -7,13 +7,18 @@ import {
   gte,
   inArray,
   isNotNull,
+  lt,
   lte,
   ne,
+  or,
   sql,
 } from "drizzle-orm";
-import { getNextScheduleSlot } from "@/lib/scheduling/slots";
+import { getNextScheduleSlotWithWeeklyCap, getUtcWeekRange } from "@/lib/scheduling/slots";
+import { getPlanLimits } from "@/lib/plans";
+import { decryptOptional, encryptOptional } from "@/lib/crypto";
+import { WeeklyScheduleLimitError } from "@/lib/usage/schedule-limit";
 import { getDb } from "./client";
-import { brands, connections, posts, users } from "./schema";
+import { brands, connections, metaOauthPending, posts, users } from "./schema";
 
 export type BrandRecord = {
   id: string;
@@ -66,6 +71,8 @@ export type UserRecord = {
   notifyQueue: boolean;
   notifyPublish: boolean;
   notifyWeeklyDigest: boolean;
+  refineUsageCount: number;
+  refineUsagePeriod: string | null;
   createdAt: string;
   updatedAt: string;
 };
@@ -131,7 +138,7 @@ function parseConnection(row: typeof connections.$inferSelect): ConnectionRecord
     brandId: row.brandId,
     platform: row.platform,
     accountName: row.accountName,
-    accessToken: row.accessToken,
+    accessToken: decryptOptional(row.accessToken),
     metadata: row.metadata,
     isDemo: row.isDemo,
     createdAt: row.createdAt,
@@ -153,6 +160,8 @@ function parseUser(row: typeof users.$inferSelect): UserRecord {
     notifyQueue: row.notifyQueue ?? true,
     notifyPublish: row.notifyPublish ?? true,
     notifyWeeklyDigest: row.notifyWeeklyDigest ?? false,
+    refineUsageCount: row.refineUsageCount ?? 0,
+    refineUsagePeriod: row.refineUsagePeriod ?? null,
     createdAt: row.createdAt,
     updatedAt: row.updatedAt,
   };
@@ -337,6 +346,36 @@ export async function getScheduledTimesForBrand(brandId: string) {
     .filter((value): value is string => Boolean(value));
 }
 
+export async function countBrandAutopilotPostsInWeek(
+  brandId: string,
+  weekStartIso: string,
+  weekEndIso: string,
+  excludePostId?: string,
+) {
+  const db = await getDb();
+  const weekConditions = or(
+    and(
+      eq(posts.status, "approved"),
+      isNotNull(posts.scheduledAt),
+      gte(posts.scheduledAt, weekStartIso),
+      lt(posts.scheduledAt, weekEndIso),
+    ),
+    and(
+      eq(posts.status, "published"),
+      isNotNull(posts.publishedAt),
+      gte(posts.publishedAt, weekStartIso),
+      lt(posts.publishedAt, weekEndIso),
+    ),
+  );
+
+  const where = excludePostId
+    ? and(eq(posts.brandId, brandId), weekConditions, ne(posts.id, excludePostId))
+    : and(eq(posts.brandId, brandId), weekConditions);
+
+  const [row] = await db.select({ total: count() }).from(posts).where(where);
+  return row?.total ?? 0;
+}
+
 export async function createPosts(
   items: Array<{
     id: string;
@@ -476,8 +515,27 @@ export async function scheduleApprovedPost(postId: string, userId: string) {
   if (row.length === 0) return null;
 
   const post = parsePost(row[0]!.post);
+  const user = await getOrCreateUser(userId);
+  const { postsPerWeek } = getPlanLimits(user.subscriptionTier);
   const existing = await getScheduledTimesForBrand(post.brandId);
-  const scheduledAt = getNextScheduleSlot(existing);
+
+  const scheduledAt = await getNextScheduleSlotWithWeeklyCap(
+    existing,
+    async (weekStart, weekEnd) => {
+      const used = await countBrandAutopilotPostsInWeek(
+        post.brandId,
+        weekStart.toISOString(),
+        weekEnd.toISOString(),
+        postId,
+      );
+      return used < postsPerWeek;
+    },
+  );
+
+  if (!scheduledAt) {
+    throw new WeeklyScheduleLimitError();
+  }
+
   const now = nowIso();
 
   await db
@@ -517,6 +575,21 @@ export async function reschedulePost(
     throw new Error("Choose a future date and time");
   }
 
+  const user = await getOrCreateUser(userId);
+  const { postsPerWeek } = getPlanLimits(user.subscriptionTier);
+  const { start, end } = getUtcWeekRange(slot);
+  const used = await countBrandAutopilotPostsInWeek(
+    post.brandId,
+    start.toISOString(),
+    end.toISOString(),
+    postId,
+  );
+  if (used >= postsPerWeek) {
+    throw new WeeklyScheduleLimitError(
+      "That week is full on your current plan. Pick another date or upgrade for more posts per week.",
+    );
+  }
+
   const now = nowIso();
   await db
     .update(posts)
@@ -526,6 +599,8 @@ export async function reschedulePost(
   const updated = await db.query.posts.findFirst({ where: eq(posts.id, postId) });
   return updated ? parsePost(updated) : null;
 }
+
+export const PUBLISHING_LOCK = "__publishing__";
 
 export async function getDuePosts(userId: string) {
   const db = await getDb();
@@ -563,6 +638,64 @@ export async function getUserIdsWithDuePosts() {
   return rows.map((row) => row.userId);
 }
 
+export async function claimDuePostForPublishing(
+  postId: string,
+  userId: string,
+): Promise<PostRecord | null> {
+  const db = await getDb();
+  const now = nowIso();
+  const rows = await db
+    .update(posts)
+    .set({
+      status: "published",
+      publishedAt: now,
+      externalPostId: PUBLISHING_LOCK,
+      publishError: null,
+      updatedAt: now,
+    })
+    .where(
+      and(
+        eq(posts.id, postId),
+        eq(posts.status, "approved"),
+        isNotNull(posts.scheduledAt),
+        lte(posts.scheduledAt, now),
+        sql`${posts.brandId} IN (
+          SELECT id FROM brands WHERE user_id = ${userId}
+        )`,
+      ),
+    )
+    .returning();
+
+  const row = rows[0];
+  return row ? parsePost(row) : null;
+}
+
+export async function finalizePublishedPost(
+  postId: string,
+  userId: string,
+  externalPostId: string,
+) {
+  const db = await getDb();
+  const now = nowIso();
+  await db
+    .update(posts)
+    .set({
+      externalPostId,
+      updatedAt: now,
+    })
+    .where(
+      and(
+        eq(posts.id, postId),
+        eq(posts.status, "published"),
+        eq(posts.externalPostId, PUBLISHING_LOCK),
+        sql`${posts.brandId} IN (
+          SELECT id FROM brands WHERE user_id = ${userId}
+        )`,
+      ),
+    );
+}
+
+/** @deprecated Use claimDuePostForPublishing + finalizePublishedPost for cron idempotency. */
 export async function markPostPublished(
   postId: string,
   userId: string,
@@ -580,9 +713,13 @@ export async function markPostPublished(
       updatedAt: now,
     })
     .where(
-      sql`${posts.id} = ${postId} AND ${posts.brandId} IN (
-        SELECT id FROM brands WHERE user_id = ${userId}
-      )`,
+      and(
+        eq(posts.id, postId),
+        eq(posts.status, "approved"),
+        sql`${posts.brandId} IN (
+          SELECT id FROM brands WHERE user_id = ${userId}
+        )`,
+      ),
     );
 }
 
@@ -593,6 +730,8 @@ export async function markPostFailed(postId: string, userId: string, message: st
     .update(posts)
     .set({
       status: "failed",
+      publishedAt: null,
+      externalPostId: null,
       publishError: message,
       updatedAt: now,
     })
@@ -643,6 +782,24 @@ export async function upsertConnection(input: {
       : input.metadata
         ? JSON.stringify(input.metadata)
         : null;
+  const accessToken =
+    input.accessToken !== undefined ? encryptOptional(input.accessToken) : null;
+
+  const updateSet: {
+    accountName: string | null;
+    metadata: string | null;
+    isDemo: boolean;
+    updatedAt: string;
+    accessToken?: string | null;
+  } = {
+    accountName: input.accountName ?? null,
+    metadata,
+    isDemo: input.isDemo ?? false,
+    updatedAt: now,
+  };
+  if (input.accessToken !== undefined) {
+    updateSet.accessToken = encryptOptional(input.accessToken);
+  }
 
   await db
     .insert(connections)
@@ -652,7 +809,7 @@ export async function upsertConnection(input: {
       brandId: input.brandId,
       platform,
       accountName: input.accountName ?? null,
-      accessToken: input.accessToken ?? null,
+      accessToken,
       metadata,
       isDemo: input.isDemo ?? false,
       createdAt: now,
@@ -660,13 +817,7 @@ export async function upsertConnection(input: {
     })
     .onConflictDoUpdate({
       target: [connections.brandId, connections.platform],
-      set: {
-        accountName: input.accountName ?? null,
-        accessToken: input.accessToken ?? null,
-        metadata,
-        isDemo: input.isDemo ?? false,
-        updatedAt: now,
-      },
+      set: updateSet,
     });
 
   return getConnectionForBrand(input.brandId, platform);
@@ -678,6 +829,115 @@ export async function deleteConnection(connectionId: string, userId: string) {
     .delete(connections)
     .where(and(eq(connections.id, connectionId), eq(connections.userId, userId)))
     .returning({ id: connections.id });
+  return result.length > 0;
+}
+
+export type MetaOauthPendingPage = {
+  id: string;
+  name: string;
+  accessToken: string;
+  pictureUrl: string | null;
+};
+
+export type MetaOauthPendingRecord = {
+  id: string;
+  userId: string;
+  brandId: string;
+  platform: string;
+  pages: MetaOauthPendingPage[];
+  expiresAt: string;
+  createdAt: string;
+};
+
+function parseMetaOauthPending(row: typeof metaOauthPending.$inferSelect): MetaOauthPendingRecord {
+  let pages: MetaOauthPendingPage[] = [];
+  try {
+    const raw = JSON.parse(row.pagesData) as MetaOauthPendingPage[];
+    pages = raw.map((page) => ({
+      ...page,
+      accessToken: decryptOptional(page.accessToken) ?? "",
+    }));
+  } catch {
+    pages = [];
+  }
+  return {
+    id: row.id,
+    userId: row.userId,
+    brandId: row.brandId,
+    platform: row.platform,
+    pages,
+    expiresAt: row.expiresAt,
+    createdAt: row.createdAt,
+  };
+}
+
+export async function saveMetaOauthPending(input: {
+  id: string;
+  userId: string;
+  brandId: string;
+  platform: string;
+  pages: MetaOauthPendingPage[];
+  expiresAt: string;
+}) {
+  const db = await getDb();
+  const now = nowIso();
+  const encryptedPages = input.pages.map((page) => ({
+    ...page,
+    accessToken: encryptOptional(page.accessToken) ?? "",
+  }));
+
+  await db.delete(metaOauthPending).where(lt(metaOauthPending.expiresAt, now));
+
+  await db
+    .insert(metaOauthPending)
+    .values({
+      id: input.id,
+      userId: input.userId,
+      brandId: input.brandId,
+      platform: input.platform,
+      pagesData: JSON.stringify(encryptedPages),
+      expiresAt: input.expiresAt,
+      createdAt: now,
+    })
+    .onConflictDoUpdate({
+      target: [
+        metaOauthPending.userId,
+        metaOauthPending.brandId,
+        metaOauthPending.platform,
+      ],
+      set: {
+        id: input.id,
+        pagesData: JSON.stringify(encryptedPages),
+        expiresAt: input.expiresAt,
+        createdAt: now,
+      },
+    });
+
+  return input.id;
+}
+
+export async function getMetaOauthPendingById(id: string, userId: string) {
+  const db = await getDb();
+  const row = await db.query.metaOauthPending.findFirst({
+    where: and(eq(metaOauthPending.id, id), eq(metaOauthPending.userId, userId)),
+  });
+  if (!row) return null;
+
+  const pending = parseMetaOauthPending(row);
+  if (pending.expiresAt <= nowIso()) {
+    await db.delete(metaOauthPending).where(eq(metaOauthPending.id, id));
+    return null;
+  }
+
+  return pending;
+}
+
+export async function deleteMetaOauthPending(id: string, userId: string) {
+  const db = await getDb();
+  const result = await db
+    .delete(metaOauthPending)
+    .where(and(eq(metaOauthPending.id, id), eq(metaOauthPending.userId, userId)))
+    .returning({ id: metaOauthPending.id });
   return result.length > 0;
 }
 
@@ -783,6 +1043,47 @@ export async function updateUserSettings(
       updatedAt: now,
     })
     .where(eq(users.id, userId));
+
+  return (await getUserById(userId))!;
+}
+
+export async function syncUserRefineUsagePeriod(userId: string, period: string) {
+  const db = await getDb();
+  const now = nowIso();
+  await db
+    .update(users)
+    .set({
+      refineUsageCount: 0,
+      refineUsagePeriod: period,
+      updatedAt: now,
+    })
+    .where(eq(users.id, userId));
+  return (await getUserById(userId))!;
+}
+
+export async function incrementUserRefineUsage(userId: string, period: string) {
+  const db = await getDb();
+  const now = nowIso();
+  const user = await getOrCreateUser(userId);
+
+  if (user.refineUsagePeriod !== period) {
+    await db
+      .update(users)
+      .set({
+        refineUsageCount: 1,
+        refineUsagePeriod: period,
+        updatedAt: now,
+      })
+      .where(eq(users.id, userId));
+  } else {
+    await db
+      .update(users)
+      .set({
+        refineUsageCount: user.refineUsageCount + 1,
+        updatedAt: now,
+      })
+      .where(eq(users.id, userId));
+  }
 
   return (await getUserById(userId))!;
 }

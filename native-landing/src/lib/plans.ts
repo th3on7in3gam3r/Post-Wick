@@ -12,3 +12,14 @@ export const PLAN_LIMITS: Record<
 export function getPlanLimits(tier: SubscriptionTier) {
   return PLAN_LIMITS[tier] ?? PLAN_LIMITS.free;
 }
+
+/** Monthly AI refine requests per subscription tier. */
+export const REFINE_LIMITS: Record<SubscriptionTier, number> = {
+  free: 5,
+  pro: 50,
+  max: 250,
+};
+
+export function getRefineLimit(tier: SubscriptionTier) {
+  return REFINE_LIMITS[tier] ?? REFINE_LIMITS.free;
+}

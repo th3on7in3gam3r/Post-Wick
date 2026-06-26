@@ -20,6 +20,8 @@ const isPublicRoute = createRouteMatcher([
   "/api/health/facebook",
   "/api/health/x",
   "/api/cron/publish",
+  "/api/webhooks/stripe",
+  "/api/contact",
   "/api/generated/(.*)",
   "/api/social/linkedin/callback",
   "/api/social/meta/callback",

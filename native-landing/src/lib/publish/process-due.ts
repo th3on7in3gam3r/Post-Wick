@@ -1,9 +1,10 @@
 import {
+  claimDuePostForPublishing,
+  finalizePublishedPost,
   getConnectionForBrand,
   getDuePosts,
   getUserIdsWithDuePosts,
   markPostFailed,
-  markPostPublished,
   upsertConnection,
   type ConnectionRecord,
 } from "@/lib/db";
@@ -138,28 +139,33 @@ export async function processDuePostsForUser(userId: string) {
   const results: Array<{ postId: string; status: "published" | "failed" }> = [];
 
   for (const post of duePosts) {
-    const connection = await getConnectionForBrand(post.brandId, post.platform);
+    const claimed = await claimDuePostForPublishing(post.id, userId);
+    if (!claimed) {
+      continue;
+    }
+
+    const connection = await getConnectionForBrand(claimed.brandId, claimed.platform);
 
     if (!connection) {
-      await markPostFailed(post.id, userId, "No connected account for this platform");
-      results.push({ postId: post.id, status: "failed" });
+      await markPostFailed(claimed.id, userId, "No connected account for this platform");
+      results.push({ postId: claimed.id, status: "failed" });
       continue;
     }
 
     try {
       if (connection.isDemo) {
-        await markPostPublished(post.id, userId, `demo-${post.id}`);
-        results.push({ postId: post.id, status: "published" });
+        await finalizePublishedPost(claimed.id, userId, `demo-${claimed.id}`);
+        results.push({ postId: claimed.id, status: "published" });
         continue;
       }
 
-      const externalId = await publishLivePost(post, connection);
-      await markPostPublished(post.id, userId, externalId);
-      results.push({ postId: post.id, status: "published" });
+      const externalId = await publishLivePost(claimed, connection);
+      await finalizePublishedPost(claimed.id, userId, externalId);
+      results.push({ postId: claimed.id, status: "published" });
     } catch (error) {
       const message = error instanceof Error ? error.message : "Publish failed";
-      await markPostFailed(post.id, userId, message);
-      results.push({ postId: post.id, status: "failed" });
+      await markPostFailed(claimed.id, userId, message);
+      results.push({ postId: claimed.id, status: "failed" });
     }
   }
 

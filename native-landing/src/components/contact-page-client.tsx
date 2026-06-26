@@ -1,16 +1,8 @@
 "use client";
 
 import { useEffect, useState, type FormEvent } from "react";
-import { ChevronDown, Mail } from "lucide-react";
+import { ChevronDown, Loader2, Mail } from "lucide-react";
 import { cn } from "@/lib/utils";
-
-const hearAboutOptions = [
-  "LinkedIn",
-  "Google search",
-  "Friend or colleague",
-  "Social media",
-  "Other",
-];
 
 const contactFaqs = [
   {
@@ -27,7 +19,7 @@ const contactFaqs = [
   },
   {
     q: "What kind of content does Kerygma Social create?",
-    a: "Posts for Facebook, Instagram, LinkedIn, X, and more. We create a tailored content plan based on your business and generate posts optimized for each platform.",
+    a: "Posts for Facebook, Instagram, and LinkedIn today, with more channels on the way. We create a tailored content plan based on your business and generate posts optimized for each platform.",
   },
   {
     q: "Is my data secure?",
@@ -44,30 +36,58 @@ const contactFaqs = [
 ];
 
 const fieldClass =
-  "mt-2 w-full rounded-xl border border-white/10 bg-[#222222] px-4 py-3.5 text-[0.95rem] text-white outline-none transition placeholder:text-white/35 focus:border-white/25";
+  "mt-2 w-full rounded-xl border border-white/10 bg-[#222222] px-4 py-3.5 text-[0.95rem] text-white outline-none transition placeholder:text-white/35 focus:border-white/25 disabled:opacity-60";
 
 export function ContactPageClient() {
   const [submitted, setSubmitted] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
 
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    if (submitting) return;
+
+    setSubmitting(true);
+    setError(null);
+
     const data = new FormData(event.currentTarget);
-    const name = String(data.get("name") ?? "");
-    const email = String(data.get("email") ?? "");
-    const message = String(data.get("message") ?? "");
-    const source = String(data.get("source") ?? "");
+    const payload = {
+      name: String(data.get("name") ?? ""),
+      email: String(data.get("email") ?? ""),
+      subject: String(data.get("subject") ?? ""),
+      message: String(data.get("message") ?? ""),
+    };
 
-    const subject = encodeURIComponent(`Kerygma Social contact from ${name}`);
-    const body = encodeURIComponent(
-      `Name: ${name}\nEmail: ${email}\nHeard about us: ${source}\n\n${message}`,
-    );
+    try {
+      const response = await fetch("/api/contact", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      const result = (await response.json().catch(() => ({}))) as { error?: string };
 
-    window.location.href = `mailto:hello@kerygmasocial.com?subject=${subject}&body=${body}`;
-    setSubmitted(true);
+      if (!response.ok) {
+        throw new Error(
+          typeof result.error === "string"
+            ? result.error
+            : "Could not send your message. Please try again.",
+        );
+      }
+
+      setSubmitted(true);
+    } catch (submitError) {
+      setError(
+        submitError instanceof Error
+          ? submitError.message
+          : "Could not send your message. Please try again.",
+      );
+    } finally {
+      setSubmitting(false);
+    }
   }
 
   return (
@@ -90,31 +110,28 @@ export function ContactPageClient() {
             What can we help you with?
           </h2>
           <p className="body-copy mt-4 max-w-[360px] text-[1rem] leading-relaxed">
-            We read every message and will get back to you as soon as possible.
-            For anything urgent, use the email below.
+            We read every message and reply within one business day. Use the
+            form to reach our team directly.
           </p>
-          <a
-            href="mailto:hello@kerygmasocial.com"
-            className="mt-8 inline-flex items-center gap-3 group"
-          >
-            <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-near-black text-white transition group-hover:bg-[#222]">
+          <div className="mt-8 inline-flex items-center gap-3">
+            <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-near-black text-white">
               <Mail className="h-5 w-5" strokeWidth={1.75} />
             </span>
-            <span className="font-playfair text-[1.35rem] italic text-near-black group-hover:text-gold">
+            <span className="font-playfair text-[1.35rem] italic text-near-black">
               hello@kerygmasocial.com
             </span>
-          </a>
+          </div>
         </div>
 
         <div className="animate-fade-drop-delay-4 rounded-[28px] bg-[#111111] p-8 shadow-[0_24px_64px_rgba(0,0,0,0.18)] md:p-10">
           {submitted ? (
             <div className="flex min-h-[420px] flex-col items-center justify-center text-center">
               <p className="font-playfair text-2xl italic text-white">
-                Thanks for reaching out
+                Message sent! We&apos;ll get back to you within 1 business day.
               </p>
               <p className="mt-3 max-w-sm text-sm leading-relaxed text-white/60">
-                Your email app should open with your message ready to send. We
-                typically reply within one business day.
+                Thanks for reaching out. A member of our team will follow up at
+                the email address you provided.
               </p>
             </div>
           ) : (
@@ -128,6 +145,7 @@ export function ContactPageClient() {
                   name="name"
                   type="text"
                   required
+                  disabled={submitting}
                   placeholder="Full name"
                   className={fieldClass}
                 />
@@ -135,14 +153,30 @@ export function ContactPageClient() {
 
               <div>
                 <label htmlFor="email" className="text-sm text-white/90">
-                  Work email*
+                  Email*
                 </label>
                 <input
                   id="email"
                   name="email"
                   type="email"
                   required
+                  disabled={submitting}
                   placeholder="you@company.com"
+                  className={fieldClass}
+                />
+              </div>
+
+              <div>
+                <label htmlFor="subject" className="text-sm text-white/90">
+                  Subject*
+                </label>
+                <input
+                  id="subject"
+                  name="subject"
+                  type="text"
+                  required
+                  disabled={submitting}
+                  placeholder="How can we help?"
                   className={fieldClass}
                 />
               </div>
@@ -155,38 +189,30 @@ export function ContactPageClient() {
                   id="message"
                   name="message"
                   required
+                  disabled={submitting}
                   rows={5}
                   placeholder="What do you want to achieve? How can we help your business succeed?"
                   className={cn(fieldClass, "resize-none")}
                 />
               </div>
 
-              <div>
-                <label htmlFor="source" className="text-sm text-white/90">
-                  Where did you hear about us?
-                </label>
-                <div className="relative mt-2">
-                  <select
-                    id="source"
-                    name="source"
-                    defaultValue="LinkedIn"
-                    className={cn(fieldClass, "appearance-none pr-10")}
-                  >
-                    {hearAboutOptions.map((option) => (
-                      <option key={option} value={option} className="bg-[#222]">
-                        {option}
-                      </option>
-                    ))}
-                  </select>
-                  <ChevronDown className="pointer-events-none absolute right-4 top-1/2 h-4 w-4 -translate-y-1/2 text-white/50" />
-                </div>
-              </div>
+              {error ? (
+                <p className="text-sm leading-relaxed text-red-300">{error}</p>
+              ) : null}
 
               <button
                 type="submit"
-                className="mt-2 w-full rounded-xl bg-[#2a2a2a] px-4 py-3.5 text-[0.95rem] font-medium text-white transition hover:bg-[#333333]"
+                disabled={submitting}
+                className="mt-2 flex w-full items-center justify-center rounded-xl bg-[#2a2a2a] px-4 py-3.5 text-[0.95rem] font-medium text-white transition hover:bg-[#333333] disabled:cursor-not-allowed disabled:opacity-70"
               >
-                Send message
+                {submitting ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Sending…
+                  </>
+                ) : (
+                  "Send message"
+                )}
               </button>
             </form>
           )}

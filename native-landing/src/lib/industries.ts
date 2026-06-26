@@ -1,53 +1,58 @@
 export const industries = [
-  "churches",
-  "faith-aligned businesses",
+  "local businesses",
   "fitness studios",
-  "wellness spas",
+  "coffee shops",
+  "restaurants",
+  "boutiques",
+  "salons & spas",
+  "churches",
+  "nonprofits",
   "yoga studios",
-  "coffee roasters",
-  "design agencies",
-  "carpenters",
-  "boutique hotels",
+  "bakeries",
 ] as const;
 
 export type Industry = (typeof industries)[number];
 
 export const industryImages: Record<Industry, { src: string; alt: string }> = {
-  churches: {
-    src: "https://images.unsplash.com/photo-1438232992991-995b7058bbb3?auto=format&fit=crop&w=500&q=80",
-    alt: "Historic church with steeple at golden hour",
-  },
-  "faith-aligned businesses": {
-    src: "https://images.unsplash.com/photo-1511632765486-a01980e01a18?auto=format&fit=crop&w=500&q=80",
-    alt: "Community gathered together in fellowship",
+  "local businesses": {
+    src: "https://images.unsplash.com/photo-1441986300917-64674bd600d8?auto=format&fit=crop&w=500&q=80",
+    alt: "Independent local shop on a neighborhood street",
   },
   "fitness studios": {
     src: "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?auto=format&fit=crop&w=500&q=80",
     alt: "Modern fitness studio with weights and equipment",
   },
-  "wellness spas": {
+  "coffee shops": {
+    src: "https://images.unsplash.com/photo-1447933601403-0c6688de566e?auto=format&fit=crop&w=500&q=80",
+    alt: "Freshly brewed coffee in a cozy café",
+  },
+  restaurants: {
+    src: "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=500&q=80",
+    alt: "Restaurant dining room ready for guests",
+  },
+  boutiques: {
+    src: "https://images.unsplash.com/photo-1445205170230-053b83016050?auto=format&fit=crop&w=500&q=80",
+    alt: "Clothing boutique with curated displays",
+  },
+  "salons & spas": {
     src: "https://images.unsplash.com/photo-1544161515-4ab6ce6db874?auto=format&fit=crop&w=500&q=80",
-    alt: "Relaxing wellness spa with massage table and candles",
+    alt: "Relaxing salon and spa treatment room",
+  },
+  churches: {
+    src: "https://images.unsplash.com/photo-1438232992991-995b7058bbb3?auto=format&fit=crop&w=500&q=80",
+    alt: "Historic church with steeple at golden hour",
+  },
+  nonprofits: {
+    src: "https://images.unsplash.com/photo-1529156069898-49953e39b3ac?auto=format&fit=crop&w=500&q=80",
+    alt: "Community volunteers working together",
   },
   "yoga studios": {
     src: "https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?auto=format&fit=crop&w=500&q=80",
     alt: "People practicing yoga in a bright studio",
   },
-  "coffee roasters": {
-    src: "https://images.unsplash.com/photo-1447933601403-0c6688de566e?auto=format&fit=crop&w=500&q=80",
-    alt: "Freshly roasted coffee beans",
-  },
-  "design agencies": {
-    src: "https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&w=500&q=80",
-    alt: "Creative design agency workspace",
-  },
-  carpenters: {
-    src: "https://images.unsplash.com/photo-1589939705384-5185137a7f0f?auto=format&fit=crop&w=500&q=80",
-    alt: "Carpenter sanding wood in a workshop",
-  },
-  "boutique hotels": {
-    src: "https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=500&q=80",
-    alt: "Boutique hotel pool and lounge",
+  bakeries: {
+    src: "https://images.unsplash.com/photo-1509440159596-0249088772ff?auto=format&fit=crop&w=500&q=80",
+    alt: "Fresh bread and pastries in a bakery",
   },
 };
 
