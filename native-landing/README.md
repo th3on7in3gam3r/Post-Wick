@@ -18,6 +18,4 @@ npm run dev
 
 Visit [http://localhost:3000](http://localhost:3000).
 
-## Standalone HTML (legacy)
-
-Static HTML prototypes live in `index.html` and `public/` for reference. The Next.js app at `/` is the primary site.
+The Next.js app at `/` is the site. Legacy static HTML prototypes have been removed.

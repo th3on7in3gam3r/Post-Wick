@@ -6,8 +6,7 @@ Social media on autopilot — brand crawl, AI post generation, approval queue, s
 
 | Package | Description |
 |---------|-------------|
-| **`native-landing/`** | Main Next.js app (UI, API routes, local SQLite dev) |
-| **`post-wick/`** | Full SaaS scaffold (Neon/Drizzle, Stripe, extended schema) |
+| **`native-landing/`** | Main Next.js app (marketing site, app UI, API routes) |
 | **`web-crawler/`** | Website crawl package (CLI subprocess integration) |
 
 ## Local development
