@@ -35,7 +35,7 @@ export function AuthPageShell({
   const isCentered = layout === "centered";
 
   return (
-    <div className="relative flex h-screen flex-col overflow-hidden bg-cream">
+    <div className="relative flex min-h-screen flex-col bg-cream">
       <div
         className={`absolute inset-0 bg-cover bg-no-repeat ${imagePosition}`}
         style={{ backgroundImage: `url('${backgroundImage}')` }}
@@ -74,15 +74,17 @@ export function AuthPageShell({
       </header>
 
       {isCentered ? (
-        <main className="relative z-10 flex min-h-0 flex-1 flex-col items-center justify-center gap-4 overflow-y-auto px-4 py-6 sm:py-8">
-          <div className="w-full max-w-xl shrink-0 text-center">
-            <AuthSlogan className="text-[clamp(1.25rem,3vw,1.75rem)]" />
-            <p className="mt-2 text-sm text-gray-body md:text-[0.95rem]">
-              Drop your URL and we&apos;ll generate posts for your brand.
-            </p>
-          </div>
-          <div className={`flex w-full shrink-0 justify-center ${contentMaxWidth}`}>
-            {children}
+        <main className="relative z-10 flex flex-1 flex-col items-center px-4 py-6 sm:py-8">
+          <div className="flex w-full max-w-xl flex-col items-center gap-5">
+            <div className="w-full shrink-0 text-center">
+              <AuthSlogan className="text-[clamp(1.25rem,3vw,1.75rem)]" />
+              <p className="mt-2 text-sm text-gray-body md:text-[0.95rem]">
+                Drop your URL and we&apos;ll generate posts for your brand.
+              </p>
+            </div>
+            <div className={`w-full ${contentMaxWidth}`}>
+              {children}
+            </div>
           </div>
         </main>
       ) : (

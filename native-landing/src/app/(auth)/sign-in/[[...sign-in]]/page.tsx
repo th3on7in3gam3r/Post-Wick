@@ -1,7 +1,10 @@
 import { SignIn } from "@clerk/nextjs";
+import { AuthClerkSlot } from "@/components/auth-clerk-slot";
 import { clerkAppearanceAuth } from "@/lib/clerk-appearance";
 import { onboardingRedirectFromHeroUrl } from "@/lib/pending-website-url";
 import { normalizeWebsiteUrl } from "@/lib/website-url";
+
+export const dynamic = "force-dynamic";
 
 export default function SignInPage({
   searchParams,
@@ -19,13 +22,15 @@ export default function SignInPage({
     : "/sign-up";
 
   return (
-    <SignIn
-      appearance={clerkAppearanceAuth}
-      routing="path"
-      path="/sign-in"
-      signUpUrl={signUpUrl}
-      forceRedirectUrl={redirectUrl}
-      fallbackRedirectUrl={redirectUrl}
-    />
+    <AuthClerkSlot>
+      <SignIn
+        appearance={clerkAppearanceAuth}
+        routing="path"
+        path="/sign-in"
+        signUpUrl={signUpUrl}
+        forceRedirectUrl={redirectUrl}
+        fallbackRedirectUrl={redirectUrl}
+      />
+    </AuthClerkSlot>
   );
 }

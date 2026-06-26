@@ -1,6 +1,5 @@
 import { AuthPageShell } from "@/components/auth-page-shell";
 import { AuthPrivacyFooter } from "@/components/auth-privacy-footer";
-import { AuthScrollLock } from "@/components/auth-scroll-lock";
 import { createPageMetadata } from "@/lib/metadata";
 
 const description = "Sign in to Kerygma Social and manage your social content on autopilot.";
@@ -19,9 +18,7 @@ export default function SignInLayout({
   children: React.ReactNode;
 }) {
   return (
-    <>
-      <AuthScrollLock />
-      <AuthPageShell
+    <AuthPageShell
         layout="centered"
         contentMaxWidth="max-w-[340px]"
         backgroundImage="/images/sign-in-forest-hammock.png"
@@ -30,7 +27,6 @@ export default function SignInLayout({
         footer={<AuthPrivacyFooter />}
       >
         {children}
-      </AuthPageShell>
-    </>
+    </AuthPageShell>
   );
 }
