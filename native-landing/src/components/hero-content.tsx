@@ -7,6 +7,7 @@ import { TextureButton } from "@/components/ui/texture-button";
 import { normalizeWebsiteUrl } from "@/lib/website-url";
 import { cn } from "@/lib/utils";
 import { savePendingWebsiteUrl, markHeroOnboardingIntent, onboardingRedirectFromHeroUrl, HERO_LAUNCH_PATHS } from "@/lib/pending-website-url";
+import { KerygmaWelcome } from "@/components/kerygma-welcome";
 import { SITE_TAGLINE } from "@/lib/brand";
 import {
   type ImagePlacement,
@@ -186,6 +187,10 @@ export function HeroContent() {
         <p className="mt-4 font-playfair text-[clamp(1.1rem,2.5vw,1.3rem)] italic text-[#555555]">
           {SITE_TAGLINE}
         </p>
+
+        <div className="mt-6 w-full">
+          <KerygmaWelcome />
+        </div>
 
         <form
           onSubmit={handleSubmit}

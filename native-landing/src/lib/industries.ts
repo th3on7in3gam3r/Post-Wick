@@ -1,4 +1,6 @@
 export const industries = [
+  "churches",
+  "faith-aligned businesses",
   "fitness studios",
   "wellness spas",
   "yoga studios",
@@ -11,6 +13,14 @@ export const industries = [
 export type Industry = (typeof industries)[number];
 
 export const industryImages: Record<Industry, { src: string; alt: string }> = {
+  churches: {
+    src: "https://images.unsplash.com/photo-1438232992991-995b7058bbb3?auto=format&fit=crop&w=500&q=80",
+    alt: "Historic church with steeple at golden hour",
+  },
+  "faith-aligned businesses": {
+    src: "https://images.unsplash.com/photo-1511632765486-a01980e01a18?auto=format&fit=crop&w=500&q=80",
+    alt: "Community gathered together in fellowship",
+  },
   "fitness studios": {
     src: "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?auto=format&fit=crop&w=500&q=80",
     alt: "Modern fitness studio with weights and equipment",
