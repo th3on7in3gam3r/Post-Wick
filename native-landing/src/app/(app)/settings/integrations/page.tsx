@@ -11,6 +11,7 @@ import {
   isInstagramConfigured,
   metaRedirectUri,
 } from "@/lib/social/meta";
+import { isXConfigured, xRedirectUri } from "@/lib/social/x";
 import { isPlatformAdmin } from "@/lib/server/platform-admin";
 import { siteUrl } from "@/lib/brand";
 import { requireUserId } from "@/lib/server/app-data";
@@ -21,7 +22,7 @@ export default async function IntegrationsPage({
   searchParams: { connected?: string; error?: string };
 }) {
   const userId = await requireUserId();
-  const [brands, connections, showMetaAdminGuide] = await Promise.all([
+  const [brands, connections, isAdmin] = await Promise.all([
     getBrandsByUserId(userId),
     getConnectionsByUserId(userId),
     isPlatformAdmin(),
@@ -56,8 +57,14 @@ export default async function IntegrationsPage({
             appUrl: siteUrl(),
             usesInstagramAppId: Boolean(process.env.INSTAGRAM_APP_ID?.trim()),
           }}
+          xSetup={{
+            configured: isXConfigured(),
+            redirectUri: xRedirectUri(),
+            appUrl: siteUrl(),
+          }}
           flashParams={searchParams}
-          showMetaAdminGuide={showMetaAdminGuide}
+          showMetaAdminGuide={isAdmin}
+          showXAdminGuide={isAdmin}
         />
       )}
     </SettingsShell>

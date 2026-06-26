@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import { PanelCard } from "@/components/app/panel-card";
 import { MetaSetupGuide, type MetaSetupInfo } from "@/components/app/meta-setup-guide";
+import { XSetupGuide, type XSetupInfo } from "@/components/app/x-setup-guide";
 import { TextureButton } from "@/components/ui/texture-button";
 import {
   INTEGRATION_CATEGORIES,
@@ -57,6 +58,9 @@ function flashMessage(searchParams: {
   if (searchParams.connected === "facebook") {
     return "Facebook Page connected. Text and image posts can publish when they are due.";
   }
+  if (searchParams.connected === "twitter") {
+    return "X connected. Text and image posts can publish when they are due.";
+  }
   if (searchParams.error === "linkedin_exchange_failed") {
     return "LinkedIn authorization failed. Try again or use demo mode.";
   }
@@ -69,6 +73,9 @@ function flashMessage(searchParams: {
   if (searchParams.error === "meta_exchange_failed") {
     return "Meta authorization failed. Confirm your Page and Instagram Business account are linked.";
   }
+  if (searchParams.error === "x_exchange_failed") {
+    return "X authorization failed. Confirm your app callback URL matches the developer portal.";
+  }
   if (searchParams.error) {
     return "Connection failed. Please try again.";
   }
@@ -80,14 +87,18 @@ export function IntegrationsClient({
   initialConnections,
   runtimeConfig,
   metaSetup,
+  xSetup,
   showMetaAdminGuide,
+  showXAdminGuide,
   flashParams,
 }: {
   brands: Brand[];
   initialConnections: Connection[];
   runtimeConfig: PlatformRuntimeConfig[];
   metaSetup: MetaSetupInfo;
+  xSetup: XSetupInfo;
   showMetaAdminGuide: boolean;
+  showXAdminGuide: boolean;
   flashParams?: { connected?: string; error?: string };
 }) {
   const router = useRouter();
@@ -156,6 +167,11 @@ export function IntegrationsClient({
 
     if (platform === "instagram" || platform === "facebook") {
       window.location.href = `/api/social/meta/connect?brandId=${brandId}&platform=${platform}`;
+      return;
+    }
+
+    if (platform === "twitter") {
+      window.location.href = `/api/social/x/connect?brandId=${brandId}`;
     }
   }
 
@@ -199,6 +215,7 @@ export function IntegrationsClient({
       ) : null}
 
       <MetaSetupGuide setup={metaSetup} showAdminGuide={showMetaAdminGuide} />
+      <XSetupGuide setup={xSetup} showAdminGuide={showXAdminGuide} />
 
       <div className="grid gap-4 md:grid-cols-3">
         <div className="rounded-2xl border border-black/[0.06] bg-white p-5 shadow-card">
@@ -344,6 +361,13 @@ export function IntegrationsClient({
                   {platform.id === "instagram" && !connection ? (
                     <p className="mt-3 text-xs text-gray-body">
                       Requires an Instagram Business or Creator account.
+                    </p>
+                  ) : null}
+
+                  {platform.id === "twitter" && !connection ? (
+                    <p className="mt-3 text-xs text-gray-body">
+                      Connect the X account that should publish approved posts. Image posts
+                      need Fix images on the brand page first.
                     </p>
                   ) : null}
 

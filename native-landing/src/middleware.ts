@@ -18,10 +18,12 @@ const isPublicRoute = createRouteMatcher([
   "/api/health/linkedin",
   "/api/health/meta",
   "/api/health/facebook",
+  "/api/health/x",
   "/api/cron/publish",
   "/api/generated/(.*)",
   "/api/social/linkedin/callback",
   "/api/social/meta/callback",
+  "/api/social/x/callback",
 ]);
 
 export default clerkMiddleware(async (auth, req) => {

@@ -4,6 +4,7 @@ import {
   getUserIdsWithDuePosts,
   markPostFailed,
   markPostPublished,
+  upsertConnection,
   type ConnectionRecord,
 } from "@/lib/db";
 import { publishToLinkedIn } from "@/lib/social/linkedin";
@@ -11,6 +12,7 @@ import {
   publishToFacebookPage,
   publishToInstagram,
 } from "@/lib/social/meta";
+import { parseXMetadata, publishToX } from "@/lib/social/x";
 import { postHasBrokenImageUrl, postNeedsRepair, resolvePostImageUrl } from "@/lib/posts/image-url";
 
 type MetaMetadata = {
@@ -92,6 +94,40 @@ async function publishLivePost(
       imageUrl,
       { authFlow: metadata.authFlow },
     );
+  }
+
+  if (platform === "twitter" && connection.accessToken) {
+    if (post.imageUrl && postHasBrokenImageUrl(post.imageUrl)) {
+      throw new Error(
+        "Post image is not in cloud storage. Open Brands and click Fix images before publishing.",
+      );
+    }
+    const imageUrl = post.imageUrl ? resolvePostImageUrl(post.imageUrl) : null;
+    const xMetadata = parseXMetadata(connection.metadata);
+    const result = await publishToX(
+      connection.accessToken,
+      post.content,
+      imageUrl,
+      xMetadata,
+    );
+
+    if (
+      result.accessToken !== connection.accessToken ||
+      JSON.stringify(result.metadata) !== JSON.stringify(xMetadata)
+    ) {
+      await upsertConnection({
+        id: connection.id,
+        userId: connection.userId,
+        brandId: connection.brandId,
+        platform: connection.platform,
+        accountName: connection.accountName ?? undefined,
+        accessToken: result.accessToken,
+        metadata: result.metadata ?? undefined,
+        isDemo: false,
+      });
+    }
+
+    return result.externalId;
   }
 
   throw new Error(`Live publishing for ${post.platform} is not available yet`);

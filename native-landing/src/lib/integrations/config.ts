@@ -6,6 +6,7 @@ import {
   isFacebookConfigured,
   isInstagramConfigured,
 } from "@/lib/social/meta";
+import { isXConfigured } from "@/lib/social/x";
 
 export type PlatformConnectionMode = "oauth" | "demo" | "unavailable";
 
@@ -51,6 +52,15 @@ export function getPlatformRuntimeConfig(
     };
   }
 
+  if (platform.oauthProvider === "x") {
+    const oauthConfigured = isXConfigured();
+    return {
+      id: platformId,
+      oauthConfigured,
+      connectionMode: oauthConfigured ? "oauth" : platform.demoAvailable ? "demo" : "unavailable",
+    };
+  }
+
   return {
     id: platformId,
     oauthConfigured: false,
@@ -69,5 +79,6 @@ export function getIntegrationProvidersSummary() {
     linkedin: isLinkedInConfigured(),
     instagram: isInstagramConfigured(),
     facebook: isFacebookConfigured(),
+    x: isXConfigured(),
   };
 }

@@ -17,7 +17,7 @@ export type IntegrationDefinition = {
   charLimit: number;
   supportsImages: boolean;
   demoAvailable: boolean;
-  oauthProvider?: "linkedin" | "meta";
+  oauthProvider?: "linkedin" | "meta" | "x";
 };
 
 export const INTEGRATION_CATEGORIES: Record<
@@ -77,6 +77,7 @@ export const INTEGRATION_PLATFORMS: IntegrationDefinition[] = [
     charLimit: 280,
     supportsImages: true,
     demoAvailable: true,
+    oauthProvider: "x",
   },
   {
     id: "tiktok",

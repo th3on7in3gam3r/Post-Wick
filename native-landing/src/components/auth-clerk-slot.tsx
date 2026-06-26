@@ -59,8 +59,11 @@ export function AuthClerkSlot({ children }: { children: React.ReactNode }) {
           <div>
             <p className="font-playfair text-lg italic text-near-black">Loading sign-in…</p>
             <p className="mt-2 text-sm text-gray-body">
-              If this stays blank, confirm <strong className="font-medium">kerygmasocial.com</strong>{" "}
-              is added in your Clerk dashboard under Domains and redirect URLs.
+              Clerk is still loading. If this stays blank, add the missing{" "}
+              <strong className="font-medium">clerk</strong> CNAME record from your Clerk
+              dashboard (Domains → DNS Configuration) — usually{" "}
+              <strong className="font-medium">clerk</strong> →{" "}
+              <strong className="font-medium">frontend-api.clerk.services</strong>.
             </p>
           </div>
         </div>
