@@ -5,7 +5,7 @@ import { PLAN_LIMITS } from "@/lib/plans";
 
 export function SidebarUpgradeNudge({ generateMax }: { generateMax: number }) {
   return (
-    <div className="rounded-xl border border-gold/25 bg-gradient-to-br from-gold/10 via-gold/5 to-cream/60 px-3 py-3">
+    <div className="rounded-xl border border-gold/25 bg-cream px-3 py-3 shadow-sm">
       <p className="text-xs font-medium text-near-black">
         Free plan · {generateMax} posts/batch
       </p>

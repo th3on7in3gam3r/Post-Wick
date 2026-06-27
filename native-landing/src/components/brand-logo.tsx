@@ -3,18 +3,28 @@ import Link from "next/link";
 import { SITE_NAME, SITE_TAGLINE } from "@/lib/brand";
 import { cn } from "@/lib/utils";
 
-const LOGO = {
-  src: "/images/kerygma-social-logo.png",
-  width: 1021,
-  height: 244,
-  alt: `${SITE_NAME} — ${SITE_TAGLINE}`,
+const LOGOS = {
+  default: {
+    src: "/images/kerygma-social-logo.png",
+    width: 930,
+    height: 261,
+    alt: `${SITE_NAME} — ${SITE_TAGLINE}`,
+  },
+  light: {
+    src: "/images/kerygma-social-logo-light.png",
+    width: 451,
+    height: 131,
+    alt: SITE_NAME,
+  },
 } as const;
 
 type BrandLogoVariant = "wordmark" | "wordmark-only" | "full" | "mark";
+type BrandLogoTone = keyof typeof LOGOS;
 
 type BrandLogoProps = {
   href?: string;
   variant?: BrandLogoVariant;
+  tone?: BrandLogoTone;
   className?: string;
   imageClassName?: string;
   priority?: boolean;
@@ -35,48 +45,61 @@ const wordmarkOnlyImageHeights: Record<"sm" | "md", string> = {
 export function BrandLogo({
   href = "/",
   variant = "wordmark",
+  tone = "default",
   className,
   imageClassName,
   priority = false,
 }: BrandLogoProps) {
+  const logo = LOGOS[tone];
   const heightClass = variantHeights[variant];
+  const blendClass = tone === "light" ? "mix-blend-screen" : undefined;
 
   const image =
     variant === "mark" ? (
       <div className={cn("overflow-hidden rounded-sm", heightClass)}>
         <Image
-          src={LOGO.src}
+          src={logo.src}
           alt={SITE_NAME}
-          width={LOGO.width}
-          height={LOGO.height}
+          width={logo.width}
+          height={logo.height}
           priority={priority}
-          className={cn("block h-full w-auto max-w-none object-left object-contain", imageClassName)}
+          className={cn(
+            "block h-full w-auto max-w-none object-left object-contain",
+            blendClass,
+            imageClassName,
+          )}
         />
       </div>
     ) : variant === "wordmark-only" ? (
       <div className={cn("overflow-hidden", heightClass)}>
         <Image
-          src={LOGO.src}
+          src={logo.src}
           alt={SITE_NAME}
-          width={LOGO.width}
-          height={LOGO.height}
+          width={logo.width}
+          height={logo.height}
           priority={priority}
           className={cn(
             "block w-auto max-w-none object-left object-top",
             wordmarkOnlyImageHeights.sm,
             wordmarkOnlyImageHeights.md,
+            blendClass,
             imageClassName,
           )}
         />
       </div>
     ) : (
       <Image
-        src={LOGO.src}
-        alt={LOGO.alt}
-        width={LOGO.width}
-        height={LOGO.height}
+        src={logo.src}
+        alt={logo.alt}
+        width={logo.width}
+        height={logo.height}
         priority={priority}
-        className={cn("block w-auto max-w-none object-contain object-left", heightClass, imageClassName)}
+        className={cn(
+          "block w-auto max-w-none object-contain object-left",
+          heightClass,
+          blendClass,
+          imageClassName,
+        )}
       />
     );
 

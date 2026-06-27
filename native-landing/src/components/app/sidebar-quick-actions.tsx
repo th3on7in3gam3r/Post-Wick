@@ -18,8 +18,8 @@ export function SidebarQuickActions() {
   const brandHref = `/brands/${activeClient.id}`;
 
   return (
-    <div className="rounded-xl border border-black/[0.06] bg-cream/40 px-3 py-3">
-      <p className="text-[0.65rem] font-semibold uppercase tracking-[0.12em] text-gray-label">
+    <div className="rounded-xl border border-white/10 bg-white/5 px-3 py-3">
+      <p className="text-[0.65rem] font-semibold uppercase tracking-[0.12em] text-cream/50">
         Quick actions
       </p>
       <div className="mt-2 grid grid-cols-3 gap-1.5">
@@ -28,23 +28,23 @@ export function SidebarQuickActions() {
             key={href}
             href={href}
             className={cn(
-              "flex flex-col items-center gap-1 rounded-lg border border-black/[0.06] bg-white px-1 py-2 text-center transition",
-              "hover:border-gold/30 hover:bg-cream/60",
+              "flex flex-col items-center gap-1 rounded-lg border border-white/10 bg-white/10 px-1 py-2 text-center transition",
+              "hover:border-white/20 hover:bg-white/15",
             )}
           >
             <Icon className="h-3.5 w-3.5 text-gold" />
-            <span className="text-[0.65rem] font-medium text-near-black">{label}</span>
+            <span className="text-[0.65rem] font-medium text-cream">{label}</span>
           </Link>
         ))}
         <Link
           href={brandHref}
           className={cn(
-            "flex flex-col items-center gap-1 rounded-lg border border-black/[0.06] bg-white px-1 py-2 text-center transition",
-            "hover:border-gold/30 hover:bg-cream/60",
+            "flex flex-col items-center gap-1 rounded-lg border border-white/10 bg-white/10 px-1 py-2 text-center transition",
+            "hover:border-white/20 hover:bg-white/15",
           )}
         >
           <Sparkles className="h-3.5 w-3.5 text-gold" />
-          <span className="text-[0.65rem] font-medium text-near-black">Generate</span>
+          <span className="text-[0.65rem] font-medium text-cream">Generate</span>
         </Link>
       </div>
     </div>

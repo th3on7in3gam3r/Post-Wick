@@ -12,6 +12,12 @@ const config: Config = {
         cream: "#F0EDE4",
         "cream-dark": "#E8E4D9",
         gold: "#C9923A",
+        sage: {
+          DEFAULT: "#3D5A45",
+          light: "#E6EBE7",
+          muted: "#5A7160",
+          dark: "#2F4536",
+        },
         "near-black": "#1A1A1A",
         "gray-body": "#6B6B6B",
         "gray-label": "#999999",

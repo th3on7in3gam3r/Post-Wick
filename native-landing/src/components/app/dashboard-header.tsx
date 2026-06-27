@@ -13,6 +13,7 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { AppHeader } from "@/components/app/app-header";
+import { greetingForHour, userFirstName } from "@/lib/user-greeting";
 
 type LocalWeather = {
   tempF: number;
@@ -38,20 +39,6 @@ function hourInTimeZone(timeZone: string, date: Date) {
     }).format(date),
   );
   return Number.isFinite(hour) ? hour : date.getHours();
-}
-
-function userFirstName(firstName?: string | null, fullName?: string | null) {
-  const first = firstName?.trim();
-  if (first) return first;
-  const full = fullName?.trim();
-  if (!full) return null;
-  return full.split(/\s+/)[0] ?? null;
-}
-
-function greetingForHour(hour: number, firstName?: string | null) {
-  const period = hour < 12 ? "Good morning" : hour < 17 ? "Good afternoon" : "Good evening";
-  const name = firstName?.trim();
-  return name ? `${period}, ${name}` : period;
 }
 
 function formatDateInTimeZone(timeZone: string, date: Date) {

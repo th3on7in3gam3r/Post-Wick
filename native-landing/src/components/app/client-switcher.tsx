@@ -42,11 +42,18 @@ function ClientAvatar({
   );
 }
 
-export function ClientSwitcher({ className }: { className?: string }) {
+export function ClientSwitcher({
+  className,
+  tone = "default",
+}: {
+  className?: string;
+  tone?: "default" | "sidebar";
+}) {
   const { clients, activeClient, setActiveClientId } = useActiveClient();
   const [open, setOpen] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
   const hasClients = clients.length > 0;
+  const isSidebar = tone === "sidebar";
 
   useEffect(() => {
     if (!open) return;
@@ -66,7 +73,10 @@ export function ClientSwitcher({ className }: { className?: string }) {
       <Link
         href="/onboarding?add=1"
         className={cn(
-          "flex w-full items-center gap-2.5 rounded-xl border border-dashed border-gold/40 bg-cream/60 px-3 py-2.5 text-sm font-medium text-gold transition hover:bg-cream",
+          "flex w-full items-center gap-2.5 rounded-xl border border-dashed px-3 py-2.5 text-sm font-medium transition",
+          isSidebar
+            ? "border-gold/40 bg-cream text-gold hover:bg-cream-dark"
+            : "border-gold/40 bg-cream/60 text-gold hover:bg-cream",
           className,
         )}
       >
@@ -83,20 +93,36 @@ export function ClientSwitcher({ className }: { className?: string }) {
         onClick={() => setOpen((value) => !value)}
         aria-expanded={open}
         aria-haspopup="listbox"
-        className="flex w-full items-center gap-2.5 rounded-xl border border-black/[0.06] bg-cream/60 px-3 py-2.5 text-left transition hover:border-gold/30 hover:bg-cream"
+        className={cn(
+          "flex w-full items-center gap-2.5 rounded-xl border px-3 py-2.5 text-left transition",
+          isSidebar
+            ? "border-white/10 bg-white/10 hover:border-white/20 hover:bg-white/15"
+            : "border-black/[0.06] bg-cream/60 hover:border-gold/30 hover:bg-cream",
+        )}
       >
         <ClientAvatar name={activeClient.name} logoUrl={activeClient.logoUrl} />
         <span className="min-w-0 flex-1">
-          <span className="block truncate text-sm font-medium text-near-black">
+          <span
+            className={cn(
+              "block truncate text-sm font-medium",
+              isSidebar ? "text-cream" : "text-near-black",
+            )}
+          >
             {activeClient.name}
           </span>
-          <span className="block truncate text-[0.65rem] text-gray-label">
+          <span
+            className={cn(
+              "block truncate text-[0.65rem]",
+              isSidebar ? "text-cream/60" : "text-gray-label",
+            )}
+          >
             {activeClient.industry}
           </span>
         </span>
         <ChevronDown
           className={cn(
-            "h-4 w-4 shrink-0 text-gray-label transition",
+            "h-4 w-4 shrink-0 transition",
+            isSidebar ? "text-cream/60" : "text-gray-label",
             open && "rotate-180",
           )}
         />

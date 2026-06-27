@@ -59,7 +59,7 @@ export function AuthPageShell({
       <header className="relative z-10 shrink-0 border-b border-black/[0.06] bg-white/60 backdrop-blur-sm">
         <div className="mx-auto flex h-16 max-w-[1400px] items-center justify-between gap-4 px-6 md:px-10">
           <div className="flex min-w-0 items-center gap-3 sm:gap-4">
-            <BrandLogo variant="wordmark-only" priority />
+            <BrandLogo variant="wordmark" priority />
             <p className="hidden text-[0.62rem] font-semibold uppercase tracking-[0.2em] text-[#5c6b58] min-[420px]:block sm:text-[0.68rem]">
               {SITE_SLOGAN_PARTS.join(" · ")}
             </p>

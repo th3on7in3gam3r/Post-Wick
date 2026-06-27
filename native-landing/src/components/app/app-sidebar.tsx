@@ -14,6 +14,7 @@ import {
 import { ClientSwitcher } from "@/components/app/client-switcher";
 import { SidebarQuickActions } from "@/components/app/sidebar-quick-actions";
 import { SidebarUpgradeNudge } from "@/components/app/sidebar-upgrade-nudge";
+import { SidebarWelcome } from "@/components/app/sidebar-welcome";
 import { BrandLogo } from "@/components/brand-logo";
 import type { SubscriptionTier } from "@/lib/plans";
 import { cn } from "@/lib/utils";
@@ -66,15 +67,16 @@ export function AppSidebar({
   return (
     <aside
       className={cn(
-        "flex h-screen w-64 shrink-0 flex-col border-r border-black/[0.08] bg-white/80 backdrop-blur-sm",
+        "flex h-screen w-64 shrink-0 flex-col border-r border-sage-dark/80 bg-sage text-cream",
         className,
       )}
     >
-      <div className="shrink-0 space-y-4 border-b border-black/[0.06] px-4 py-5">
+      <div className="shrink-0 space-y-4 border-b border-white/10 px-4 py-5">
         <div className="px-2">
-          <BrandLogo href="/dashboard" variant="wordmark" priority />
+          <BrandLogo href="/dashboard" variant="wordmark" tone="light" priority />
         </div>
-        <ClientSwitcher />
+        <SidebarWelcome hasBrands={hasBrands} />
+        <ClientSwitcher tone="sidebar" />
         <SidebarQuickActions />
       </div>
 
@@ -89,27 +91,27 @@ export function AppSidebar({
               className={cn(
                 "flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium leading-none transition-colors",
                 active
-                  ? "bg-cream text-near-black shadow-sm"
-                  : "text-gray-body hover:bg-cream/70 hover:text-near-black",
+                  ? "bg-cream/15 text-cream shadow-sm ring-1 ring-white/10"
+                  : "text-cream/70 hover:bg-white/10 hover:text-cream",
               )}
             >
-              <Icon className={cn("h-4 w-4", active ? "text-gold" : "text-gray-label")} />
+              <Icon className={cn("h-4 w-4", active ? "text-gold" : "text-cream/50")} />
               {label}
             </Link>
           );
         })}
       </nav>
 
-      <div className="shrink-0 border-t border-black/[0.06] p-4">
+      <div className="shrink-0 border-t border-white/10 p-4">
         {plan.tier === "free" ? (
           <SidebarUpgradeNudge generateMax={plan.generateMax} />
         ) : (
           <a
             href="mailto:hello@kerygmasocial.com"
-            className="block rounded-xl border border-black/[0.06] bg-cream/40 px-3 py-2.5 transition hover:border-gold/25 hover:bg-cream/70"
+            className="block rounded-xl border border-white/10 bg-white/5 px-3 py-2.5 transition hover:border-white/20 hover:bg-white/10"
           >
-            <p className="text-xs font-medium text-near-black">Need help?</p>
-            <p className="mt-0.5 text-xs text-gray-body">hello@kerygmasocial.com</p>
+            <p className="text-xs font-medium text-cream">Need help?</p>
+            <p className="mt-0.5 text-xs text-cream/65">hello@kerygmasocial.com</p>
           </a>
         )}
       </div>
