@@ -1,5 +1,6 @@
 import { SignUp } from "@clerk/nextjs";
 import { AuthClerkSlot } from "@/components/auth-clerk-slot";
+import { authRedirectPath, pairedAuthUrls } from "@/lib/auth-routes";
 import { clerkAppearanceAuth } from "@/lib/clerk-appearance";
 import { onboardingRedirectFromHeroUrl } from "@/lib/pending-website-url";
 import { normalizeWebsiteUrl } from "@/lib/website-url";
@@ -14,12 +15,11 @@ export default function SignUpPage({
   const pendingUrl = searchParams.url
     ? normalizeWebsiteUrl(searchParams.url)
     : null;
-  const redirectUrl =
+  const redirectUrl = authRedirectPath(
     searchParams.redirect_url ??
-    (pendingUrl ? onboardingRedirectFromHeroUrl(pendingUrl) : "/onboarding");
-  const signInUrl = pendingUrl
-    ? `/sign-in?url=${encodeURIComponent(pendingUrl)}&redirect_url=${encodeURIComponent(redirectUrl)}`
-    : "/sign-in";
+      (pendingUrl ? onboardingRedirectFromHeroUrl(pendingUrl) : undefined),
+  );
+  const { signInUrl } = pairedAuthUrls({ redirectUrl, pendingUrl });
 
   return (
     <AuthClerkSlot>

@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import { TextureButton } from "@/components/ui/texture-button";
+import { PRICING_SIGN_UP_HREF } from "@/lib/auth-routes";
 import { PLAN_LIMITS } from "@/lib/plans";
 import { formatAnnualCharge, plans, YEARLY_SAVE_LABEL } from "@/lib/pricing";
 import { cn } from "@/lib/utils";
@@ -93,7 +94,7 @@ export function Pricing() {
                   <li>Post history and publishing status</li>
                 </ul>
                 <TextureButton asChild variant="primary" size="lg" className="mt-8 flex w-full">
-                  <Link href="/sign-up" className="w-full">
+                  <Link href={PRICING_SIGN_UP_HREF} className="w-full">
                     See your own posts
                   </Link>
                 </TextureButton>
@@ -126,7 +127,7 @@ export function Pricing() {
                   <li>Early access to new features</li>
                 </ul>
                 <TextureButton asChild variant="secondary" size="lg" className="mt-8 flex w-full">
-                  <Link href="/sign-up" className="w-full">
+                  <Link href={PRICING_SIGN_UP_HREF} className="w-full">
                     Get started with Max
                   </Link>
                 </TextureButton>
