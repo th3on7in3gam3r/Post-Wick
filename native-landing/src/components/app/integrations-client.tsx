@@ -61,6 +61,9 @@ function flashMessage(searchParams: {
   if (searchParams.connected === "twitter") {
     return "X connected. Text and image posts can publish when they are due.";
   }
+  if (searchParams.connected === "pinterest") {
+    return "Pinterest connected. Image posts will pin to your selected board when they are due.";
+  }
   if (searchParams.error === "linkedin_exchange_failed") {
     return "LinkedIn authorization failed. Try again or use demo mode.";
   }
@@ -75,6 +78,12 @@ function flashMessage(searchParams: {
   }
   if (searchParams.error === "x_exchange_failed") {
     return "X authorization failed. Confirm your app callback URL matches the developer portal.";
+  }
+  if (searchParams.error === "pinterest_exchange_failed") {
+    return "Pinterest authorization failed. Confirm your app credentials and redirect URI.";
+  }
+  if (searchParams.error === "pinterest_no_boards") {
+    return "No Pinterest boards were found on this account. Create a board on Pinterest, then try again.";
   }
   if (searchParams.error) {
     return "Connection failed. Please try again.";
@@ -172,6 +181,11 @@ export function IntegrationsClient({
 
     if (platform === "twitter") {
       window.location.href = `/api/social/x/connect?brandId=${brandId}`;
+      return;
+    }
+
+    if (platform === "pinterest") {
+      window.location.href = `/api/social/pinterest/connect?brandId=${brandId}`;
     }
   }
 
@@ -368,6 +382,13 @@ export function IntegrationsClient({
                     <p className="mt-3 text-xs text-gray-body">
                       Connect the X account that should publish approved posts. Image posts
                       need Fix images on the brand page first.
+                    </p>
+                  ) : null}
+
+                  {platform.id === "pinterest" && !connection ? (
+                    <p className="mt-3 text-xs text-gray-body">
+                      Pins require an image. Connect a board you manage, then use Fix images
+                      on the brand page before publishing.
                     </p>
                   ) : null}
 

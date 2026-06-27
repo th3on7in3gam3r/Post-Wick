@@ -7,8 +7,8 @@ import { PLAN_LIMITS } from "@/lib/plans";
 import { plans } from "@/lib/pricing";
 import { cn } from "@/lib/utils";
 
-const ACTIVE_CHANNELS = ["Facebook", "Instagram", "LinkedIn"] as const;
-const COMING_SOON_CHANNELS = ["X", "TikTok", "Pinterest", "Reddit", "Bluesky"] as const;
+const ACTIVE_CHANNELS = ["Facebook", "Instagram", "LinkedIn", "Pinterest"] as const;
+const COMING_SOON_CHANNELS = ["X", "TikTok", "Reddit", "Bluesky"] as const;
 
 type BillingCycle = "monthly" | "yearly";
 

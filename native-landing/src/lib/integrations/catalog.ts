@@ -7,6 +7,12 @@ export type IntegrationPlatformId =
   | "pinterest"
   | "google_business";
 
+export type IntegrationOAuthProvider =
+  | "linkedin"
+  | "meta"
+  | "x"
+  | "pinterest";
+
 export type IntegrationCategory = "professional" | "social" | "local";
 
 export type IntegrationDefinition = {
@@ -17,7 +23,7 @@ export type IntegrationDefinition = {
   charLimit: number;
   supportsImages: boolean;
   demoAvailable: boolean;
-  oauthProvider?: "linkedin" | "meta" | "x";
+  oauthProvider?: IntegrationOAuthProvider;
 };
 
 export const INTEGRATION_CATEGORIES: Record<
@@ -96,6 +102,7 @@ export const INTEGRATION_PLATFORMS: IntegrationDefinition[] = [
     charLimit: 500,
     supportsImages: true,
     demoAvailable: true,
+    oauthProvider: "pinterest",
   },
   {
     id: "google_business",

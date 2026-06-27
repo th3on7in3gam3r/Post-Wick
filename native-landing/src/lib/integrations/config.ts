@@ -6,6 +6,7 @@ import {
   isFacebookConfigured,
   isInstagramConfigured,
 } from "@/lib/social/meta";
+import { isPinterestConfigured } from "@/lib/social/pinterest";
 import { isXConfigured } from "@/lib/social/x";
 
 export type PlatformConnectionMode = "oauth" | "demo" | "unavailable";
@@ -61,6 +62,15 @@ export function getPlatformRuntimeConfig(
     };
   }
 
+  if (platform.oauthProvider === "pinterest") {
+    const oauthConfigured = isPinterestConfigured();
+    return {
+      id: platformId,
+      oauthConfigured,
+      connectionMode: oauthConfigured ? "oauth" : platform.demoAvailable ? "demo" : "unavailable",
+    };
+  }
+
   return {
     id: platformId,
     oauthConfigured: false,
@@ -80,5 +90,6 @@ export function getIntegrationProvidersSummary() {
     instagram: isInstagramConfigured(),
     facebook: isFacebookConfigured(),
     x: isXConfigured(),
+    pinterest: isPinterestConfigured(),
   };
 }

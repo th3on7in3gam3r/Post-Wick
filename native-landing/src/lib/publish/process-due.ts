@@ -1,6 +1,7 @@
 import {
   claimDuePostForPublishing,
   finalizePublishedPost,
+  getBrandById,
   getConnectionForBrand,
   getDuePosts,
   getUserIdsWithDuePosts,
@@ -13,6 +14,11 @@ import {
   publishToFacebookPage,
   publishToInstagram,
 } from "@/lib/social/meta";
+import {
+  parsePinterestMetadata,
+  publishToPinterest,
+  resolvePinterestAccessToken,
+} from "@/lib/social/pinterest";
 import { parseXMetadata, publishToX } from "@/lib/social/x";
 import { postHasBrokenImageUrl, postNeedsRepair, resolvePostImageUrl } from "@/lib/posts/image-url";
 
@@ -34,6 +40,7 @@ function parseMetadata(connection: ConnectionRecord): MetaMetadata | null {
 async function publishLivePost(
   post: { id: string; brandId: string; platform: string; content: string; imageUrl: string | null },
   connection: ConnectionRecord,
+  userId: string,
 ) {
   const platform = post.platform.toLowerCase();
 
@@ -131,6 +138,56 @@ async function publishLivePost(
     return result.externalId;
   }
 
+  if (platform === "pinterest" && connection.accessToken) {
+    const metadata = parsePinterestMetadata(connection.metadata);
+    if (!metadata?.boardId) {
+      throw new Error("Pinterest board metadata is missing for this connection");
+    }
+    if (!post.imageUrl) {
+      throw new Error("Pinterest pins require an image. Refine this post with an image first.");
+    }
+    if (postNeedsRepair(post.imageUrl)) {
+      throw new Error(
+        "Post image is not in cloud storage. Open Brands and click Fix images before publishing.",
+      );
+    }
+
+    const imageUrl = resolvePostImageUrl(post.imageUrl);
+    if (!imageUrl) {
+      throw new Error("Pinterest image URL is invalid.");
+    }
+
+    const brand = await getBrandById(post.brandId, userId);
+    const resolved = await resolvePinterestAccessToken(
+      connection.accessToken,
+      metadata,
+    );
+
+    if (
+      resolved.accessToken !== connection.accessToken ||
+      JSON.stringify(resolved.metadata) !== JSON.stringify(metadata)
+    ) {
+      await upsertConnection({
+        id: connection.id,
+        userId: connection.userId,
+        brandId: connection.brandId,
+        platform: connection.platform,
+        accountName: connection.accountName ?? undefined,
+        accessToken: resolved.accessToken,
+        metadata: resolved.metadata ?? undefined,
+        isDemo: false,
+      });
+    }
+
+    return publishToPinterest(
+      resolved.accessToken,
+      resolved.metadata ?? metadata,
+      post.content,
+      imageUrl,
+      brand?.websiteUrl ?? null,
+    );
+  }
+
   throw new Error(`Live publishing for ${post.platform} is not available yet`);
 }
 
@@ -159,7 +216,7 @@ export async function processDuePostsForUser(userId: string) {
         continue;
       }
 
-      const externalId = await publishLivePost(claimed, connection);
+      const externalId = await publishLivePost(claimed, connection, userId);
       await finalizePublishedPost(claimed.id, userId, externalId);
       results.push({ postId: claimed.id, status: "published" });
     } catch (error) {

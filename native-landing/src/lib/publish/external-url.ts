@@ -2,6 +2,7 @@ const PLATFORM_LABELS: Record<string, string> = {
   linkedin: "LinkedIn",
   instagram: "Instagram",
   facebook: "Facebook",
+  pinterest: "Pinterest",
 };
 
 export function platformLabel(platform: string) {

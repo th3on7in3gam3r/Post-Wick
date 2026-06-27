@@ -1,6 +1,6 @@
 import { getIntegrationPlatform } from "@/lib/integrations/catalog";
 
-export const GENERATE_PLATFORMS = ["linkedin", "instagram", "facebook"] as const;
+export const GENERATE_PLATFORMS = ["linkedin", "instagram", "facebook", "pinterest"] as const;
 
 export type GeneratePlatform = (typeof GENERATE_PLATFORMS)[number];
 
@@ -9,7 +9,8 @@ export function charLimitForPlatform(platform: string) {
 }
 
 export function platformRequiresImage(platform: string) {
-  return platform.toLowerCase() === "instagram";
+  const normalized = platform.toLowerCase();
+  return normalized === "instagram" || normalized === "pinterest";
 }
 
 export function isSupportedGeneratePlatform(

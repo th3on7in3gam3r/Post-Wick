@@ -837,6 +837,9 @@ export type MetaOauthPendingPage = {
   name: string;
   accessToken: string;
   pictureUrl: string | null;
+  refreshToken?: string | null;
+  refreshTokenExpiresIn?: number | null;
+  accessTokenExpiresIn?: number | null;
 };
 
 export type MetaOauthPendingRecord = {
