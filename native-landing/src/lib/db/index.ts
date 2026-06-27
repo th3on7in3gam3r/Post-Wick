@@ -171,6 +171,11 @@ function nowIso() {
   return new Date().toISOString();
 }
 
+function isTimestampExpired(expiresAt: string) {
+  const expiresMs = new Date(expiresAt).getTime();
+  return Number.isNaN(expiresMs) || expiresMs <= Date.now();
+}
+
 export async function getBrandsByUserId(userId: string) {
   const db = await getDb();
   const rows = await db
@@ -892,29 +897,24 @@ export async function saveMetaOauthPending(input: {
   await db.delete(metaOauthPending).where(lt(metaOauthPending.expiresAt, now));
 
   await db
-    .insert(metaOauthPending)
-    .values({
-      id: input.id,
-      userId: input.userId,
-      brandId: input.brandId,
-      platform: input.platform,
-      pagesData: JSON.stringify(encryptedPages),
-      expiresAt: input.expiresAt,
-      createdAt: now,
-    })
-    .onConflictDoUpdate({
-      target: [
-        metaOauthPending.userId,
-        metaOauthPending.brandId,
-        metaOauthPending.platform,
-      ],
-      set: {
-        id: input.id,
-        pagesData: JSON.stringify(encryptedPages),
-        expiresAt: input.expiresAt,
-        createdAt: now,
-      },
-    });
+    .delete(metaOauthPending)
+    .where(
+      and(
+        eq(metaOauthPending.userId, input.userId),
+        eq(metaOauthPending.brandId, input.brandId),
+        eq(metaOauthPending.platform, input.platform),
+      ),
+    );
+
+  await db.insert(metaOauthPending).values({
+    id: input.id,
+    userId: input.userId,
+    brandId: input.brandId,
+    platform: input.platform,
+    pagesData: JSON.stringify(encryptedPages),
+    expiresAt: input.expiresAt,
+    createdAt: now,
+  });
 
   return input.id;
 }
@@ -927,8 +927,32 @@ export async function getMetaOauthPendingById(id: string, userId: string) {
   if (!row) return null;
 
   const pending = parseMetaOauthPending(row);
-  if (pending.expiresAt <= nowIso()) {
+  if (isTimestampExpired(pending.expiresAt)) {
     await db.delete(metaOauthPending).where(eq(metaOauthPending.id, id));
+    return null;
+  }
+
+  return pending;
+}
+
+export async function getMetaOauthPendingForBrand(
+  userId: string,
+  brandId: string,
+  platform: string,
+) {
+  const db = await getDb();
+  const row = await db.query.metaOauthPending.findFirst({
+    where: and(
+      eq(metaOauthPending.userId, userId),
+      eq(metaOauthPending.brandId, brandId),
+      eq(metaOauthPending.platform, platform),
+    ),
+  });
+  if (!row) return null;
+
+  const pending = parseMetaOauthPending(row);
+  if (isTimestampExpired(pending.expiresAt)) {
+    await db.delete(metaOauthPending).where(eq(metaOauthPending.id, row.id));
     return null;
   }
 

@@ -1,7 +1,7 @@
 import { auth } from "@clerk/nextjs/server";
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
-import { getBrandById, getMetaOauthPendingById } from "@/lib/db";
+import { getBrandById, getMetaOauthPendingById, getMetaOauthPendingForBrand } from "@/lib/db";
 import { PINTEREST_BOARD_PICK_COOKIE } from "@/lib/social/pinterest-pending";
 
 export async function GET(req: Request) {
@@ -14,7 +14,9 @@ export async function GET(req: Request) {
   const pendingId = cookies().get(PINTEREST_BOARD_PICK_COOKIE)?.value;
 
   if (!brandId || !pendingId) {
-    return NextResponse.json({ error: "Missing board selection session" }, { status: 400 });
+    if (!brandId) {
+      return NextResponse.json({ error: "Missing board selection session" }, { status: 400 });
+    }
   }
 
   const brand = await getBrandById(brandId, userId);
@@ -22,7 +24,9 @@ export async function GET(req: Request) {
     return NextResponse.json({ error: "Brand not found" }, { status: 404 });
   }
 
-  const pending = await getMetaOauthPendingById(pendingId, userId);
+  const pending =
+    (pendingId ? await getMetaOauthPendingById(pendingId, userId) : null) ??
+    (await getMetaOauthPendingForBrand(userId, brandId, "pinterest"));
   if (!pending || pending.brandId !== brandId || pending.platform !== "pinterest") {
     return NextResponse.json({ error: "Board selection session expired" }, { status: 404 });
   }

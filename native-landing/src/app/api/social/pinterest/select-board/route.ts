@@ -7,6 +7,7 @@ import {
   deleteMetaOauthPending,
   getBrandById,
   getMetaOauthPendingById,
+  getMetaOauthPendingForBrand,
   upsertConnection,
 } from "@/lib/db";
 import { buildPinterestConnectionFromBoard } from "@/lib/social/pinterest";
@@ -39,21 +40,21 @@ export async function POST(req: Request) {
     const { brandId, boardId } = selectBoardSchema.parse(body);
     const pendingId = cookies().get(PINTEREST_BOARD_PICK_COOKIE)?.value;
 
-    if (!pendingId) {
-      return NextResponse.json({ error: "Board selection session expired" }, { status: 400 });
-    }
-
     const brand = await getBrandById(brandId, userId);
     if (!brand) {
       return NextResponse.json({ error: "Brand not found" }, { status: 404 });
     }
 
-    const pending = await getMetaOauthPendingById(pendingId, userId);
+    const pending =
+      (pendingId ? await getMetaOauthPendingById(pendingId, userId) : null) ??
+      (await getMetaOauthPendingForBrand(userId, brandId, "pinterest"));
     if (!pending || pending.brandId !== brandId || pending.platform !== "pinterest") {
       return clearPendingCookie(
         NextResponse.json({ error: "Board selection session expired" }, { status: 404 }),
       );
     }
+
+    const resolvedPendingId = pending.id;
 
     const board = pending.pages.find((item) => item.id === boardId);
     if (!board) {
@@ -83,7 +84,7 @@ export async function POST(req: Request) {
       isDemo: false,
     });
 
-    await deleteMetaOauthPending(pendingId, userId);
+    await deleteMetaOauthPending(resolvedPendingId, userId);
 
     return clearPendingCookie(NextResponse.json({ ok: true }));
   } catch (error) {
