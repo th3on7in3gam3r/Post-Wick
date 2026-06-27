@@ -168,6 +168,15 @@ function batchVariationBlock(platform: string, count: number): string {
     );
   }
 
+  if (platform === "pinterest") {
+    lines.push(
+      "Write Pinterest pin descriptions: searchable, helpful, and save-worthy.",
+      "Lead with a clear benefit or idea in the first line — pins are scanned quickly.",
+      "Keep copy concise (under 500 characters), with 2-4 relevant keywords woven naturally.",
+      "Vary pin angles across the batch: how-to, inspiration, checklist, story, and product/service highlight.",
+    );
+  }
+
   return lines.map((line) => `- ${line}`).join("\n");
 }
 
@@ -221,7 +230,7 @@ Global rules:
 - Max ${charLimit} characters each
 - Professional, approachable tone matching the brand
 - Each post must clearly fit its assigned pillar (SEO, GEO, or Money)
-${platform === "instagram" ? "- Instagram: visual-first captions, 1-3 relevant hashtags max, conversational tone\n" : ""}- No hashtag spam, no emoji overload
+${platform === "instagram" ? "- Instagram: visual-first captions, 1-3 relevant hashtags max, conversational tone\n" : ""}${platform === "pinterest" ? "- Pinterest: save-worthy pin descriptions, searchable keywords, concise and helpful, no hashtag spam\n" : ""}- No hashtag spam, no emoji overload
 
 Batch variation (mandatory — every post in this batch):
 ${batchVariationBlock(platform, count)}
@@ -243,6 +252,10 @@ export function buildTemplatePost(
 
   if (platform === "instagram") {
     return buildInstagramTemplatePost(research, topicLabel, index);
+  }
+
+  if (platform === "pinterest") {
+    return buildPinterestTemplatePost(research, topicLabel, index);
   }
 
   switch (pillar) {
@@ -296,6 +309,28 @@ export function buildTemplatePost(
     default:
       return uniqueValueProposition;
   }
+}
+
+function buildPinterestTemplatePost(
+  research: BrandResearch,
+  topicLabel: string,
+  index: number,
+): string {
+  const { companyName, uniqueValueProposition, targetAudience } =
+    normalizeBrandResearch(research);
+  const openings = [
+    `${topicLabel} ideas worth saving —`,
+    `How to get more from ${topicLabel}:`,
+    `A simple ${topicLabel} guide for ${targetAudience.toLowerCase()}.`,
+    `Save this for later: ${topicLabel} tips from ${companyName}.`,
+    `${companyName}'s favorite ${topicLabel} inspiration:`,
+  ];
+
+  return [
+    openings[index % openings.length]!,
+    uniqueValueProposition,
+    `Discover more at ${companyName}.`,
+  ].join(" ");
 }
 
 function buildInstagramTemplatePost(

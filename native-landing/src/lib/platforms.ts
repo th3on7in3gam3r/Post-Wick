@@ -18,3 +18,24 @@ export function isSupportedGeneratePlatform(
 ): platform is GeneratePlatform {
   return (GENERATE_PLATFORMS as readonly string[]).includes(platform);
 }
+
+export function generatePlatformLabel(platform: string) {
+  return getIntegrationPlatform(platform)?.name ?? platform;
+}
+
+export function defaultGeneratePlatform(
+  connectedPlatforms: string[] = [],
+  preferred?: string,
+): GeneratePlatform {
+  if (
+    preferred &&
+    isSupportedGeneratePlatform(preferred)
+  ) {
+    return preferred;
+  }
+
+  const connected = connectedPlatforms.find((platform) =>
+    isSupportedGeneratePlatform(platform),
+  );
+  return connected ?? "linkedin";
+}

@@ -30,7 +30,7 @@ export default async function DashboardPage({
 
   return (
     <>
-      <DashboardHeader timeZone={dbUser.timezone} />
+      <DashboardHeader timeZone={dbUser.timezone} hasBrands={brands.length > 0} />
       <DashboardClientView
         stats={stats}
         publishedByBrand={publishedByBrand}

@@ -6,13 +6,7 @@ import { useRouter } from "next/navigation";
 import { ArrowRight, Loader2, X } from "lucide-react";
 import { useActiveClient } from "@/components/app/client-context";
 import { TextureButton } from "@/components/ui/texture-button";
-import { GENERATE_PLATFORMS } from "@/lib/platforms";
-
-const PLATFORM_LABELS: Record<string, string> = {
-  linkedin: "LinkedIn",
-  instagram: "Instagram",
-  facebook: "Facebook",
-};
+import { GENERATE_PLATFORMS, generatePlatformLabel } from "@/lib/platforms";
 
 export function DashboardGenerateAction({ generateMax }: { generateMax: number }) {
   const router = useRouter();
@@ -59,7 +53,7 @@ export function DashboardGenerateAction({ generateMax }: { generateMax: number }
       }
 
       const parts = [
-        `Generated ${data.count} ${PLATFORM_LABELS[platform] ?? platform} posts.`,
+        `Generated ${data.count} ${generatePlatformLabel(platform)} posts.`,
       ];
 
       if (data.imagesGenerated > 0) {
@@ -180,7 +174,7 @@ export function DashboardGenerateAction({ generateMax }: { generateMax: number }
                 >
                   {GENERATE_PLATFORMS.map((item) => (
                     <option key={item} value={item}>
-                      {PLATFORM_LABELS[item]}
+                      {generatePlatformLabel(item)}
                     </option>
                   ))}
                 </select>

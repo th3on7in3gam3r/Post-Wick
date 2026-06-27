@@ -5,10 +5,12 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Check, CheckCircle2, Loader2, RotateCcw, Sparkles, X } from "lucide-react";
 import { EmptyState } from "@/components/app/empty-state";
+import { useActiveClient } from "@/components/app/client-context";
+import { PlatformPostPreview } from "@/components/app/platform-post-preview";
 import { TextureButton } from "@/components/ui/texture-button";
+import { clientInitials } from "@/lib/clients";
 import { formatScheduleLabel } from "@/lib/scheduling/slots";
 import { REFINE_QUICK_PICKS } from "@/lib/ai/prompts";
-import { resolvePostImageUrl } from "@/lib/posts/image-url";
 import { cn } from "@/lib/utils";
 
 type QueuePost = {
@@ -34,18 +36,24 @@ type RefineResult = {
 function PostCardSkeleton() {
   return (
     <div
-      className="animate-pulse rounded-2xl border border-black/[0.06] bg-cream/40 p-6 shadow-card"
+      className="animate-pulse overflow-hidden rounded-2xl border border-black/[0.08] bg-white shadow-card"
       aria-busy="true"
       aria-label="Generating a new version"
     >
-      <div className="h-3 w-20 rounded bg-black/[0.08]" />
-      <div className="mt-4 aspect-square w-full rounded-xl bg-black/[0.06]" />
-      <div className="mt-4 space-y-2">
+      <div className="flex items-center gap-3 px-4 py-3">
+        <div className="h-10 w-10 rounded-full bg-black/[0.06]" />
+        <div className="space-y-2">
+          <div className="h-3 w-24 rounded bg-black/[0.08]" />
+          <div className="h-2 w-16 rounded bg-black/[0.06]" />
+        </div>
+      </div>
+      <div className="aspect-square w-full bg-black/[0.06]" />
+      <div className="space-y-2 px-4 py-4">
         <div className="h-3 w-full rounded bg-black/[0.06]" />
         <div className="h-3 w-full rounded bg-black/[0.06]" />
         <div className="h-3 w-[80%] rounded bg-black/[0.06]" />
       </div>
-      <p className="mt-5 flex items-center justify-center gap-2 text-sm text-gray-body">
+      <p className="flex items-center justify-center gap-2 pb-4 text-sm text-gray-body">
         <Loader2 className="h-4 w-4 animate-spin text-gold" />
         Writing a new version…
       </p>
@@ -123,6 +131,7 @@ async function regeneratePost(
 
 export function QueueClient({ initialPosts }: { initialPosts: QueuePost[] }) {
   const router = useRouter();
+  const { activeClient } = useActiveClient();
   const [posts, setPosts] = useState(initialPosts);
   const [lastScheduled, setLastScheduled] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -143,7 +152,6 @@ export function QueueClient({ initialPosts }: { initialPosts: QueuePost[] }) {
   const total = useRef(initialPosts.length);
   const reviewed = total.current - posts.length;
   const current = posts[0];
-  const currentImageSrc = resolvePostImageUrl(current?.imageUrl, { display: true });
   const busy = acting || refining || applying || regenerating;
 
   useEffect(() => {
@@ -439,23 +447,19 @@ export function QueueClient({ initialPosts }: { initialPosts: QueuePost[] }) {
       {regenerating ? (
         <PostCardSkeleton />
       ) : (
-        <article className="rounded-2xl border border-black/[0.06] bg-cream/40 p-6 shadow-card">
-          <p className="text-xs font-semibold uppercase tracking-[0.12em] text-gold">
-            {current.platform}
+        <>
+          <p className="mb-3 text-center text-xs font-medium uppercase tracking-[0.12em] text-gray-label">
+            Preview · {current.platform}
           </p>
-          {currentImageSrc ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
-              src={currentImageSrc}
-              alt=""
-              className="mt-4 aspect-square w-full rounded-xl border border-black/[0.06] object-cover"
-              referrerPolicy="no-referrer"
-            />
-          ) : (
-            <p className="mt-3 text-xs text-gray-label">No image for this draft</p>
-          )}
-          <p className="mt-4 text-sm leading-relaxed text-near-black">{current.content}</p>
-        </article>
+          <PlatformPostPreview
+            platform={current.platform}
+            content={current.content}
+            imageUrl={current.imageUrl}
+            accountName={activeClient.name || "Your brand"}
+            accountAvatarUrl={activeClient.logoUrl}
+            accountInitials={clientInitials(activeClient.name)}
+          />
+        </>
       )}
 
       <section

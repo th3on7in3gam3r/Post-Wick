@@ -14,7 +14,6 @@ import {
 import { ClientSwitcher } from "@/components/app/client-switcher";
 import { SidebarQuickActions } from "@/components/app/sidebar-quick-actions";
 import { SidebarUpgradeNudge } from "@/components/app/sidebar-upgrade-nudge";
-import { SidebarWelcome } from "@/components/app/sidebar-welcome";
 import { BrandLogo } from "@/components/brand-logo";
 import type { SubscriptionTier } from "@/lib/plans";
 import { cn } from "@/lib/utils";
@@ -75,7 +74,6 @@ export function AppSidebar({
         <div className="px-2">
           <BrandLogo href="/dashboard" variant="wordmark" tone="light" priority />
         </div>
-        <SidebarWelcome hasBrands={hasBrands} />
         <ClientSwitcher tone="sidebar" />
         <SidebarQuickActions />
       </div>

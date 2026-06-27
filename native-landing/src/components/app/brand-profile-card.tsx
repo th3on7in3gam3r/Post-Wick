@@ -32,10 +32,12 @@ function ProfileField({
 export function BrandProfileCard({
   brandId,
   generateMax,
+  connectedPlatforms = [],
   research,
 }: {
   brandId: string;
   generateMax: number;
+  connectedPlatforms?: string[];
   research: BrandResearch | null;
 }) {
   return (
@@ -56,6 +58,7 @@ export function BrandProfileCard({
             <GeneratePostsButton
               brandId={brandId}
               generateMax={generateMax}
+              connectedPlatforms={connectedPlatforms}
               layout="toolbar"
             />
           </div>

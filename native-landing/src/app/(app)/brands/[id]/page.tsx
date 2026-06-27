@@ -141,6 +141,7 @@ export default async function BrandPage({
           <BrandProfileCard
             brandId={brand.id}
             generateMax={plan.generateMax}
+            connectedPlatforms={connections.map((connection) => connection.platform)}
             research={
               research
                 ? {

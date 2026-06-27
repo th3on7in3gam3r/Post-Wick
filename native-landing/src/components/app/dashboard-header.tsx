@@ -13,7 +13,7 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { AppHeader } from "@/components/app/app-header";
-import { greetingForHour, userFirstName } from "@/lib/user-greeting";
+import { dashboardWelcomeGreeting, userFirstName } from "@/lib/user-greeting";
 
 type LocalWeather = {
   tempF: number;
@@ -91,7 +91,13 @@ async function fetchLocalWeather(latitude: number, longitude: number): Promise<L
   };
 }
 
-export function DashboardHeader({ timeZone: timeZoneProp }: { timeZone?: string }) {
+export function DashboardHeader({
+  timeZone: timeZoneProp,
+  hasBrands = true,
+}: {
+  timeZone?: string;
+  hasBrands?: boolean;
+}) {
   const { user, isLoaded } = useUser();
   const [now, setNow] = useState(() => new Date());
   const [weather, setWeather] = useState<LocalWeather | null>(null);
@@ -126,8 +132,8 @@ export function DashboardHeader({ timeZone: timeZoneProp }: { timeZone?: string 
     const firstName = isLoaded
       ? userFirstName(user?.firstName, user?.fullName)
       : undefined;
-    return greetingForHour(hour, firstName);
-  }, [activeTimeZone, now, isLoaded, user?.firstName, user?.fullName]);
+    return dashboardWelcomeGreeting(hour, hasBrands, firstName);
+  }, [activeTimeZone, now, isLoaded, user?.firstName, user?.fullName, hasBrands]);
 
   const dateLabel = activeTimeZone
     ? formatDateInTimeZone(activeTimeZone, now)
@@ -143,7 +149,10 @@ export function DashboardHeader({ timeZone: timeZoneProp }: { timeZone?: string 
       leading={
         <>
           <h1 className="font-playfair text-2xl italic text-near-black">{greeting}</h1>
-          <p className="mt-1 flex flex-wrap items-center gap-x-1.5 gap-y-0.5 text-sm text-gray-body">
+          <p className="mt-1 text-sm text-gray-body">
+            Here&apos;s what&apos;s happening with your brands today.
+          </p>
+          <p className="mt-1 flex flex-wrap items-center gap-x-1.5 gap-y-0.5 text-sm text-gray-label">
             <span>{dateLabel}</span>
             {weather && WeatherIcon ? (
               <>
