@@ -983,6 +983,14 @@ export async function getUserById(userId: string) {
   return row ? parseUser(row) : null;
 }
 
+export async function getUserByStripeCustomerId(stripeCustomerId: string) {
+  const db = await getDb();
+  const row = await db.query.users.findFirst({
+    where: eq(users.stripeCustomerId, stripeCustomerId),
+  });
+  return row ? parseUser(row) : null;
+}
+
 export async function getOrCreateUser(userId: string, email?: string | null) {
   const existing = await getUserById(userId);
   if (existing) {

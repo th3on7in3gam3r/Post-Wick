@@ -1,14 +1,22 @@
 import { headers } from "next/headers";
 import { NextResponse } from "next/server";
 import type Stripe from "stripe";
-import { updateUserSubscription } from "@/lib/db";
-import { getStripe } from "@/lib/stripe";
+import { getUserByStripeCustomerId, updateUserSubscription } from "@/lib/db";
+import { getStripe, tierFromStripePriceId } from "@/lib/stripe";
 
-function tierFromPriceId(priceId: string | undefined) {
-  if (!priceId) return "free" as const;
-  if (priceId === process.env.STRIPE_MAX_PRICE_ID) return "max" as const;
-  if (priceId === process.env.STRIPE_PRO_PRICE_ID) return "pro" as const;
-  return "free" as const;
+async function resolveUserIdFromSubscription(subscription: Stripe.Subscription) {
+  const metadataUserId = subscription.metadata?.clerkUserId;
+  if (metadataUserId) return metadataUserId;
+
+  const customerId =
+    typeof subscription.customer === "string"
+      ? subscription.customer
+      : subscription.customer?.id;
+
+  if (!customerId) return null;
+
+  const user = await getUserByStripeCustomerId(customerId);
+  return user?.id ?? null;
 }
 
 export async function POST(req: Request) {
@@ -47,13 +55,13 @@ export async function POST(req: Request) {
     case "customer.subscription.updated":
     case "customer.subscription.deleted": {
       const subscription = event.data.object as Stripe.Subscription;
-      const userId = subscription.metadata?.clerkUserId;
+      const userId = await resolveUserIdFromSubscription(subscription);
       if (!userId) break;
 
       const priceId = subscription.items.data[0]?.price.id;
       const active = subscription.status === "active" || subscription.status === "trialing";
       await updateUserSubscription(userId, {
-        subscriptionTier: active ? tierFromPriceId(priceId) : "free",
+        subscriptionTier: active ? tierFromStripePriceId(priceId) : "free",
         stripeCustomerId:
           typeof subscription.customer === "string"
             ? subscription.customer

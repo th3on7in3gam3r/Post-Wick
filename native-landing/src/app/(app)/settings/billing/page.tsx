@@ -2,7 +2,7 @@ import { BillingClient } from "@/components/app/billing-client";
 import { SettingsShell } from "@/components/app/settings-shell";
 import { getOrCreateUser } from "@/lib/db";
 import { requireUserId } from "@/lib/server/app-data";
-import { isStripeConfigured } from "@/lib/stripe";
+import { getAvailableBillingIntervals, isStripeConfigured } from "@/lib/stripe";
 
 function flashMessage(searchParams: { success?: string; canceled?: string }) {
   if (searchParams.success) {
@@ -27,6 +27,7 @@ export default async function BillingPage({
       <BillingClient
         currentTier={user.subscriptionTier}
         stripeConfigured={isStripeConfigured()}
+        billingIntervals={getAvailableBillingIntervals()}
         flash={flashMessage(searchParams)}
       />
     </SettingsShell>
