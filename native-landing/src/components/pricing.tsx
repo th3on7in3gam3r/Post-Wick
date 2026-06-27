@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { TextureButton } from "@/components/ui/texture-button";
 import { PLAN_LIMITS } from "@/lib/plans";
-import { plans } from "@/lib/pricing";
+import { formatAnnualCharge, plans, YEARLY_SAVE_LABEL } from "@/lib/pricing";
 import { cn } from "@/lib/utils";
 
 const ACTIVE_CHANNELS = ["Facebook", "Instagram", "LinkedIn", "Pinterest"] as const;
@@ -21,7 +21,7 @@ export function Pricing() {
     billing === "yearly" ? plans.max.yearlyPerMonth : plans.max.monthly;
   const billingNote =
     billing === "yearly"
-      ? "per month, billed yearly · excl. tax"
+      ? "per month, billed yearly"
       : "per month, billed monthly · excl. tax";
 
   return (
@@ -59,7 +59,8 @@ export function Pricing() {
                 size="sm"
                 onClick={() => setBilling("yearly")}
               >
-                Yearly <span className="text-gold">−20%</span>
+                Yearly
+                <span className="text-gold"> · {YEARLY_SAVE_LABEL}</span>
               </TextureButton>
             </div>
 
@@ -76,6 +77,11 @@ export function Pricing() {
                   ${proPrice}
                 </p>
                 <p className="text-sm text-gray-label">{billingNote}</p>
+                {billing === "yearly" ? (
+                  <p className="mt-0.5 text-sm text-gray-label">
+                    {formatAnnualCharge("pro")}
+                  </p>
+                ) : null}
                 <ul className="mt-6 space-y-2 text-sm text-gray-body">
                   <li>
                     Up to {PLAN_LIMITS.pro.generateMax} posts per batch, ready for approval
@@ -105,6 +111,11 @@ export function Pricing() {
                   ${maxPrice}
                 </p>
                 <p className="text-sm text-gray-label">{billingNote}</p>
+                {billing === "yearly" ? (
+                  <p className="mt-0.5 text-sm text-gray-label">
+                    {formatAnnualCharge("max")}
+                  </p>
+                ) : null}
                 <ul className="mt-6 space-y-2 text-sm text-gray-body">
                   <li>Everything in Pro, plus</li>
                   <li>

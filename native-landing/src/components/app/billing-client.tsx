@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import { Check, CreditCard, Loader2 } from "lucide-react";
 import { PanelCard } from "@/components/app/panel-card";
 import { TextureButton } from "@/components/ui/texture-button";
+import { formatAnnualCharge, YEARLY_SAVE_LABEL, type PaidPlanKey } from "@/lib/pricing";
 import { getPlanLimits, PLAN_LIMITS, type SubscriptionTier } from "@/lib/plans";
 import { STRIPE_PLANS, type BillingInterval } from "@/lib/stripe";
 import { cn } from "@/lib/utils";
@@ -29,7 +30,7 @@ export function BillingClient({
 
   const billingNote =
     billing === "yearly"
-      ? "per month, billed yearly · excl. tax"
+      ? "per month, billed yearly"
       : "per month, billed monthly · excl. tax";
 
   async function startCheckout(plan: "pro" | "max") {
@@ -115,10 +116,14 @@ export function BillingClient({
               size="sm"
               onClick={() => setBilling(interval)}
             >
-              {interval === "monthly" ? "Monthly" : "Yearly"}
-              {interval === "yearly" ? (
-                <span className="ml-1 text-gold">−20%</span>
-              ) : null}
+              {interval === "monthly" ? (
+                "Monthly"
+              ) : (
+                <>
+                  Yearly
+                  <span className="text-gold"> · {YEARLY_SAVE_LABEL}</span>
+                </>
+              )}
             </TextureButton>
           ))}
         </div>
@@ -143,6 +148,11 @@ export function BillingClient({
               <p className="font-playfair text-2xl italic text-near-black">{limits.label}</p>
               <p className="mt-4 font-playfair text-4xl italic text-near-black">${displayPrice}</p>
               <p className="mt-1 text-sm text-gray-label">{billingNote}</p>
+              {billing === "yearly" ? (
+                <p className="mt-0.5 text-sm text-gray-label">
+                  {formatAnnualCharge(plan as PaidPlanKey)}
+                </p>
+              ) : null}
               <ul className="mt-4 space-y-2 text-sm text-gray-body">
                 <li className="flex items-center gap-2">
                   <Check className="h-4 w-4 text-gold" />
