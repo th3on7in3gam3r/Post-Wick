@@ -10,8 +10,12 @@ export async function GET() {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
+  const connections = await getConnectionsByUserId(userId);
   return NextResponse.json(
-    (await getConnectionsByUserId(userId)).map(({ accessToken: _token, ...connection }) => connection),
+    connections.map(({ accessToken, ...connection }) => {
+      void accessToken;
+      return connection;
+    }),
   );
 }
 

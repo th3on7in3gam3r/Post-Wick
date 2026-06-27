@@ -442,7 +442,7 @@ export function IntegrationsClient({
                           ) : null}
                         </>
                       ) : null}
-                      {platform.demoAvailable ? (
+                      {platform.demoAvailable && !oauthReady(platform.id) ? (
                         <TextureButton
                           type="button"
                           variant="secondary"
@@ -457,9 +457,9 @@ export function IntegrationsClient({
                           )}
                           Try demo mode
                         </TextureButton>
-                      ) : (
+                      ) : !platform.demoAvailable ? (
                         <p className="text-xs text-gray-label">Coming soon</p>
-                      )}
+                      ) : null}
                     </div>
                   )}
                 </article>
