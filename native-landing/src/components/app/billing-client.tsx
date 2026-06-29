@@ -60,7 +60,9 @@ export function BillingClient({
       const response = await fetch("/api/billing/portal", { method: "POST" });
       const data = await response.json();
       if (!response.ok || !data.url) {
-        throw new Error(data.error ?? "Billing portal unavailable");
+        throw new Error(
+          typeof data.error === "string" ? data.error : "Billing portal unavailable",
+        );
       }
       window.location.href = data.url;
     } catch (error) {
