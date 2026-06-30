@@ -21,6 +21,7 @@ const isPublicRoute = createRouteMatcher([
   "/api/health/x",
   "/api/health/pinterest",
   "/api/health/stripe",
+  "/api/health/integrations",
   "/api/cron/publish",
   "/api/webhooks/stripe",
   "/api/contact",

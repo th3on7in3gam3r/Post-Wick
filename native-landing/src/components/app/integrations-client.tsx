@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   CheckCircle2,
@@ -9,6 +9,7 @@ import {
   Plug,
   Sparkles,
 } from "lucide-react";
+import { useActiveClient } from "@/components/app/client-context";
 import { PanelCard } from "@/components/app/panel-card";
 import { MetaSetupGuide, type MetaSetupInfo } from "@/components/app/meta-setup-guide";
 import { XSetupGuide, type XSetupInfo } from "@/components/app/x-setup-guide";
@@ -91,6 +92,31 @@ function flashMessage(searchParams: {
   return null;
 }
 
+function oauthConnectUrl(platform: IntegrationPlatformId, brandId: string) {
+  const id = encodeURIComponent(brandId);
+  if (platform === "linkedin") {
+    return `/api/social/linkedin/connect?brandId=${id}`;
+  }
+  if (platform === "instagram" || platform === "facebook") {
+    return `/api/social/meta/connect?brandId=${id}&platform=${platform}`;
+  }
+  if (platform === "twitter") {
+    return `/api/social/x/connect?brandId=${id}`;
+  }
+  if (platform === "pinterest") {
+    return `/api/social/pinterest/connect?brandId=${id}`;
+  }
+  return null;
+}
+
+function connectErrorMessage(data: unknown) {
+  if (typeof data === "object" && data && "error" in data) {
+    const error = (data as { error?: unknown }).error;
+    if (typeof error === "string") return error;
+  }
+  return "Could not connect this channel. Try again.";
+}
+
 export function IntegrationsClient({
   brands,
   initialConnections,
@@ -111,12 +137,23 @@ export function IntegrationsClient({
   flashParams?: { connected?: string; error?: string };
 }) {
   const router = useRouter();
-  const [brandId, setBrandId] = useState(brands[0]?.id ?? "");
+  const { activeClient, setActiveClientId } = useActiveClient();
+  const [brandId, setBrandId] = useState(
+    () => activeClient.id || brands[0]?.id || "",
+  );
   const [connections, setConnections] = useState(initialConnections);
   const [loadingKey, setLoadingKey] = useState<string | null>(null);
   const [filter, setFilter] = useState<"all" | "connected">("all");
+  const [actionError, setActionError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (activeClient.id && brands.some((brand) => brand.id === activeClient.id)) {
+      setBrandId(activeClient.id);
+    }
+  }, [activeClient.id, brands]);
 
   const flash = flashParams ? flashMessage(flashParams) : null;
+  const activeBrand = brands.find((brand) => brand.id === brandId);
   const brandConnections = connections.filter((item) => item.brandId === brandId);
   const configById = useMemo(
     () => new Map(runtimeConfig.map((item) => [item.id, item])),
@@ -127,7 +164,11 @@ export function IntegrationsClient({
   const liveOAuthCount = runtimeConfig.filter((item) => item.oauthConfigured).length;
 
   async function connectDemo(platform: IntegrationPlatformId) {
-    if (!brandId) return;
+    if (!brandId) {
+      setActionError("Select a brand before connecting.");
+      return;
+    }
+    setActionError(null);
     setLoadingKey(`demo:${platform}`);
 
     try {
@@ -145,7 +186,9 @@ export function IntegrationsClient({
           return [data, ...filtered];
         });
         router.refresh();
+        return;
       }
+      setActionError(connectErrorMessage(data));
     } finally {
       setLoadingKey(null);
     }
@@ -166,26 +209,44 @@ export function IntegrationsClient({
     }
   }
 
-  function connectOAuth(platform: IntegrationPlatformId) {
-    if (!brandId) return;
-
-    if (platform === "linkedin") {
-      window.location.href = `/api/social/linkedin/connect?brandId=${brandId}`;
+  async function connectOAuth(platform: IntegrationPlatformId) {
+    if (!brandId) {
+      setActionError("Select a brand before connecting.");
       return;
     }
 
-    if (platform === "instagram" || platform === "facebook") {
-      window.location.href = `/api/social/meta/connect?brandId=${brandId}&platform=${platform}`;
-      return;
-    }
+    const url = oauthConnectUrl(platform, brandId);
+    if (!url) return;
 
-    if (platform === "twitter") {
-      window.location.href = `/api/social/x/connect?brandId=${brandId}`;
-      return;
-    }
+    setActionError(null);
+    setLoadingKey(`oauth:${platform}`);
 
-    if (platform === "pinterest") {
-      window.location.href = `/api/social/pinterest/connect?brandId=${brandId}`;
+    try {
+      const response = await fetch(url, {
+        redirect: "manual",
+        credentials: "include",
+      });
+
+      if (response.status >= 300 && response.status < 400) {
+        const location = response.headers.get("location");
+        if (location) {
+          window.location.assign(location);
+          return;
+        }
+      }
+
+      const contentType = response.headers.get("content-type") ?? "";
+      if (contentType.includes("application/json")) {
+        const data = await response.json();
+        setActionError(connectErrorMessage(data));
+        return;
+      }
+
+      window.location.assign(url);
+    } catch {
+      window.location.assign(url);
+    } finally {
+      setLoadingKey(null);
     }
   }
 
@@ -228,6 +289,12 @@ export function IntegrationsClient({
         </div>
       ) : null}
 
+      {actionError ? (
+        <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-900">
+          {actionError}
+        </div>
+      ) : null}
+
       <MetaSetupGuide setup={metaSetup} showAdminGuide={showMetaAdminGuide} />
       <XSetupGuide setup={xSetup} showAdminGuide={showXAdminGuide} />
 
@@ -261,7 +328,7 @@ export function IntegrationsClient({
 
       <PanelCard
         title="Brand"
-        description="Each brand has its own channel connections."
+        description="Each brand has its own channel connections. This follows the workspace you pick in the sidebar."
       >
         <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div className="w-full max-w-md">
@@ -271,7 +338,11 @@ export function IntegrationsClient({
             <select
               id="integration-brand"
               value={brandId}
-              onChange={(event) => setBrandId(event.target.value)}
+              onChange={(event) => {
+                const nextBrandId = event.target.value;
+                setBrandId(nextBrandId);
+                setActiveClientId(nextBrandId);
+              }}
               className="mt-2 w-full rounded-xl border border-black/[0.08] bg-white px-4 py-2.5 text-sm text-near-black"
             >
               {brands.map((brand) => (
@@ -280,6 +351,11 @@ export function IntegrationsClient({
                 </option>
               ))}
             </select>
+            {activeBrand ? (
+              <p className="mt-2 text-xs text-gray-body">
+                Connecting channels for <strong className="text-near-black">{activeBrand.name}</strong>.
+              </p>
+            ) : null}
           </div>
           <div className="flex gap-2">
             {(["all", "connected"] as const).map((value) => (
@@ -320,6 +396,7 @@ export function IntegrationsClient({
               const runtime = configById.get(platform.id);
               const isLoading =
                 loadingKey === `demo:${platform.id}` ||
+                loadingKey === `oauth:${platform.id}` ||
                 loadingKey === `disconnect:${connection?.id}`;
 
               return (
@@ -428,9 +505,13 @@ export function IntegrationsClient({
                             variant="primary"
                             size="sm"
                             disabled={isLoading || !oauthReady(platform.id)}
-                            onClick={() => connectOAuth(platform.id)}
+                            onClick={() => void connectOAuth(platform.id)}
                           >
-                            <Link2 className="mr-2 h-4 w-4" />
+                            {isLoading ? (
+                              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            ) : (
+                              <Link2 className="mr-2 h-4 w-4" />
+                            )}
                             Connect {platform.name}
                           </TextureButton>
                           {!oauthReady(platform.id) ? (
