@@ -1,39 +1,15 @@
 import Link from "next/link";
 import { BrandLogo } from "@/components/brand-logo";
 import { CookieSettingsTrigger } from "@/components/cookie-settings-trigger";
+import { FaqJsonLd } from "@/components/faq-json-ld";
 import { TextureButton } from "@/components/ui/texture-button";
 import { BIBLEFUNLAND_STUDIOS_URL, SITE_TAGLINE } from "@/lib/brand";
-
-const faqs = [
-  {
-    q: "Do I need to be good at creating content to use this?",
-    a: "Not at all. You don't need to write anything. Just add your website, and Kerygma Social handles the rest — we research your business, create the content, and publish it automatically. You just approve what looks good.",
-  },
-  {
-    q: "Will the content actually sound like my brand?",
-    a: "Yes. Kerygma Social researches your website, your industry, and your competitors to create content that fits your business. No generic templates. Just relevant, high-quality posts tailored to your brand.",
-  },
-  {
-    q: "Will this work if I don't have a big following yet?",
-    a: "Absolutely. Whether you have 200 followers or 20,000, Kerygma Social helps you show up consistently across all your channels. That consistency is how you grow in the first place.",
-  },
-  {
-    q: "What kind of content does Kerygma Social create?",
-    a: "Posts for Facebook, Instagram, and LinkedIn today, with more channels on the way. We create a tailored content plan based on your business and generate posts optimized for each platform. Everything runs on autopilot.",
-  },
-  {
-    q: "Is my data secure?",
-    a: "Yes. Your content and business information stay private. We use industry-standard encryption and secure cloud infrastructure. Your data stays yours, and we never sell it to third parties.",
-  },
-  {
-    q: "Will this actually help my business?",
-    a: "Most likely, yes. Consistent social media presence builds visibility, trust, and reach. That leads to more customers, more partnerships, and more growth. Kerygma Social just makes it effortless.",
-  },
-];
+import { SITE_FAQS } from "@/lib/faq";
 
 export function FAQ() {
   return (
     <section className="bg-cream-dark px-10 py-24">
+      <FaqJsonLd />
       <div className="mx-auto max-w-[800px]">
         <h2 className="font-playfair text-[clamp(1.75rem,3vw,2.5rem)] italic text-near-black">
           Frequently asked questions
@@ -42,7 +18,7 @@ export function FAQ() {
           In case you missed anything and had some more questions.
         </p>
         <div className="mt-10 space-y-6">
-          {faqs.map((item) => (
+          {SITE_FAQS.map((item) => (
             <details
               key={item.q}
               className="group rounded-xl bg-white p-5 shadow-card"
