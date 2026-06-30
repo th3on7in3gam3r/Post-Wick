@@ -117,9 +117,43 @@ function connectErrorMessage(data: unknown) {
   return "Could not connect this channel. Try again.";
 }
 
+function DemoModeToggle({
+  checked,
+  disabled,
+  onChange,
+}: {
+  checked: boolean;
+  disabled?: boolean;
+  onChange: (value: boolean) => void;
+}) {
+  return (
+    <button
+      type="button"
+      role="switch"
+      aria-checked={checked}
+      aria-label="Demo mode"
+      disabled={disabled}
+      onClick={() => !disabled && onChange(!checked)}
+      className={cn(
+        "relative h-7 w-12 shrink-0 rounded-full transition-colors",
+        checked ? "bg-gold" : "bg-black/15",
+        disabled ? "cursor-not-allowed opacity-60" : "cursor-pointer",
+      )}
+    >
+      <span
+        className={cn(
+          "absolute top-0.5 left-0.5 h-6 w-6 rounded-full bg-white shadow transition-transform",
+          checked && "translate-x-5",
+        )}
+      />
+    </button>
+  );
+}
+
 export function IntegrationsClient({
   brands,
   initialConnections,
+  initialDemoModeEnabled,
   runtimeConfig,
   metaSetup,
   xSetup,
@@ -129,6 +163,7 @@ export function IntegrationsClient({
 }: {
   brands: Brand[];
   initialConnections: Connection[];
+  initialDemoModeEnabled: boolean;
   runtimeConfig: PlatformRuntimeConfig[];
   metaSetup: MetaSetupInfo;
   xSetup: XSetupInfo;
@@ -145,6 +180,8 @@ export function IntegrationsClient({
   const [loadingKey, setLoadingKey] = useState<string | null>(null);
   const [filter, setFilter] = useState<"all" | "connected">("all");
   const [actionError, setActionError] = useState<string | null>(null);
+  const [demoModeEnabled, setDemoModeEnabled] = useState(initialDemoModeEnabled);
+  const [demoModeSaving, setDemoModeSaving] = useState(false);
 
   useEffect(() => {
     if (activeClient.id && brands.some((brand) => brand.id === activeClient.id)) {
@@ -162,8 +199,38 @@ export function IntegrationsClient({
 
   const connectedCount = brandConnections.length;
   const liveOAuthCount = runtimeConfig.filter((item) => item.oauthConfigured).length;
+  const demoConnectionCount = brandConnections.filter((item) => item.isDemo).length;
+
+  async function updateDemoModeEnabled(enabled: boolean) {
+    const previous = demoModeEnabled;
+    setDemoModeEnabled(enabled);
+    setDemoModeSaving(true);
+    setActionError(null);
+
+    try {
+      const response = await fetch("/api/settings", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ demoModeEnabled: enabled }),
+      });
+      const data = await response.json();
+      if (!response.ok) {
+        setDemoModeEnabled(previous);
+        setActionError(connectErrorMessage(data));
+      }
+    } catch {
+      setDemoModeEnabled(previous);
+      setActionError("Could not update demo mode. Try again.");
+    } finally {
+      setDemoModeSaving(false);
+    }
+  }
 
   async function connectDemo(platform: IntegrationPlatformId) {
+    if (!demoModeEnabled) {
+      setActionError("Turn on demo mode to preview channels without live OAuth.");
+      return;
+    }
     if (!brandId) {
       setActionError("Select a brand before connecting.");
       return;
@@ -318,11 +385,30 @@ export function IntegrationsClient({
           <p className="mt-1 text-sm text-gray-body">channels ready to connect</p>
         </div>
         <div className="rounded-2xl border border-black/[0.06] bg-white p-5 shadow-card">
-          <p className="text-xs font-semibold uppercase tracking-[0.12em] text-gray-label">
-            Demo mode
+          <div className="flex items-start justify-between gap-3">
+            <p className="text-xs font-semibold uppercase tracking-[0.12em] text-gray-label">
+              Demo mode
+            </p>
+            <DemoModeToggle
+              checked={demoModeEnabled}
+              disabled={demoModeSaving}
+              onChange={(enabled) => void updateDemoModeEnabled(enabled)}
+            />
+          </div>
+          <p className="mt-2 font-playfair text-3xl italic text-near-black">
+            {demoModeEnabled ? "On" : "Off"}
           </p>
-          <p className="mt-2 font-playfair text-3xl italic text-near-black">On</p>
-          <p className="mt-1 text-sm text-gray-body">test publishing without live APIs</p>
+          <p className="mt-1 text-sm text-gray-body">
+            {demoModeEnabled
+              ? "Try demo connections on platforms without live OAuth."
+              : "Enable to test publishing without live APIs."}
+          </p>
+          {!demoModeEnabled && demoConnectionCount > 0 ? (
+            <p className="mt-2 text-xs text-gray-body">
+              {demoConnectionCount} demo connection{demoConnectionCount === 1 ? "" : "s"} still
+              active for this brand.
+            </p>
+          ) : null}
         </div>
       </div>
 
@@ -523,7 +609,7 @@ export function IntegrationsClient({
                           ) : null}
                         </>
                       ) : null}
-                      {platform.demoAvailable && !oauthReady(platform.id) ? (
+                      {platform.demoAvailable && demoModeEnabled && !oauthReady(platform.id) ? (
                         <TextureButton
                           type="button"
                           variant="secondary"
@@ -540,6 +626,10 @@ export function IntegrationsClient({
                         </TextureButton>
                       ) : !platform.demoAvailable ? (
                         <p className="text-xs text-gray-label">Coming soon</p>
+                      ) : !demoModeEnabled && !oauthReady(platform.id) ? (
+                        <p className="text-xs text-gray-body">
+                          Turn on demo mode above to preview this channel.
+                        </p>
                       ) : null}
                     </div>
                   )}

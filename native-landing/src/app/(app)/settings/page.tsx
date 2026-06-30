@@ -40,6 +40,7 @@ export default async function SettingsPage() {
           notifyQueue: dbUser.notifyQueue,
           notifyPublish: dbUser.notifyPublish,
           notifyWeeklyDigest: dbUser.notifyWeeklyDigest,
+          demoModeEnabled: dbUser.demoModeEnabled,
         }}
       />
     </SettingsShell>

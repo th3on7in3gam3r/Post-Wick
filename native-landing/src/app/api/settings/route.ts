@@ -17,6 +17,7 @@ const settingsSchema = z.object({
   notifyQueue: z.boolean().optional(),
   notifyPublish: z.boolean().optional(),
   notifyWeeklyDigest: z.boolean().optional(),
+  demoModeEnabled: z.boolean().optional(),
 });
 
 function serializeSettings(user: Awaited<ReturnType<typeof getOrCreateUser>>) {
@@ -26,6 +27,7 @@ function serializeSettings(user: Awaited<ReturnType<typeof getOrCreateUser>>) {
     notifyQueue: user.notifyQueue,
     notifyPublish: user.notifyPublish,
     notifyWeeklyDigest: user.notifyWeeklyDigest,
+    demoModeEnabled: user.demoModeEnabled,
   };
 }
 

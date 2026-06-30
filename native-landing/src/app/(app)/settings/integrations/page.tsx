@@ -2,7 +2,7 @@ import { Plug } from "lucide-react";
 import { EmptyState } from "@/components/app/empty-state";
 import { IntegrationsClient } from "@/components/app/integrations-client";
 import { SettingsShell } from "@/components/app/settings-shell";
-import { getBrandsByUserId, getConnectionsByUserId } from "@/lib/db";
+import { getBrandsByUserId, getConnectionsByUserId, getOrCreateUser } from "@/lib/db";
 import {
   getIntegrationsRuntimeConfig,
 } from "@/lib/integrations/config";
@@ -22,10 +22,11 @@ export default async function IntegrationsPage({
   searchParams: { connected?: string; error?: string };
 }) {
   const userId = await requireUserId();
-  const [brands, connections, isAdmin] = await Promise.all([
+  const [brands, connections, isAdmin, dbUser] = await Promise.all([
     getBrandsByUserId(userId),
     getConnectionsByUserId(userId),
     isPlatformAdmin(),
+    getOrCreateUser(userId),
   ]);
 
   return (
@@ -42,6 +43,7 @@ export default async function IntegrationsPage({
       ) : (
         <IntegrationsClient
           brands={brands.map((brand) => ({ id: brand.id, name: brand.name }))}
+          initialDemoModeEnabled={dbUser.demoModeEnabled}
           initialConnections={connections.map((connection) => ({
             id: connection.id,
             brandId: connection.brandId,

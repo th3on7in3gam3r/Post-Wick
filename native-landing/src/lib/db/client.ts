@@ -148,6 +148,7 @@ async function ensureSchema() {
   await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS notify_queue BOOLEAN NOT NULL DEFAULT TRUE`;
   await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS notify_publish BOOLEAN NOT NULL DEFAULT TRUE`;
   await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS notify_weekly_digest BOOLEAN NOT NULL DEFAULT FALSE`;
+  await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS demo_mode_enabled BOOLEAN NOT NULL DEFAULT FALSE`;
   await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS refine_usage_count INTEGER NOT NULL DEFAULT 0`;
   await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS refine_usage_period TEXT`;
   await sql`ALTER TABLE connections ADD COLUMN IF NOT EXISTS metadata TEXT`;

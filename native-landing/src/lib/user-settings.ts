@@ -28,4 +28,5 @@ export type UserSettingsPayload = {
   notifyQueue: boolean;
   notifyPublish: boolean;
   notifyWeeklyDigest: boolean;
+  demoModeEnabled: boolean;
 };

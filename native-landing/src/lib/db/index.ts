@@ -71,6 +71,7 @@ export type UserRecord = {
   notifyQueue: boolean;
   notifyPublish: boolean;
   notifyWeeklyDigest: boolean;
+  demoModeEnabled: boolean;
   refineUsageCount: number;
   refineUsagePeriod: string | null;
   createdAt: string;
@@ -160,6 +161,7 @@ function parseUser(row: typeof users.$inferSelect): UserRecord {
     notifyQueue: row.notifyQueue ?? true,
     notifyPublish: row.notifyPublish ?? true,
     notifyWeeklyDigest: row.notifyWeeklyDigest ?? false,
+    demoModeEnabled: row.demoModeEnabled ?? false,
     refineUsageCount: row.refineUsageCount ?? 0,
     refineUsagePeriod: row.refineUsagePeriod ?? null,
     createdAt: row.createdAt,
@@ -1059,6 +1061,7 @@ export async function updateUserSettings(
     notifyQueue: boolean;
     notifyPublish: boolean;
     notifyWeeklyDigest: boolean;
+    demoModeEnabled: boolean;
   }>,
 ) {
   const existing = await getOrCreateUser(userId);
@@ -1075,6 +1078,7 @@ export async function updateUserSettings(
       notifyPublish: data.notifyPublish ?? existing.notifyPublish,
       notifyWeeklyDigest:
         data.notifyWeeklyDigest ?? existing.notifyWeeklyDigest,
+      demoModeEnabled: data.demoModeEnabled ?? existing.demoModeEnabled,
       updatedAt: now,
     })
     .where(eq(users.id, userId));

@@ -27,7 +27,7 @@ export async function GET() {
       `Add EXACTLY: ${redirectUri}`,
       "Copy the Instagram App ID + Instagram App Secret from that Instagram login setup page (NOT App settings → Basic).",
       "Set them in Vercel as INSTAGRAM_APP_ID + INSTAGRAM_APP_SECRET, or META_APP_ID + META_APP_SECRET.",
-      "App settings → Basic → App domains: post-wick.vercel.app",
+      `App settings → Basic → App domains: ${new URL(appUrl).hostname}`,
       "Redeploy Vercel, then Connect Instagram in Kerygma Social.",
     ],
   });

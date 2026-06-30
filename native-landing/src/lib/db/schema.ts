@@ -107,6 +107,7 @@ export const users = pgTable("users", {
   notifyQueue: boolean("notify_queue").notNull().default(true),
   notifyPublish: boolean("notify_publish").notNull().default(true),
   notifyWeeklyDigest: boolean("notify_weekly_digest").notNull().default(false),
+  demoModeEnabled: boolean("demo_mode_enabled").notNull().default(false),
   refineUsageCount: integer("refine_usage_count").notNull().default(0),
   refineUsagePeriod: text("refine_usage_period"),
   createdAt: timestamp("created_at", { withTimezone: true, mode: "string" })

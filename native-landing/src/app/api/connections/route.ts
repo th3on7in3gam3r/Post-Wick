@@ -2,7 +2,7 @@ import { randomUUID } from "node:crypto";
 import { auth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import { deleteConnection, getBrandById, getConnectionsByUserId, upsertConnection } from "@/lib/db";
+import { deleteConnection, getBrandById, getConnectionsByUserId, getOrCreateUser, upsertConnection } from "@/lib/db";
 
 export async function GET() {
   const { userId } = await auth();
@@ -38,6 +38,14 @@ export async function POST(req: Request) {
 
     if (!brand) {
       return NextResponse.json({ error: "Brand not found" }, { status: 404 });
+    }
+
+    const user = await getOrCreateUser(userId);
+    if (!user.demoModeEnabled) {
+      return NextResponse.json(
+        { error: "Demo mode is off. Turn it on in Settings → Integrations to use demo connections." },
+        { status: 403 },
+      );
     }
 
     const platform = data.platform.toLowerCase();
