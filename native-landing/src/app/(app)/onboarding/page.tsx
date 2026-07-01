@@ -1,8 +1,10 @@
 import { redirect } from "next/navigation";
 import { Suspense } from "react";
+import { currentUser } from "@clerk/nextjs/server";
 import { AppHeader } from "@/components/app/app-header";
 import { OnboardingHeroBootstrap } from "@/components/app/onboarding-hero-bootstrap";
 import { OnboardingFlow } from "@/components/app/onboarding-flow";
+import { getOrCreateUser } from "@/lib/db";
 import { getAppContext } from "@/lib/server/app-data";
 import { websiteHostname } from "@/lib/website-url";
 
@@ -12,7 +14,14 @@ export default async function OnboardingPage({
   searchParams: { url?: string; brand?: string; add?: string };
 }) {
   const addingAnother = searchParams.add === "1" && !searchParams.url;
-  const { websiteUrl, brands } = await getAppContext(searchParams.url);
+  const { userId, websiteUrl, brands } = await getAppContext(searchParams.url);
+  const [clerkUser, dbUser] = await Promise.all([
+    currentUser(),
+    getOrCreateUser(userId),
+  ]);
+
+  const skipWelcome =
+    addingAnother || dbUser.profileOnboardingCompleted || brands.length > 0;
 
   if (
     brands.some((brand) => brand.crawlStatus === "completed") &&
@@ -42,6 +51,9 @@ export default async function OnboardingPage({
           websiteUrl={addingAnother ? null : websiteUrl}
           brandName={brandName}
           addingAnother={addingAnother}
+          skipWelcome={skipWelcome}
+          initialName={clerkUser?.fullName ?? dbUser.displayName}
+          initialEmail={clerkUser?.emailAddresses[0]?.emailAddress ?? dbUser.email}
         />
       </div>
     </>

@@ -108,6 +108,10 @@ export const users = pgTable("users", {
   notifyPublish: boolean("notify_publish").notNull().default(true),
   notifyWeeklyDigest: boolean("notify_weekly_digest").notNull().default(false),
   demoModeEnabled: boolean("demo_mode_enabled").notNull().default(false),
+  profileOnboardingCompleted: boolean("profile_onboarding_completed").notNull().default(false),
+  displayName: text("display_name"),
+  referralSource: text("referral_source"),
+  referralDetail: text("referral_detail"),
   refineUsageCount: integer("refine_usage_count").notNull().default(0),
   refineUsagePeriod: text("refine_usage_period"),
   createdAt: timestamp("created_at", { withTimezone: true, mode: "string" })

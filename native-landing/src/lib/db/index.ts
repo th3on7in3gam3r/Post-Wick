@@ -72,6 +72,10 @@ export type UserRecord = {
   notifyPublish: boolean;
   notifyWeeklyDigest: boolean;
   demoModeEnabled: boolean;
+  profileOnboardingCompleted: boolean;
+  displayName: string | null;
+  referralSource: string | null;
+  referralDetail: string | null;
   refineUsageCount: number;
   refineUsagePeriod: string | null;
   createdAt: string;
@@ -162,6 +166,10 @@ function parseUser(row: typeof users.$inferSelect): UserRecord {
     notifyPublish: row.notifyPublish ?? true,
     notifyWeeklyDigest: row.notifyWeeklyDigest ?? false,
     demoModeEnabled: row.demoModeEnabled ?? false,
+    profileOnboardingCompleted: row.profileOnboardingCompleted ?? false,
+    displayName: row.displayName ?? null,
+    referralSource: row.referralSource ?? null,
+    referralDetail: row.referralDetail ?? null,
     refineUsageCount: row.refineUsageCount ?? 0,
     refineUsagePeriod: row.refineUsagePeriod ?? null,
     createdAt: row.createdAt,
@@ -1016,6 +1024,31 @@ export async function getOrCreateUser(userId: string, email?: string | null) {
     createdAt: now,
     updatedAt: now,
   });
+
+  return (await getUserById(userId))!;
+}
+
+export async function completeProfileOnboarding(
+  userId: string,
+  data: {
+    displayName?: string | null;
+    referralSource: string;
+    referralDetail?: string | null;
+  },
+) {
+  const db = await getDb();
+  const now = nowIso();
+
+  await db
+    .update(users)
+    .set({
+      profileOnboardingCompleted: true,
+      displayName: data.displayName?.trim() || null,
+      referralSource: data.referralSource,
+      referralDetail: data.referralDetail?.trim() || null,
+      updatedAt: now,
+    })
+    .where(eq(users.id, userId));
 
   return (await getUserById(userId))!;
 }

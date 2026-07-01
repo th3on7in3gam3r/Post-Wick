@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { CheckCircle2, Globe, Loader2, Sparkles } from "lucide-react";
 import { BrandVoiceEditor } from "@/components/app/brand-voice-editor";
+import { OnboardingWelcome } from "@/components/app/onboarding-welcome";
 import { TextureButton } from "@/components/ui/texture-button";
 import {
   brandVoiceFromResearch,
@@ -13,9 +14,11 @@ import {
 import { clearPendingWebsiteUrl, consumePendingWebsiteUrl, consumeHeroOnboardingIntent } from "@/lib/pending-website-url";
 import { normalizeWebsiteUrl } from "@/lib/website-url";
 
-type Step = "idle" | "analyzing" | "review" | "generating" | "done" | "error";
+type Step = "welcome" | "idle" | "analyzing" | "review" | "generating" | "done" | "error";
 
 const PROGRESS_STEPS = [
+  { id: "welcome", label: "Welcome" },
+  { id: "website", label: "Your website" },
   { id: "crawling", label: "Crawling your website" },
   { id: "research", label: "Building your brand profile" },
   { id: "review", label: "Review your brand voice" },
@@ -38,14 +41,24 @@ export function OnboardingFlow({
   websiteUrl,
   brandName,
   addingAnother = false,
+  skipWelcome = false,
+  initialName = null,
+  initialEmail = null,
 }: {
   websiteUrl: string | null;
   brandName: string | null;
   addingAnother?: boolean;
+  skipWelcome?: boolean;
+  initialName?: string | null;
+  initialEmail?: string | null;
 }) {
   const router = useRouter();
   const [url, setUrl] = useState(websiteUrl ?? "");
-  const [step, setStep] = useState<Step>(websiteUrl ? "analyzing" : "idle");
+  const [step, setStep] = useState<Step>(() => {
+    if (!skipWelcome) return "welcome";
+    if (websiteUrl) return "analyzing";
+    return "idle";
+  });
   const [workingPhase, setWorkingPhase] = useState(0);
   const [error, setError] = useState<string | null>(null);
   const [statusNote, setStatusNote] = useState<string | null>(null);
@@ -79,7 +92,7 @@ export function OnboardingFlow({
 
   function beginGeneratePhases() {
     clearPhaseTimers();
-    setWorkingPhase(3);
+    setWorkingPhase(0);
   }
 
   async function analyzeWebsite(targetUrl?: string) {
@@ -130,7 +143,7 @@ export function OnboardingFlow({
       setVoiceDraft(
         brandVoiceFromResearch((data.brand.researchData ?? {}) as BrandResearchRecord),
       );
-      setWorkingPhase(2);
+      setWorkingPhase(0);
       setStep("review");
     } catch (err) {
       clearPhaseTimers();
@@ -199,6 +212,10 @@ export function OnboardingFlow({
   }
 
   useEffect(() => {
+    if (!skipWelcome) {
+      return () => clearPhaseTimers();
+    }
+
     if (addingAnother) {
       if (!consumeHeroOnboardingIntent()) {
         return () => clearPhaseTimers();
@@ -234,25 +251,58 @@ export function OnboardingFlow({
 
     return () => clearPhaseTimers();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [websiteUrl, addingAnother]);
+  }, [websiteUrl, addingAnother, skipWelcome]);
 
   const activeIndex =
     step === "done"
       ? PROGRESS_STEPS.length
-      : step === "review"
-        ? 2
-        : step === "generating"
-          ? 3
-          : step === "analyzing"
-            ? workingPhase
-            : -1;
+      : step === "welcome"
+        ? 0
+        : step === "idle"
+          ? 1
+          : step === "review"
+            ? 4
+            : step === "generating"
+              ? 5
+              : step === "analyzing"
+                ? 2 + workingPhase
+                : -1;
 
-  const showProgressList = step !== "review";
+  const showProgressList = step !== "review" && step !== "welcome";
 
   return (
     <div className="mx-auto w-full max-w-xl">
       <div className="rounded-2xl border border-black/[0.06] bg-white p-8 shadow-card">
-        {step !== "review" ? (
+        {step === "welcome" ? (
+          <>
+            <OnboardingWelcome
+              initialName={initialName}
+              initialEmail={initialEmail}
+              onComplete={() => {
+                if (websiteUrl) {
+                  void analyzeWebsite(websiteUrl);
+                  return;
+                }
+                setStep("idle");
+              }}
+            />
+            <ol className="mt-8 space-y-2 border-t border-black/[0.06] pt-6">
+              {PROGRESS_STEPS.map((item, index) => (
+                <li
+                  key={item.id}
+                  className={[
+                    "text-sm",
+                    index === 0 ? "font-medium text-near-black" : "text-gray-label",
+                  ].join(" ")}
+                >
+                  {index + 1}. {item.label}
+                </li>
+              ))}
+            </ol>
+          </>
+        ) : null}
+
+        {step !== "review" && step !== "welcome" ? (
           <>
             <div className="flex items-center gap-3">
               <div className="rounded-full bg-cream p-3">
@@ -317,7 +367,7 @@ export function OnboardingFlow({
                 aria-live="polite"
               >
                 <p className="font-medium text-near-black">
-                  {PROGRESS_STEPS[workingPhase]?.label ?? "Finishing up"}…
+                  {PROGRESS_STEPS[2 + workingPhase]?.label ?? "Finishing up"}…
                 </p>
                 <p className="mt-1 text-xs">
                   First run can take a minute while we crawl pages and build your brand
@@ -357,7 +407,11 @@ export function OnboardingFlow({
             {PROGRESS_STEPS.map((item, index) => {
               const complete = index < activeIndex;
               const active =
-                (step === "analyzing" && index === workingPhase) ||
+                (step === "idle" && item.id === "website") ||
+                (step === "analyzing" &&
+                  (item.id === "crawling" || item.id === "research") &&
+                  ((item.id === "crawling" && workingPhase === 0) ||
+                    (item.id === "research" && workingPhase === 1))) ||
                 (step === "generating" && item.id === "posts");
               return (
                 <li
