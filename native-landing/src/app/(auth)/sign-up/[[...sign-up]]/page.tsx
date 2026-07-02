@@ -1,4 +1,6 @@
+import { Suspense } from "react";
 import { SignUp } from "@clerk/nextjs";
+import { AgencyReferralCapture } from "@/components/agency/agency-referral-capture";
 import { AuthClerkSlot } from "@/components/auth-clerk-slot";
 import { authRedirectPath, pairedAuthUrls } from "@/lib/auth-routes";
 import { clerkAppearanceAuth } from "@/lib/clerk-appearance";
@@ -10,7 +12,7 @@ export const dynamic = "force-dynamic";
 export default function SignUpPage({
   searchParams,
 }: {
-  searchParams: { url?: string; redirect_url?: string };
+  searchParams: { url?: string; redirect_url?: string; ref?: string };
 }) {
   const pendingUrl = searchParams.url
     ? normalizeWebsiteUrl(searchParams.url)
@@ -23,6 +25,9 @@ export default function SignUpPage({
 
   return (
     <AuthClerkSlot>
+      <Suspense fallback={null}>
+        <AgencyReferralCapture />
+      </Suspense>
       <SignUp
         appearance={clerkAppearanceAuth}
         routing="path"

@@ -1,3 +1,5 @@
+import { Suspense } from "react";
+import { AgencyReferralCapture } from "@/components/agency/agency-referral-capture";
 import { Navbar } from "./navbar";
 import { Footer } from "./sections";
 
@@ -10,6 +12,9 @@ export function MarketingShell({
 }) {
   return (
     <>
+      <Suspense fallback={null}>
+        <AgencyReferralCapture />
+      </Suspense>
       <Navbar />
       <main className="relative z-0 min-h-screen bg-cream px-6 pb-32 pt-32 md:px-10">
         <div className={`mx-auto ${wide ? "max-w-[1100px]" : "max-w-[720px]"}`}>

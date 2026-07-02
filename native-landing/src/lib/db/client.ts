@@ -156,7 +156,35 @@ async function ensureSchema() {
   await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS refine_usage_count INTEGER NOT NULL DEFAULT 0`;
   await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS refine_usage_period TEXT`;
   await sql`ALTER TABLE connections ADD COLUMN IF NOT EXISTS metadata TEXT`;
-  await sql`CREATE INDEX IF NOT EXISTS idx_brands_user_id ON brands(user_id)`;
+  await sql`ALTER TABLE brands ADD COLUMN IF NOT EXISTS is_public BOOLEAN NOT NULL DEFAULT FALSE`;
+  await sql`ALTER TABLE brands ADD COLUMN IF NOT EXISTS public_slug TEXT`;
+  await sql`ALTER TABLE brands ADD COLUMN IF NOT EXISTS public_niche TEXT`;
+  await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS agency_id TEXT`;
+  await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS referred_by_agency_id TEXT`;
+  await sql`
+    CREATE TABLE IF NOT EXISTS agencies (
+      id TEXT PRIMARY KEY,
+      owner_user_id TEXT NOT NULL UNIQUE,
+      name TEXT NOT NULL,
+      contact_email TEXT,
+      referral_code TEXT NOT NULL UNIQUE,
+      status TEXT NOT NULL DEFAULT 'active',
+      white_label_name TEXT,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+      updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    )`;
+  await sql`
+    CREATE TABLE IF NOT EXISTS affiliate_referrals (
+      id TEXT PRIMARY KEY,
+      agency_id TEXT NOT NULL REFERENCES agencies(id) ON DELETE CASCADE,
+      referred_user_id TEXT NOT NULL UNIQUE,
+      signup_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+      converted_at TIMESTAMPTZ,
+      subscription_tier TEXT,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    )`;
+  await sql`CREATE UNIQUE INDEX IF NOT EXISTS brands_public_slug_idx ON brands(public_slug) WHERE public_slug IS NOT NULL`;
+  await sql`CREATE INDEX IF NOT EXISTS idx_brands_is_public ON brands(is_public)`;
   await sql`CREATE INDEX IF NOT EXISTS idx_posts_brand_id ON posts(brand_id)`;
   await sql`CREATE INDEX IF NOT EXISTS idx_posts_status ON posts(status)`;
   await sql`CREATE INDEX IF NOT EXISTS idx_posts_scheduled_at ON posts(scheduled_at)`;

@@ -1,3 +1,4 @@
+import { randomBytes, randomUUID } from "node:crypto";
 import {
   and,
   asc,
@@ -18,7 +19,7 @@ import { getPlanLimits } from "@/lib/plans";
 import { decryptOptional, encryptOptional } from "@/lib/crypto";
 import { WeeklyScheduleLimitError } from "@/lib/usage/schedule-limit";
 import { getDb } from "./client";
-import { brands, connections, metaOauthPending, posts, users } from "./schema";
+import { brands, connections, metaOauthPending, posts, users, agencies, affiliateReferrals } from "./schema";
 
 export type BrandRecord = {
   id: string;
@@ -29,6 +30,9 @@ export type BrandRecord = {
   crawlStatus: "pending" | "running" | "review" | "completed" | "failed";
   researchData: string | null;
   postingFrequency: number;
+  isPublic: boolean;
+  publicSlug: string | null;
+  publicNiche: string | null;
   createdAt: string;
   updatedAt: string;
 };
@@ -76,6 +80,8 @@ export type UserRecord = {
   displayName: string | null;
   referralSource: string | null;
   referralDetail: string | null;
+  agencyId: string | null;
+  referredByAgencyId: string | null;
   refineUsageCount: number;
   refineUsagePeriod: string | null;
   createdAt: string;
@@ -104,6 +110,26 @@ export type ActivityItem = CalendarPost & {
   action: "published" | "scheduled" | "skipped" | "failed" | "generated";
 };
 
+export type AgencyRecord = {
+  id: string;
+  ownerUserId: string;
+  name: string;
+  contactEmail: string | null;
+  referralCode: string;
+  status: "pending" | "active" | "suspended";
+  whiteLabelName: string | null;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type AgencyReferralRow = {
+  id: string;
+  email: string | null;
+  subscriptionTier: UserRecord["subscriptionTier"];
+  signupAt: string;
+  convertedAt: string | null;
+};
+
 function parseBrand(row: typeof brands.$inferSelect): BrandRecord {
   return {
     id: row.id,
@@ -114,6 +140,9 @@ function parseBrand(row: typeof brands.$inferSelect): BrandRecord {
     crawlStatus: row.crawlStatus as BrandRecord["crawlStatus"],
     researchData: row.researchData,
     postingFrequency: row.postingFrequency,
+    isPublic: row.isPublic ?? false,
+    publicSlug: row.publicSlug ?? null,
+    publicNiche: row.publicNiche ?? null,
     createdAt: row.createdAt,
     updatedAt: row.updatedAt,
   };
@@ -170,6 +199,8 @@ function parseUser(row: typeof users.$inferSelect): UserRecord {
     displayName: row.displayName ?? null,
     referralSource: row.referralSource ?? null,
     referralDetail: row.referralDetail ?? null,
+    agencyId: row.agencyId ?? null,
+    referredByAgencyId: row.referredByAgencyId ?? null,
     refineUsageCount: row.refineUsageCount ?? 0,
     refineUsagePeriod: row.refineUsagePeriod ?? null,
     createdAt: row.createdAt,
@@ -194,6 +225,70 @@ export async function getBrandsByUserId(userId: string) {
     .where(eq(brands.userId, userId))
     .orderBy(desc(brands.createdAt));
   return rows.map(parseBrand);
+}
+
+export async function getPublicDirectoryBrands() {
+  const db = await getDb();
+  const rows = await db
+    .select()
+    .from(brands)
+    .where(eq(brands.isPublic, true))
+    .orderBy(desc(brands.updatedAt));
+  return rows.map(parseBrand);
+}
+
+export async function updateBrandDirectoryListing(
+  id: string,
+  userId: string,
+  data: { isPublic: boolean; publicNiche?: string | null },
+) {
+  const existing = await getBrandById(id, userId);
+  if (!existing) return null;
+
+  const db = await getDb();
+  const now = nowIso();
+  let publicSlug = existing.publicSlug;
+  let publicNiche = data.publicNiche ?? existing.publicNiche;
+
+  if (data.isPublic) {
+    if (!publicSlug) {
+      const base =
+        existing.name
+          .toLowerCase()
+          .replace(/[^a-z0-9]+/g, "-")
+          .replace(/^-+|-+$/g, "") || "brand";
+      publicSlug = `${base}-${id.slice(0, 8)}`;
+    }
+
+    if (!publicNiche && existing.researchData) {
+      try {
+        const research = JSON.parse(existing.researchData) as { industry?: string };
+        publicNiche = research.industry?.trim() || "Small business";
+      } catch {
+        publicNiche = "Small business";
+      }
+    }
+  }
+
+  await db
+    .update(brands)
+    .set({
+      isPublic: data.isPublic,
+      publicSlug: data.isPublic ? publicSlug : existing.publicSlug,
+      publicNiche: data.isPublic ? publicNiche : existing.publicNiche,
+      updatedAt: now,
+    })
+    .where(and(eq(brands.id, id), eq(brands.userId, userId)));
+
+  return (await getBrandById(id, userId))!;
+}
+
+export async function getPublicBrandBySlug(slug: string) {
+  const db = await getDb();
+  const row = await db.query.brands.findFirst({
+    where: and(eq(brands.publicSlug, slug), eq(brands.isPublic, true)),
+  });
+  return row ? parseBrand(row) : null;
 }
 
 export async function getBrandById(id: string, userId: string) {
@@ -1425,4 +1520,211 @@ export async function getRecentActivity(userId: string, limit = 12): Promise<Act
       action,
     };
   });
+}
+
+function parseAgency(row: typeof agencies.$inferSelect): AgencyRecord {
+  const status = row.status;
+  return {
+    id: row.id,
+    ownerUserId: row.ownerUserId,
+    name: row.name,
+    contactEmail: row.contactEmail ?? null,
+    referralCode: row.referralCode,
+    status:
+      status === "pending" || status === "suspended" ? status : "active",
+    whiteLabelName: row.whiteLabelName ?? null,
+    createdAt: row.createdAt,
+    updatedAt: row.updatedAt,
+  };
+}
+
+function generateAgencyReferralCode(agencyName: string) {
+  const slug =
+    agencyName
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "_")
+      .replace(/^_+|_+$/g, "")
+      .slice(0, 24) || "partner";
+  return `agency_${slug}_${randomBytes(3).toString("hex")}`;
+}
+
+export async function getAgencyByOwnerUserId(ownerUserId: string) {
+  const db = await getDb();
+  const row = await db.query.agencies.findFirst({
+    where: eq(agencies.ownerUserId, ownerUserId),
+  });
+  return row ? parseAgency(row) : null;
+}
+
+export async function getAgencyByReferralCode(referralCode: string) {
+  const db = await getDb();
+  const row = await db.query.agencies.findFirst({
+    where: eq(agencies.referralCode, referralCode),
+  });
+  return row ? parseAgency(row) : null;
+}
+
+export async function createAgency(input: {
+  ownerUserId: string;
+  name: string;
+  contactEmail?: string | null;
+}) {
+  const existing = await getAgencyByOwnerUserId(input.ownerUserId);
+  if (existing) {
+    throw new Error("Agency already exists for this user");
+  }
+
+  const db = await getDb();
+  const now = nowIso();
+  const id = randomUUID();
+  let referralCode = generateAgencyReferralCode(input.name);
+
+  for (let attempt = 0; attempt < 5; attempt += 1) {
+    try {
+      await db.insert(agencies).values({
+        id,
+        ownerUserId: input.ownerUserId,
+        name: input.name.trim(),
+        contactEmail: input.contactEmail?.trim() || null,
+        referralCode,
+        status: "active",
+        createdAt: now,
+        updatedAt: now,
+      });
+      break;
+    } catch {
+      if (attempt === 4) {
+        throw new Error("Could not generate a unique referral code");
+      }
+      referralCode = generateAgencyReferralCode(input.name);
+    }
+  }
+
+  await db
+    .update(users)
+    .set({ agencyId: id, updatedAt: now })
+    .where(eq(users.id, input.ownerUserId));
+
+  return (await getAgencyByOwnerUserId(input.ownerUserId))!;
+}
+
+export async function updateAgencyWhiteLabel(
+  ownerUserId: string,
+  whiteLabelName: string | null,
+) {
+  const agency = await getAgencyByOwnerUserId(ownerUserId);
+  if (!agency) return null;
+
+  const db = await getDb();
+  const now = nowIso();
+  await db
+    .update(agencies)
+    .set({
+      whiteLabelName: whiteLabelName?.trim() || null,
+      updatedAt: now,
+    })
+    .where(eq(agencies.id, agency.id));
+
+  return (await getAgencyByOwnerUserId(ownerUserId))!;
+}
+
+export async function getAgencyReferrals(agencyId: string): Promise<AgencyReferralRow[]> {
+  const db = await getDb();
+  const rows = await db
+    .select({
+      id: affiliateReferrals.id,
+      signupAt: affiliateReferrals.signupAt,
+      convertedAt: affiliateReferrals.convertedAt,
+      email: users.email,
+      subscriptionTier: users.subscriptionTier,
+    })
+    .from(affiliateReferrals)
+    .innerJoin(users, eq(users.id, affiliateReferrals.referredUserId))
+    .where(eq(affiliateReferrals.agencyId, agencyId))
+    .orderBy(desc(affiliateReferrals.signupAt));
+
+  return rows.map((row) => {
+    const tier = row.subscriptionTier;
+    return {
+      id: row.id,
+      email: row.email ?? null,
+      subscriptionTier: tier === "pro" || tier === "max" ? tier : "free",
+      signupAt: row.signupAt,
+      convertedAt: row.convertedAt ?? null,
+    };
+  });
+}
+
+export async function getAgencyDashboardStats(agencyId: string) {
+  const referrals = await getAgencyReferrals(agencyId);
+  return {
+    totalReferred: referrals.length,
+    activeSubscriptions: referrals.filter(
+      (referral) => referral.subscriptionTier === "pro" || referral.subscriptionTier === "max",
+    ).length,
+  };
+}
+
+export async function applyAgencyReferral(userId: string, referralCode: string) {
+  const agency = await getAgencyByReferralCode(referralCode);
+  if (!agency || agency.status !== "active") {
+    return false;
+  }
+
+  if (agency.ownerUserId === userId) {
+    return false;
+  }
+
+  const user = await getOrCreateUser(userId);
+  if (user.referredByAgencyId || user.agencyId) {
+    return false;
+  }
+
+  const db = await getDb();
+  const now = nowIso();
+
+  await db
+    .update(users)
+    .set({ referredByAgencyId: agency.id, updatedAt: now })
+    .where(eq(users.id, userId));
+
+  const existingReferral = await db.query.affiliateReferrals.findFirst({
+    where: eq(affiliateReferrals.referredUserId, userId),
+  });
+
+  if (!existingReferral) {
+    await db.insert(affiliateReferrals).values({
+      id: randomUUID(),
+      agencyId: agency.id,
+      referredUserId: userId,
+      signupAt: now,
+      createdAt: now,
+    });
+  }
+
+  return true;
+}
+
+export async function markAffiliateReferralConverted(
+  userId: string,
+  subscriptionTier: UserRecord["subscriptionTier"],
+) {
+  if (subscriptionTier !== "pro" && subscriptionTier !== "max") {
+    return;
+  }
+
+  const db = await getDb();
+  const now = nowIso();
+  await db
+    .update(affiliateReferrals)
+    .set({
+      convertedAt: now,
+      subscriptionTier,
+    })
+    .where(
+      and(
+        eq(affiliateReferrals.referredUserId, userId),
+        sql`${affiliateReferrals.convertedAt} IS NULL`,
+      ),
+    );
 }

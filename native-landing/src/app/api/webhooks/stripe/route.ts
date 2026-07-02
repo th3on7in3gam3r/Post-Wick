@@ -1,7 +1,7 @@
 import { headers } from "next/headers";
 import { NextResponse } from "next/server";
 import type Stripe from "stripe";
-import { getUserByStripeCustomerId, updateUserSubscription } from "@/lib/db";
+import { getUserByStripeCustomerId, markAffiliateReferralConverted, updateUserSubscription } from "@/lib/db";
 import { getStripe, tierFromStripePriceId } from "@/lib/stripe";
 
 async function resolveUserIdFromSubscription(subscription: Stripe.Subscription) {
@@ -44,11 +44,13 @@ export async function POST(req: Request) {
       const userId = session.metadata?.clerkUserId;
       const plan = session.metadata?.plan;
       if (userId) {
+        const tier = plan === "max" ? "max" : plan === "pro" ? "pro" : "free";
         await updateUserSubscription(userId, {
-          subscriptionTier: plan === "max" ? "max" : plan === "pro" ? "pro" : "free",
+          subscriptionTier: tier,
           stripeCustomerId:
             typeof session.customer === "string" ? session.customer : session.customer?.id,
         });
+        await markAffiliateReferralConverted(userId, tier);
       }
       break;
     }
@@ -60,13 +62,15 @@ export async function POST(req: Request) {
 
       const priceId = subscription.items.data[0]?.price.id;
       const active = subscription.status === "active" || subscription.status === "trialing";
+      const tier = active ? tierFromStripePriceId(priceId) : "free";
       await updateUserSubscription(userId, {
-        subscriptionTier: active ? tierFromStripePriceId(priceId) : "free",
+        subscriptionTier: tier,
         stripeCustomerId:
           typeof subscription.customer === "string"
             ? subscription.customer
             : subscription.customer.id,
       });
+      await markAffiliateReferralConverted(userId, tier);
       break;
     }
     default:

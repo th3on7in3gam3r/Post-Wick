@@ -16,6 +16,9 @@ export const brands = pgTable("brands", {
   crawlStatus: text("crawl_status").notNull().default("pending"),
   researchData: text("research_data"),
   postingFrequency: integer("posting_frequency").notNull().default(3),
+  isPublic: boolean("is_public").notNull().default(false),
+  publicSlug: text("public_slug"),
+  publicNiche: text("public_niche"),
   createdAt: timestamp("created_at", { withTimezone: true, mode: "string" })
     .notNull()
     .defaultNow(),
@@ -112,6 +115,8 @@ export const users = pgTable("users", {
   displayName: text("display_name"),
   referralSource: text("referral_source"),
   referralDetail: text("referral_detail"),
+  agencyId: text("agency_id"),
+  referredByAgencyId: text("referred_by_agency_id"),
   refineUsageCount: integer("refine_usage_count").notNull().default(0),
   refineUsagePeriod: text("refine_usage_period"),
   createdAt: timestamp("created_at", { withTimezone: true, mode: "string" })
@@ -121,3 +126,50 @@ export const users = pgTable("users", {
     .notNull()
     .defaultNow(),
 });
+
+export const agencies = pgTable(
+  "agencies",
+  {
+    id: text("id").primaryKey(),
+    ownerUserId: text("owner_user_id").notNull(),
+    name: text("name").notNull(),
+    contactEmail: text("contact_email"),
+    referralCode: text("referral_code").notNull(),
+    status: text("status").notNull().default("active"),
+    whiteLabelName: text("white_label_name"),
+    createdAt: timestamp("created_at", { withTimezone: true, mode: "string" })
+      .notNull()
+      .defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true, mode: "string" })
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => ({
+    ownerIdx: uniqueIndex("agencies_owner_user_id_idx").on(table.ownerUserId),
+    referralCodeIdx: uniqueIndex("agencies_referral_code_idx").on(table.referralCode),
+  }),
+);
+
+export const affiliateReferrals = pgTable(
+  "affiliate_referrals",
+  {
+    id: text("id").primaryKey(),
+    agencyId: text("agency_id")
+      .notNull()
+      .references(() => agencies.id, { onDelete: "cascade" }),
+    referredUserId: text("referred_user_id").notNull(),
+    signupAt: timestamp("signup_at", { withTimezone: true, mode: "string" })
+      .notNull()
+      .defaultNow(),
+    convertedAt: timestamp("converted_at", { withTimezone: true, mode: "string" }),
+    subscriptionTier: text("subscription_tier"),
+    createdAt: timestamp("created_at", { withTimezone: true, mode: "string" })
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => ({
+    referredUserIdx: uniqueIndex("affiliate_referrals_referred_user_id_idx").on(
+      table.referredUserId,
+    ),
+  }),
+);

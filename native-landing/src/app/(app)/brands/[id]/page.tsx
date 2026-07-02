@@ -10,6 +10,7 @@ import {
   Sparkles,
 } from "lucide-react";
 import { AppHeader } from "@/components/app/app-header";
+import { BrandDirectoryToggle } from "@/components/app/brand-directory-toggle";
 import { BrandProfileCard } from "@/components/app/brand-profile-card";
 import { BrandSitePreview } from "@/components/app/brand-site-preview";
 import { GenerateImagesButton } from "@/components/app/generate-images-button";
@@ -160,6 +161,20 @@ export default async function BrandPage({
           />
 
           <div className="space-y-6">
+            {brand.crawlStatus === "completed" ? (
+              <PanelCard
+                title="Directory listing"
+                description="Share your brand on the public Kerygma Social directory."
+              >
+                <BrandDirectoryToggle
+                  brandId={brand.id}
+                  initialIsPublic={brand.isPublic}
+                  publicSlug={brand.publicSlug}
+                  publicNiche={brand.publicNiche}
+                />
+              </PanelCard>
+            ) : null}
+
             <PanelCard title="Connections" description="Channels linked to this brand.">
               {connections.length > 0 ? (
                 <ul className="space-y-2">
