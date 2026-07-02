@@ -40,7 +40,7 @@ export function SocialGraderSeoSections() {
         <div className="overflow-hidden rounded-2xl border border-black/[0.06] bg-white shadow-card">
           <Image
             src="/images/sample-posts/greenpress.jpg"
-            alt="Placeholder screenshot of a social media grader score breakdown with category bars for posting frequency, profile clarity, and visual consistency"
+            alt="Social media grader score breakdown showing posting frequency, profile clarity, and visual consistency for a local business"
             width={1200}
             height={720}
             className="h-auto w-full object-cover"
@@ -76,7 +76,7 @@ export function SocialGraderSeoSections() {
         <div className="overflow-hidden rounded-2xl border border-black/[0.06] bg-white shadow-card">
           <Image
             src="/images/sample-posts/bloom-stem.jpg"
-            alt="Placeholder screenshot showing consistent weekly social media posts for a local flower shop improving local search visibility"
+            alt="Example of consistent weekly Instagram posts for a local flower shop improving local search visibility"
             width={1200}
             height={720}
             className="h-auto w-full object-cover"
@@ -112,7 +112,7 @@ export function SocialGraderSeoSections() {
         <div className="overflow-hidden rounded-2xl border border-black/[0.06] bg-white shadow-card">
           <Image
             src="/images/sample-posts/strongform.jpg"
-            alt="Placeholder screenshot of Kerygma Social approval queue with drafted Instagram and LinkedIn posts ready to publish"
+            alt="Example of an AI-generated Instagram post for a local fitness studio with on-brand captions and imagery"
             width={1200}
             height={720}
             className="h-auto w-full object-cover"

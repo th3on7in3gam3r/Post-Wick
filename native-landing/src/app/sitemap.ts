@@ -1,6 +1,7 @@
 import type { MetadataRoute } from "next";
-import { INDUSTRY_SLUGS } from "@/lib/industries/verticals";
 import { siteUrl } from "@/lib/brand";
+import { getPublicDirectoryBrands } from "@/lib/db";
+import { INDUSTRY_SLUGS } from "@/lib/industries/verticals";
 
 const PUBLIC_PAGES: Array<{
   path: string;
@@ -20,21 +21,45 @@ const PUBLIC_PAGES: Array<{
   { path: "/cookies", changeFrequency: "yearly", priority: 0.3 },
 ];
 
-export default function sitemap(): MetadataRoute.Sitemap {
+async function directoryListingEntries(
+  base: string,
+): Promise<MetadataRoute.Sitemap> {
+  try {
+    const brands = await getPublicDirectoryBrands();
+
+    return brands
+      .filter((brand) => brand.publicSlug)
+      .map((brand) => ({
+        url: `${base}/directory/${brand.publicSlug}`,
+        lastModified: new Date(brand.updatedAt),
+        changeFrequency: "weekly" as const,
+        priority: 0.65,
+      }));
+  } catch {
+    // DB unavailable at build or request time — skip dynamic directory listings.
+    return [];
+  }
+}
+
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const base = siteUrl();
   const lastModified = new Date();
 
-  return PUBLIC_PAGES.map(({ path, changeFrequency, priority }) => ({
+  const staticEntries = PUBLIC_PAGES.map(({ path, changeFrequency, priority }) => ({
     url: `${base}${path}`,
     lastModified,
     changeFrequency,
     priority,
-  })).concat(
-    INDUSTRY_SLUGS.map((slug) => ({
-      url: `${base}/industries/${slug}`,
-      lastModified,
-      changeFrequency: "monthly" as const,
-      priority: 0.75,
-    })),
-  );
+  }));
+
+  const industryEntries = INDUSTRY_SLUGS.map((slug) => ({
+    url: `${base}/industries/${slug}`,
+    lastModified,
+    changeFrequency: "monthly" as const,
+    priority: 0.75,
+  }));
+
+  const directoryEntries = await directoryListingEntries(base);
+
+  return staticEntries.concat(industryEntries, directoryEntries);
 }

@@ -13,11 +13,11 @@ Kerygma Social is a social media automation platform for small businesses. Drop 
 
 ## Key pages
 
-- Home: https://post-wick.vercel.app/
-- About: https://post-wick.vercel.app/about
-- Contact: https://post-wick.vercel.app/contact
-- Privacy: https://post-wick.vercel.app/privacy
-- Terms: https://post-wick.vercel.app/terms
+- Home: https://kerygmasocial.com/
+- About: https://kerygmasocial.com/about
+- Contact: https://kerygmasocial.com/contact
+- Privacy: https://kerygmasocial.com/privacy
+- Terms: https://kerygmasocial.com/terms
 
 ## Tagline
 
@@ -25,4 +25,4 @@ One URL. Endless Content.
 
 ## Contact
 
-https://post-wick.vercel.app/contact
+https://kerygmasocial.com/contact

@@ -15,7 +15,10 @@ export const metadata = createPageMetadata({
 
 export default function AboutPage() {
   return (
-    <MarketingShell wide>
+    <MarketingShell
+      wide
+      heroBackground="/images/comparison-autopilot-watercolor.png"
+    >
       <AboutPageClient />
     </MarketingShell>
   );

@@ -15,7 +15,10 @@ export const metadata = createPageMetadata({
 
 export default function ContactPage() {
   return (
-    <MarketingShell wide>
+    <MarketingShell
+      wide
+      heroBackground="/images/comparison-autopilot-watercolor.png"
+    >
       <ContactPageClient />
     </MarketingShell>
   );

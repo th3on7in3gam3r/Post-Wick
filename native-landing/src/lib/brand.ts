@@ -23,7 +23,7 @@ export const OG_IMAGE = {
 } as const;
 
 export function siteUrl() {
-  return (process.env.NEXT_PUBLIC_APP_URL ?? "https://post-wick.vercel.app").replace(
+  return (process.env.NEXT_PUBLIC_APP_URL ?? "https://kerygmasocial.com").replace(
     /\/+$/,
     "",
   );
