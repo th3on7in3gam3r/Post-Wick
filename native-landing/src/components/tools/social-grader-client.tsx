@@ -81,12 +81,12 @@ export function SocialGraderClient() {
         <span className="animate-fade-drop inline-block rounded-full bg-white px-4 py-1.5 text-sm font-medium text-near-black shadow-sm">
           Free tool
         </span>
-        <h1 className="animate-fade-drop-delay-1 mt-6 font-playfair text-[clamp(2.25rem,4vw,3.25rem)] italic leading-tight text-near-black">
-          Social Media Grader
+        <h1 className="animate-fade-drop-delay-1 mt-6 font-playfair text-[clamp(2rem,3.8vw,2.75rem)] italic leading-tight text-near-black">
+          Free Social Media Grader: Analyze Your Local Business Presence
         </h1>
-        <p className="body-copy animate-fade-drop-delay-2 mx-auto mt-4 max-w-[560px] text-[1.05rem]">
-          Enter your business website or social handle for a quick score and practical
-          tips to improve your feed.
+        <p className="body-copy animate-fade-drop-delay-2 mx-auto mt-4 max-w-[600px] text-[1.05rem]">
+          Enter your website or social handle for an instant score, category breakdown, and
+          practical tips to strengthen your local brand online.
         </p>
       </div>
 

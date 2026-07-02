@@ -8,12 +8,17 @@ import { Comparison, ComparisonTable } from "@/components/comparison";
 import { TestimonialsSection } from "@/components/testimonials-section";
 import { FAQ, GraderPromoSection, Guides, CTASection, Footer } from "@/components/sections";
 import { createPageMetadata } from "@/lib/metadata";
+import { homepageSoftwareJsonLd } from "@/lib/seo/structured-data";
 
 export const metadata = createPageMetadata({ path: "/" });
 
 export default function Home() {
   return (
     <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(homepageSoftwareJsonLd()) }}
+      />
       <Navbar />
       <main>
         <Hero />

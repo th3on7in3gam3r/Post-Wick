@@ -4,6 +4,7 @@ import { CookieSettingsTrigger } from "@/components/cookie-settings-trigger";
 import { FaqJsonLd } from "@/components/faq-json-ld";
 import { TextureButton } from "@/components/ui/texture-button";
 import { BIBLEFUNLAND_STUDIOS_URL, SITE_TAGLINE } from "@/lib/brand";
+import { INDUSTRY_FOOTER_LINKS } from "@/lib/industries/verticals";
 import { SITE_FAQS } from "@/lib/faq";
 
 export function FAQ() {
@@ -121,7 +122,8 @@ export function CTASection() {
 export function Footer() {
   return (
     <footer className="relative z-10 border-t border-[#ddd] bg-cream px-10 py-12">
-      <div className="mx-auto flex max-w-[1200px] flex-col items-center justify-between gap-6 sm:flex-row">
+      <div className="mx-auto max-w-[1200px]">
+        <div className="flex flex-col items-center justify-between gap-8 sm:flex-row sm:items-start">
         <div className="flex flex-col items-center gap-2 sm:items-start">
           <BrandLogo href="/" variant="wordmark" />
           <p className="text-[0.65rem] font-medium uppercase tracking-[0.18em] text-gray-label">
@@ -139,7 +141,21 @@ export function Footer() {
             </Link>
           </p>
         </div>
-        <div className="flex flex-col gap-8 sm:flex-row sm:gap-12">
+        <div className="flex flex-col gap-8 sm:flex-row sm:gap-10">
+          <nav className="flex flex-col items-center gap-3 text-sm sm:items-start">
+            <p className="text-[0.65rem] font-semibold uppercase tracking-[0.18em] text-gray-label">
+              Solutions by industry
+            </p>
+            <ul className="flex flex-col items-center gap-3 sm:items-start">
+              {INDUSTRY_FOOTER_LINKS.map((item) => (
+                <li key={item.slug}>
+                  <Link href={item.href} className="text-gray-body hover:text-near-black">
+                    {item.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </nav>
           <nav className="flex flex-col items-center gap-3 text-sm sm:items-start">
             <p className="text-[0.65rem] font-semibold uppercase tracking-[0.18em] text-gray-label">
               Explore
@@ -172,6 +188,7 @@ export function Footer() {
             </Link>
             <CookieSettingsTrigger className="text-gray-body hover:text-near-black" />
           </nav>
+        </div>
         </div>
       </div>
     </footer>

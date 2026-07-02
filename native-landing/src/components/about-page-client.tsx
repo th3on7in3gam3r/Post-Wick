@@ -86,6 +86,36 @@ export function AboutPageClient() {
           </p>
         </div>
 
+        <section className="mt-14 rounded-2xl border border-black/[0.06] bg-white p-8 shadow-card sm:p-10">
+          <p className="step-label">Our mission</p>
+          <h2 className="mt-3 font-playfair text-[clamp(1.75rem,3vw,2.25rem)] italic text-near-black">
+            Serving local businesses everywhere and the faith communities that anchor them
+          </h2>
+          <div className="body-copy mt-5 space-y-4 sm:text-left">
+            <p>
+              We believe every main-street shop, neighborhood nonprofit, and parish deserves
+              the same caliber of social media that national chains buy from agencies — without
+              the five-figure retainer. Kerygma Social exists to democratize{" "}
+              <strong className="font-medium text-near-black">AI social media marketing</strong>{" "}
+              for owners who would rather serve customers than stare at Canva at midnight.
+            </p>
+            <p>
+              From family restaurants and home-service contractors to yoga studios and
+              community churches, our mission is simple: help{" "}
+              <strong className="font-medium text-near-black">local businesses post consistently</strong>,
+              sound like themselves, and show up where their neighbors already scroll. Faith
+              communities use Kerygma Social to extend welcome beyond Sunday — sharing events,
+              volunteer needs, and stories that reflect their values year-round.
+            </p>
+            <p>
+              We are building for the long tail of American entrepreneurship — the places you
+              recommend to friends, the ministries you trust, the brands that make your town
+              feel like home. Social media on autopilot is not about replacing human connection;
+              it is about freeing you to focus on the work only you can do.
+            </p>
+          </div>
+        </section>
+
         <div className="mt-10 flex flex-wrap justify-center gap-3 sm:justify-start">
           <TextureButton asChild variant="primary" size="lg">
             <Link href="/sign-up">Try Kerygma Social →</Link>

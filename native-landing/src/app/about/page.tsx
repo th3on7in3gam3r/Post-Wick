@@ -3,12 +3,12 @@ import { MarketingShell } from "@/components/marketing-shell";
 import { createPageMetadata } from "@/lib/metadata";
 
 const description =
-  "Meet the founder behind Kerygma Social — social media on autopilot for local businesses of every kind.";
+  "Meet Kerygma Social — AI social media on autopilot for local shops, studios, and faith communities. No blank captions. Just consistent posts.";
 
 export const metadata = createPageMetadata({
-  title: "About",
+  title: "About Kerygma Social | Autopilot for Locals",
   description,
-  ogTitle: "About Kerygma Social | Social media on autopilot for local businesses",
+  ogTitle: "About Kerygma Social — Social Media on Autopilot",
   ogDescription: description,
   path: "/about",
 });

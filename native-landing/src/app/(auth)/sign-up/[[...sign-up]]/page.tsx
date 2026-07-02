@@ -1,13 +1,25 @@
+import type { Metadata } from "next";
 import { Suspense } from "react";
 import { SignUp } from "@clerk/nextjs";
 import { AgencyReferralCapture } from "@/components/agency/agency-referral-capture";
 import { AuthClerkSlot } from "@/components/auth-clerk-slot";
 import { authRedirectPath, pairedAuthUrls } from "@/lib/auth-routes";
+import { siteUrl } from "@/lib/brand";
 import { clerkAppearanceAuth } from "@/lib/clerk-appearance";
 import { onboardingRedirectFromHeroUrl } from "@/lib/pending-website-url";
 import { normalizeWebsiteUrl } from "@/lib/website-url";
 
 export const dynamic = "force-dynamic";
+
+export const metadata: Metadata = {
+  alternates: {
+    canonical: `${siteUrl()}/sign-up`,
+  },
+  robots: {
+    index: false,
+    follow: true,
+  },
+};
 
 export default function SignUpPage({
   searchParams,

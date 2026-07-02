@@ -1,11 +1,23 @@
+import type { Metadata } from "next";
 import { SignIn } from "@clerk/nextjs";
 import { AuthClerkSlot } from "@/components/auth-clerk-slot";
 import { authRedirectPath, pairedAuthUrls } from "@/lib/auth-routes";
+import { siteUrl } from "@/lib/brand";
 import { clerkAppearanceAuth } from "@/lib/clerk-appearance";
 import { onboardingRedirectFromHeroUrl } from "@/lib/pending-website-url";
 import { normalizeWebsiteUrl } from "@/lib/website-url";
 
 export const dynamic = "force-dynamic";
+
+export const metadata: Metadata = {
+  alternates: {
+    canonical: `${siteUrl()}/sign-in`,
+  },
+  robots: {
+    index: false,
+    follow: true,
+  },
+};
 
 export default function SignInPage({
   searchParams,

@@ -3,6 +3,7 @@ import { Pricing } from "@/components/pricing";
 import { Navbar } from "@/components/navbar";
 import { FAQ, Footer } from "@/components/sections";
 import { createPageMetadata } from "@/lib/metadata";
+import { pricingProductsJsonLd } from "@/lib/seo/structured-data";
 
 const description =
   "Simple pricing for AI-generated social content. Pro and Max plans with monthly or yearly billing.";
@@ -18,9 +19,16 @@ export const metadata = createPageMetadata({
 export default function PricingPage() {
   return (
     <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(pricingProductsJsonLd()) }}
+      />
       <Navbar />
       <main>
-        <Pricing />
+        <Pricing
+          headingTag="h1"
+          heading="Affordable AI Social Media Pricing for Local Businesses & Churches"
+        />
         <Comparison />
         <ComparisonTable />
         <FAQ />

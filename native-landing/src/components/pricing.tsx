@@ -13,7 +13,13 @@ const COMING_SOON_CHANNELS = ["X", "TikTok", "Reddit", "Bluesky"] as const;
 
 type BillingCycle = "monthly" | "yearly";
 
-export function Pricing() {
+export function Pricing({
+  heading = "One plan for autopilot.",
+  headingTag: HeadingTag = "h2",
+}: {
+  heading?: string;
+  headingTag?: "h1" | "h2";
+} = {}) {
   const [billing, setBilling] = useState<BillingCycle>("yearly");
 
   const proPrice =
@@ -37,9 +43,9 @@ export function Pricing() {
 
           <div className="relative z-10 px-6 py-12 md:px-12 md:py-16">
             <p className="step-label text-[#E9D5FF]">Pricing</p>
-            <h2 className="mt-3 font-playfair text-[clamp(2rem,4vw,3rem)] italic text-[#F2EBD9] drop-shadow-md">
-              One plan for autopilot.
-            </h2>
+            <HeadingTag className="mt-3 font-playfair text-[clamp(2rem,4vw,3rem)] italic text-[#F2EBD9] drop-shadow-md">
+              {heading}
+            </HeadingTag>
             <p className="body-copy mt-3 max-w-xl text-[#EDE8F5]">
               Pick the batch size that matches your posting rhythm. Free includes{" "}
               {PLAN_LIMITS.free.generateMax} posts to try the workflow.

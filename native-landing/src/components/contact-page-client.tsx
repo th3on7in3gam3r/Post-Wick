@@ -104,6 +104,21 @@ export function ContactPageClient() {
         </p>
       </div>
 
+      <section className="mx-auto mt-12 max-w-[1040px] rounded-2xl border border-black/[0.06] bg-white p-8 shadow-card md:p-10">
+        <h2 className="font-playfair text-[clamp(1.5rem,2.5vw,2rem)] italic text-near-black">
+          How we help local brands scale their digital marketing
+        </h2>
+        <p className="body-copy mt-4 max-w-[720px] text-[1.05rem] leading-relaxed">
+          Kerygma Social is built for owners who need{" "}
+          <strong className="font-medium text-near-black">affordable social media automation</strong>{" "}
+          without sacrificing authenticity. We research your website, draft platform-ready posts,
+          and queue them for your approval — so your coffee shop, dental practice, boutique, or
+          church can grow reach on Instagram, Facebook, and LinkedIn while you run the business.
+          Reach out for onboarding help, partnership questions, or feedback on how we can serve
+          your community better.
+        </p>
+      </section>
+
       <div className="mx-auto mt-16 grid max-w-[1040px] gap-12 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.15fr)] lg:items-start lg:gap-16">
         <div className="animate-fade-drop-delay-3 lg:pt-4">
           <h2 className="font-playfair text-[clamp(1.5rem,2.5vw,2rem)] italic leading-snug text-near-black">

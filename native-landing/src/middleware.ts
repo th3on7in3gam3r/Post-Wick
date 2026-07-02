@@ -14,6 +14,8 @@ const isPublicRoute = createRouteMatcher([
   "/agency",
   "/agency/register",
   "/get-started",
+  "/industries",
+  "/industries/(.*)",
   "/opengraph-image(.*)",
   "/sign-in(.*)",
   "/sign-up(.*)",

@@ -1,4 +1,5 @@
 import type { MetadataRoute } from "next";
+import { INDUSTRY_SLUGS } from "@/lib/industries/verticals";
 import { siteUrl } from "@/lib/brand";
 
 const PUBLIC_PAGES: Array<{
@@ -28,5 +29,12 @@ export default function sitemap(): MetadataRoute.Sitemap {
     lastModified,
     changeFrequency,
     priority,
-  }));
+  })).concat(
+    INDUSTRY_SLUGS.map((slug) => ({
+      url: `${base}/industries/${slug}`,
+      lastModified,
+      changeFrequency: "monthly" as const,
+      priority: 0.75,
+    })),
+  );
 }
