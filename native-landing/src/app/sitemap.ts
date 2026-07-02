@@ -45,21 +45,23 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const base = siteUrl();
   const lastModified = new Date();
 
-  const staticEntries = PUBLIC_PAGES.map(({ path, changeFrequency, priority }) => ({
-    url: `${base}${path}`,
-    lastModified,
-    changeFrequency,
-    priority,
-  }));
+  const staticEntries: MetadataRoute.Sitemap = PUBLIC_PAGES.map(
+    ({ path, changeFrequency, priority }) => ({
+      url: `${base}${path}`,
+      lastModified,
+      changeFrequency,
+      priority,
+    }),
+  );
 
-  const industryEntries = INDUSTRY_SLUGS.map((slug) => ({
+  const industryEntries: MetadataRoute.Sitemap = INDUSTRY_SLUGS.map((slug) => ({
     url: `${base}/industries/${slug}`,
     lastModified,
-    changeFrequency: "monthly" as const,
+    changeFrequency: "monthly",
     priority: 0.75,
   }));
 
   const directoryEntries = await directoryListingEntries(base);
 
-  return staticEntries.concat(industryEntries, directoryEntries);
+  return [...staticEntries, ...industryEntries, ...directoryEntries];
 }
