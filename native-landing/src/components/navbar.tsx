@@ -10,8 +10,9 @@ import { useScrollDirection } from "@/hooks/use-scroll-direction";
 
 const navLinks = [
   { label: "How it works", href: "/#how-it-works" },
-  { label: "About", href: "/about" },
   { label: "Pricing", href: "/pricing" },
+  { label: "Free grader", href: "/tools/grading" },
+  { label: "About", href: "/about" },
 ] as const;
 
 export function Navbar() {

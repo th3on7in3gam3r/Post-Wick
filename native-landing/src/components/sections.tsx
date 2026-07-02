@@ -58,6 +58,29 @@ export function Guides() {
   );
 }
 
+export function GraderPromoSection() {
+  return (
+    <section className="bg-cream px-6 py-16 md:px-10">
+      <div className="mx-auto max-w-[1200px]">
+        <div className="flex flex-col items-start justify-between gap-6 rounded-2xl border border-black/[0.06] bg-white p-8 shadow-card md:flex-row md:items-center md:p-10">
+          <div className="max-w-xl">
+            <p className="step-label">Free tool</p>
+            <h2 className="mt-2 font-playfair text-[clamp(1.75rem,3vw,2.25rem)] italic text-near-black">
+              How strong is your social presence?
+            </h2>
+            <p className="body-copy mt-3">
+              Grade your Instagram or website in under a minute. No account required.
+            </p>
+          </div>
+          <TextureButton asChild variant="accent" size="lg" className="shrink-0">
+            <Link href="/tools/grading">Try the free grader →</Link>
+          </TextureButton>
+        </div>
+      </div>
+    </section>
+  );
+}
+
 export function CTASection() {
   return (
     <section className="bg-cream px-6 py-24 md:px-10">
@@ -116,21 +139,40 @@ export function Footer() {
             </Link>
           </p>
         </div>
-        <nav className="flex flex-wrap justify-center gap-6 text-sm text-gray-body">
-          <Link href="/contact" className="hover:text-near-black">
-            Contact
-          </Link>
-          <Link href="/privacy" className="hover:text-near-black">
-            Privacy
-          </Link>
-          <Link href="/terms" className="hover:text-near-black">
-            Terms
-          </Link>
-          <Link href="/cookies" className="hover:text-near-black">
-            Cookies
-          </Link>
-          <CookieSettingsTrigger />
-        </nav>
+        <div className="flex flex-col gap-8 sm:flex-row sm:gap-12">
+          <nav className="flex flex-col items-center gap-3 text-sm sm:items-start">
+            <p className="text-[0.65rem] font-semibold uppercase tracking-[0.18em] text-gray-label">
+              Explore
+            </p>
+            <Link href="/tools/grading" className="text-gray-body hover:text-near-black">
+              Social grader
+            </Link>
+            <Link href="/directory" className="text-gray-body hover:text-near-black">
+              Business directory
+            </Link>
+            <Link href="/agency/register" className="text-gray-body hover:text-near-black">
+              Agency partners
+            </Link>
+          </nav>
+          <nav className="flex flex-col items-center gap-3 text-sm sm:items-start">
+            <p className="text-[0.65rem] font-semibold uppercase tracking-[0.18em] text-gray-label">
+              Legal
+            </p>
+            <Link href="/contact" className="text-gray-body hover:text-near-black">
+              Contact
+            </Link>
+            <Link href="/privacy" className="text-gray-body hover:text-near-black">
+              Privacy
+            </Link>
+            <Link href="/terms" className="text-gray-body hover:text-near-black">
+              Terms
+            </Link>
+            <Link href="/cookies" className="text-gray-body hover:text-near-black">
+              Cookies
+            </Link>
+            <CookieSettingsTrigger className="text-gray-body hover:text-near-black" />
+          </nav>
+        </div>
       </div>
     </footer>
   );

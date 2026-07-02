@@ -6,7 +6,7 @@ import { SocialProofSection } from "@/components/social-proof-section";
 import { Pricing } from "@/components/pricing";
 import { Comparison, ComparisonTable } from "@/components/comparison";
 import { TestimonialsSection } from "@/components/testimonials-section";
-import { FAQ, Guides, CTASection, Footer } from "@/components/sections";
+import { FAQ, GraderPromoSection, Guides, CTASection, Footer } from "@/components/sections";
 import { createPageMetadata } from "@/lib/metadata";
 
 export const metadata = createPageMetadata({ path: "/" });
@@ -17,6 +17,7 @@ export default function Home() {
       <Navbar />
       <main>
         <Hero />
+        <GraderPromoSection />
         <PostCarousel />
         <HowItWorks />
         <SocialProofSection />
