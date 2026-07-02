@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import {
   getImageGenerationProviders,
+  getImageProviderCircuitHealth,
   isImageGenerationConfigured,
   probeImageProviders,
 } from "@/lib/ai/images";
@@ -67,6 +68,7 @@ export async function GET(req: Request) {
     order: ["openai", "gemini", "ideogram"],
     onVercel,
     providers,
+    circuits: getImageProviderCircuitHealth(),
     warnings,
     probe,
     probeHint: runProbe

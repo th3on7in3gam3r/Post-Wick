@@ -4,12 +4,21 @@ import { join } from "node:path";
 import { randomUUID } from "node:crypto";
 import { put } from "@vercel/blob";
 import type { buildResearchFromCrawl } from "@/lib/crawl/website";
+import {
+  callProviderWithResilience,
+  getCachedImageUrl,
+  getImageProviderCircuitHealth,
+  setCachedImageUrl,
+  type ImageProviderId,
+} from "@/lib/ai/image-runtime";
 
 type Research = ReturnType<typeof buildResearchFromCrawl>;
 
 const DEFAULT_GEMINI_IMAGE_MODEL = "gemini-2.5-flash-image";
+const PROVIDER_ORDER: ImageProviderId[] = ["openai", "gemini", "ideogram"];
 
 let lastImageGenerationError: string | null = null;
+let lastImageGenerationProvider: ImageProviderId | "cache" | null = null;
 
 function getGeminiApiKey() {
   return process.env.GEMINI_API_KEY?.trim() || process.env.GOOGLE_API_KEY?.trim();
@@ -34,6 +43,12 @@ function formatAxiosError(provider: string, error: unknown) {
     if (status === 401) {
       return `${provider} API key is invalid or expired — create a new key in the provider dashboard and update Vercel env vars.`;
     }
+    if (status === 402) {
+      return `${provider} billing or credits issue — check your account balance.`;
+    }
+    if (status === 403) {
+      return `${provider} access denied — verify API permissions for this key.`;
+    }
     return `${provider} failed (${status ?? "network"}): ${detail.slice(0, 240)}`;
   }
   if (error instanceof Error) {
@@ -42,19 +57,21 @@ function formatAxiosError(provider: string, error: unknown) {
   return `${provider} failed`;
 }
 
+function isProviderConfigured(provider: ImageProviderId) {
+  if (provider === "openai") return Boolean(process.env.OPENAI_API_KEY?.trim());
+  if (provider === "gemini") return Boolean(getGeminiApiKey());
+  return Boolean(process.env.IDEOGRAM_API_KEY?.trim());
+}
+
 export function isImageGenerationConfigured() {
-  return Boolean(
-    process.env.OPENAI_API_KEY?.trim() ||
-      getGeminiApiKey() ||
-      process.env.IDEOGRAM_API_KEY?.trim(),
-  );
+  return PROVIDER_ORDER.some(isProviderConfigured);
 }
 
 export function getImageGenerationProviders() {
   return {
-    openai: Boolean(process.env.OPENAI_API_KEY?.trim()),
-    gemini: Boolean(getGeminiApiKey()),
-    ideogram: Boolean(process.env.IDEOGRAM_API_KEY?.trim()),
+    openai: isProviderConfigured("openai"),
+    gemini: isProviderConfigured("gemini"),
+    ideogram: isProviderConfigured("ideogram"),
     blob: Boolean(process.env.BLOB_READ_WRITE_TOKEN?.trim()),
   };
 }
@@ -64,6 +81,12 @@ export function consumeLastImageGenerationError() {
   lastImageGenerationError = null;
   return error;
 }
+
+export function getLastImageGenerationProvider() {
+  return lastImageGenerationProvider;
+}
+
+export { getImageProviderCircuitHealth };
 
 export function buildImagePrompt(
   content: string,
@@ -132,6 +155,11 @@ async function persistRemoteImageUrl(url: string) {
   return persistImageBuffer(Buffer.from(response.data));
 }
 
+async function saveBase64Image(b64: string) {
+  const buffer = Buffer.from(b64, "base64");
+  return persistImageBuffer(buffer);
+}
+
 async function generateWithIdeogram(prompt: string) {
   const response = await axios.post<{
     data?: Array<{ url?: string; is_image_safe?: boolean }>;
@@ -158,11 +186,6 @@ async function generateWithIdeogram(prompt: string) {
     throw new Error("Ideogram returned no image URL");
   }
   return persistRemoteImageUrl(image.url);
-}
-
-async function saveBase64Image(b64: string) {
-  const buffer = Buffer.from(b64, "base64");
-  return persistImageBuffer(buffer);
 }
 
 async function generateWithOpenAI(prompt: string) {
@@ -243,39 +266,59 @@ async function generateWithGemini(prompt: string) {
   throw new Error("Gemini returned no image data");
 }
 
+const providerGenerators: Record<ImageProviderId, (prompt: string) => Promise<string>> = {
+  openai: generateWithOpenAI,
+  gemini: generateWithGemini,
+  ideogram: generateWithIdeogram,
+};
+
+const providerLabels: Record<ImageProviderId, string> = {
+  openai: "OpenAI",
+  gemini: "Gemini",
+  ideogram: "Ideogram",
+};
+
 export async function generatePostImage(prompt: string): Promise<string | null> {
-  if (process.env.OPENAI_API_KEY?.trim()) {
+  const cached = getCachedImageUrl(prompt);
+  if (cached) {
+    console.log("[image-generation] cache hit for prompt");
+    lastImageGenerationError = null;
+    lastImageGenerationProvider = "cache";
+    return cached;
+  }
+
+  const errors: string[] = [];
+
+  for (const provider of PROVIDER_ORDER) {
+    if (!isProviderConfigured(provider)) {
+      continue;
+    }
+
+    const label = providerLabels[provider];
+    console.log(`[image-generation] trying ${label}`);
+
     try {
-      const url = await generateWithOpenAI(prompt);
+      const url = await callProviderWithResilience(provider, () =>
+        providerGenerators[provider](prompt),
+      );
+      setCachedImageUrl(prompt, url);
       lastImageGenerationError = null;
+      lastImageGenerationProvider = provider;
+      console.log(`[image-generation] success via ${label}`);
       return url;
     } catch (error) {
-      setImageError(formatAxiosError("OpenAI", error));
+      const message = formatAxiosError(label, error);
+      errors.push(message);
+      setImageError(message);
+      console.error(`[image-generation] ${label} failed`, error);
     }
   }
 
-  if (getGeminiApiKey()) {
-    try {
-      const url = await generateWithGemini(prompt);
-      lastImageGenerationError = null;
-      return url;
-    } catch (error) {
-      setImageError(formatAxiosError("Gemini", error));
-    }
+  if (errors.length === 0) {
+    setImageError("No image provider API keys are configured");
   }
 
-  if (process.env.IDEOGRAM_API_KEY?.trim()) {
-    try {
-      const url = await generateWithIdeogram(prompt);
-      lastImageGenerationError = null;
-      return url;
-    } catch (error) {
-      setImageError(formatAxiosError("Ideogram", error));
-      return null;
-    }
-  }
-
-  setImageError("No image provider API keys are configured");
+  lastImageGenerationProvider = null;
   return null;
 }
 
