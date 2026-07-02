@@ -13,6 +13,10 @@ import { cn } from "@/lib/utils";
 
 type Step = "input" | "loading" | "results";
 
+const FROST_CARD_HERO =
+  "mx-auto max-w-3xl rounded-2xl bg-white/80 p-8 shadow-lg backdrop-blur-sm md:p-12";
+const FROST_CARD = "rounded-2xl bg-white/80 p-8 shadow-lg backdrop-blur-sm";
+
 const LOADING_MESSAGES = [
   "Scanning your public presence…",
   "Checking posting patterns…",
@@ -81,13 +85,20 @@ export function SocialGraderClient() {
         <span className="animate-fade-drop inline-block rounded-full bg-white px-4 py-1.5 text-sm font-medium text-near-black shadow-sm">
           Free tool
         </span>
-        <h1 className="animate-fade-drop-delay-1 mt-6 font-playfair text-[clamp(2rem,3.8vw,2.75rem)] italic leading-tight text-near-black">
-          Free Social Media Grader: Analyze Your Local Business Presence
-        </h1>
-        <p className="body-copy animate-fade-drop-delay-2 mx-auto mt-4 max-w-[600px] text-[1.05rem]">
-          Enter your website or social handle for an instant score, category breakdown, and
-          practical tips to strengthen your local brand online.
-        </p>
+        <div
+          className={cn(
+            "animate-fade-drop-delay-1 mt-6 space-y-4 text-left sm:text-center",
+            FROST_CARD_HERO,
+          )}
+        >
+          <h1 className="font-playfair text-[clamp(2rem,3.8vw,2.75rem)] italic leading-tight text-gray-900">
+            Free Social Media Grader: Analyze Your Local Business Presence
+          </h1>
+          <p className="mx-auto max-w-[600px] text-[1.05rem] leading-relaxed text-gray-900 sm:text-center">
+            Enter your website or social handle for an instant score, category breakdown, and
+            practical tips to strengthen your local brand online.
+          </p>
+        </div>
       </div>
 
       <div className="animate-fade-drop-delay-3 mt-12 rounded-3xl border border-black/[0.06] bg-white p-8 shadow-card md:p-10">
@@ -201,10 +212,12 @@ export function SocialGraderClient() {
         ) : null}
       </div>
 
-      <p className="mt-6 text-center text-xs text-gray-label">
-        Scores are illustrative for planning purposes. Connect your accounts in Kerygma Social
-        for real brand-aware posting.
-      </p>
+      <div className={cn("mt-6 text-center", FROST_CARD, "p-4 md:p-6")}>
+        <p className="text-xs text-gray-900">
+          Scores are illustrative for planning purposes. Connect your accounts in Kerygma Social
+          for real brand-aware posting.
+        </p>
+      </div>
     </div>
   );
 }
