@@ -24,7 +24,7 @@ export default async function AgencyRegisterPage() {
 
   if (!userId) {
     return (
-      <MarketingShell wide>
+      <MarketingShell wide heroBackground>
         <AgencyRegisterGuest />
       </MarketingShell>
     );
@@ -39,7 +39,7 @@ export default async function AgencyRegisterPage() {
   const defaultEmail = clerkUser?.emailAddresses[0]?.emailAddress ?? null;
 
   return (
-    <MarketingShell wide>
+    <MarketingShell wide heroBackground>
       <AgencyRegisterClient defaultEmail={defaultEmail} />
     </MarketingShell>
   );

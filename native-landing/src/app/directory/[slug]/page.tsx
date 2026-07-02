@@ -45,7 +45,7 @@ export default async function PublicBrandDirectoryPage({ params }: PageProps) {
   };
 
   return (
-    <MarketingShell wide>
+    <MarketingShell wide heroBackground>
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}

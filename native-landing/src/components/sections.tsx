@@ -150,7 +150,7 @@ export function Footer() {
             <Link href="/directory" className="text-gray-body hover:text-near-black">
               Business directory
             </Link>
-            <Link href="/agency/register" className="text-gray-body hover:text-near-black">
+            <Link href="/agency" className="text-gray-body hover:text-near-black">
               Agency partners
             </Link>
           </nav>

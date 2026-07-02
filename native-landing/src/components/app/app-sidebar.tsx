@@ -1,6 +1,8 @@
+import type { LucideIcon } from "lucide-react";
 import Link from "next/link";
 import {
   BarChart3,
+  Briefcase,
   Building2,
   CalendarDays,
   CreditCard,
@@ -31,24 +33,58 @@ const baseNavItems = [
   { href: "/settings/billing", label: "Billing", icon: CreditCard },
 ];
 
-function isActive(pathname: string, href: string, exact?: boolean, onboarding?: boolean) {
+type NavItem = {
+  href: string;
+  label: string;
+  icon: LucideIcon;
+  exact?: boolean;
+  onboarding?: boolean;
+  agency?: boolean;
+};
+
+function isActive(
+  pathname: string,
+  href: string,
+  exact?: boolean,
+  onboarding?: boolean,
+  agency?: boolean,
+) {
   if (onboarding) return pathname === "/onboarding";
+  if (agency && href === "/agency/dashboard") {
+    return pathname === "/agency/dashboard" || pathname.startsWith("/agency/");
+  }
   if (exact) return pathname === href;
   return pathname === href || pathname.startsWith(`${href}/`);
 }
 
-function navItemsForUser(hasBrands: boolean) {
-  return baseNavItems.map((item) =>
+function navItemsForUser(hasBrands: boolean, hasAgency: boolean): NavItem[] {
+  const items: NavItem[] = baseNavItems.map((item) =>
     item.onboarding
       ? { ...item, href: hasBrands ? "/onboarding?add=1" : "/onboarding" }
       : item,
   );
+
+  const agencyItem: NavItem = {
+    href: hasAgency ? "/agency/dashboard" : "/agency/register",
+    label: hasAgency ? "Agency" : "Agency partners",
+    icon: Briefcase,
+    exact: !hasAgency,
+    agency: true,
+  };
+
+  const billingIndex = items.findIndex((item) => item.href === "/settings/billing");
+  if (billingIndex === -1) {
+    return [...items, agencyItem];
+  }
+
+  return [...items.slice(0, billingIndex), agencyItem, ...items.slice(billingIndex)];
 }
 
 export function AppSidebar({
   pathname,
   plan,
   hasBrands,
+  hasAgency,
   className,
   onNavigate,
 }: {
@@ -59,10 +95,11 @@ export function AppSidebar({
     generateMax: number;
   };
   hasBrands: boolean;
+  hasAgency: boolean;
   className?: string;
   onNavigate?: () => void;
 }) {
-  const navItems = navItemsForUser(hasBrands);
+  const navItems = navItemsForUser(hasBrands, hasAgency);
   return (
     <aside
       className={cn(
@@ -79,8 +116,8 @@ export function AppSidebar({
       </div>
 
       <nav className="min-h-0 flex-1 space-y-1 overflow-y-auto p-4 pb-6">
-        {navItems.map(({ href, label, icon: Icon, exact, onboarding }) => {
-          const active = isActive(pathname, href, exact, onboarding);
+        {navItems.map(({ href, label, icon: Icon, exact, onboarding, agency }) => {
+          const active = isActive(pathname, href, exact, onboarding, agency);
           return (
             <Link
               key={href}

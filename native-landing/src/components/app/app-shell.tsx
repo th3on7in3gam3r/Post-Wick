@@ -12,6 +12,7 @@ export function AppShell({
   pathname,
   plan,
   hasBrands,
+  hasAgency,
 }: {
   children: React.ReactNode;
   pathname: string;
@@ -21,6 +22,7 @@ export function AppShell({
     generateMax: number;
   };
   hasBrands: boolean;
+  hasAgency: boolean;
 }) {
   const [mobileOpen, setMobileOpen] = useState(false);
 
@@ -37,7 +39,13 @@ export function AppShell({
 
   return (
     <div className="flex h-screen overflow-hidden bg-cream">
-      <AppSidebar pathname={pathname} plan={plan} hasBrands={hasBrands} className="hidden lg:flex" />
+      <AppSidebar
+        pathname={pathname}
+        plan={plan}
+        hasBrands={hasBrands}
+        hasAgency={hasAgency}
+        className="hidden lg:flex"
+      />
 
       {mobileOpen ? (
         <button
@@ -52,6 +60,7 @@ export function AppShell({
         pathname={pathname}
         plan={plan}
         hasBrands={hasBrands}
+        hasAgency={hasAgency}
         onNavigate={() => setMobileOpen(false)}
         className={cn(
           "fixed inset-y-0 left-0 z-50 w-[min(100%,18rem)] shadow-xl transition-transform duration-200 ease-out lg:hidden",

@@ -81,7 +81,7 @@ export function ClientSwitcher({
         )}
       >
         <Plus className="h-4 w-4 shrink-0" />
-        Add your first client
+        Add your first brand
       </Link>
     );
   }
@@ -132,11 +132,11 @@ export function ClientSwitcher({
         <div
           className="absolute left-0 right-0 top-[calc(100%+0.5rem)] z-50 overflow-hidden rounded-xl border border-black/[0.06] bg-white shadow-card"
           role="listbox"
-          aria-label="Switch client"
+          aria-label="Switch brand"
         >
           <div className="border-b border-black/[0.06] px-3 py-2">
             <p className="text-[0.65rem] font-semibold uppercase tracking-[0.12em] text-gray-label">
-              Your clients
+              My brands
             </p>
           </div>
           <ul className="max-h-64 overflow-y-auto py-1">
@@ -174,12 +174,19 @@ export function ClientSwitcher({
           </ul>
           <div className="border-t border-black/[0.06] p-2">
             <Link
+              href="/brands"
+              onClick={() => setOpen(false)}
+              className="flex items-center gap-2 rounded-lg px-3 py-2.5 text-sm font-medium text-near-black transition hover:bg-cream/70"
+            >
+              View all brands
+            </Link>
+            <Link
               href="/onboarding?add=1"
               onClick={() => setOpen(false)}
               className="flex items-center gap-2 rounded-lg px-3 py-2.5 text-sm font-medium text-gold transition hover:bg-cream/70"
             >
               <Plus className="h-4 w-4" />
-              Add new client +
+              Add new brand
             </Link>
           </div>
         </div>

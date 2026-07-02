@@ -11,6 +11,7 @@ const isPublicRoute = createRouteMatcher([
   "/tools/grading",
   "/directory",
   "/directory/(.*)",
+  "/agency",
   "/agency/register",
   "/get-started",
   "/opengraph-image(.*)",

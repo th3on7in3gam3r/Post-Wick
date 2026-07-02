@@ -15,7 +15,7 @@ export const metadata = createPageMetadata({
 
 export default function SocialGraderPage() {
   return (
-    <MarketingShell wide>
+    <MarketingShell wide heroBackground>
       <SocialGraderClient />
     </MarketingShell>
   );

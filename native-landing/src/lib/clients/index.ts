@@ -10,7 +10,7 @@ export type Client = {
 
 export const EMPTY_CLIENT: Client = {
   id: "",
-  name: "No clients yet",
+  name: "No brands yet",
   logoUrl: null,
   industry: "Add a brand to begin",
 };

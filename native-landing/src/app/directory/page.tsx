@@ -32,7 +32,7 @@ export default async function DirectoryPage() {
   const listings = getPublicBrandListings(brands);
 
   return (
-    <MarketingShell wide>
+    <MarketingShell wide heroBackground>
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(directoryJsonLd(listings.length)) }}

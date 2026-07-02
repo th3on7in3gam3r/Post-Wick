@@ -2,8 +2,9 @@
 
 import { useState, type FormEvent } from "react";
 import { Sparkles } from "lucide-react";
+import { OnboardingBrandBar } from "@/components/app/onboarding-brand-bar";
+import { ReferralSourceSelect } from "@/components/app/referral-source-select";
 import { TextureButton } from "@/components/ui/texture-button";
-import { REFERRAL_SOURCES } from "@/lib/onboarding/referral-sources";
 
 export function OnboardingWelcome({
   initialName,
@@ -64,6 +65,8 @@ export function OnboardingWelcome({
 
   return (
     <form onSubmit={(event) => void handleSubmit(event)} className="space-y-6">
+      <OnboardingBrandBar />
+
       <div className="flex items-center gap-3">
         <div className="rounded-full bg-cream p-3">
           <Sparkles className="h-5 w-5 text-gold" />
@@ -103,20 +106,11 @@ export function OnboardingWelcome({
         <label className="text-sm font-medium text-near-black" htmlFor="referral-source">
           Where did you hear about us?
         </label>
-        <select
-          id="referral-source"
+        <ReferralSourceSelect
           value={referralSource}
-          onChange={(event) => setReferralSource(event.target.value)}
+          onChange={setReferralSource}
           disabled={submitting}
-          className="w-full rounded-xl border border-black/[0.1] bg-cream/50 px-4 py-3 text-sm text-near-black outline-none ring-gold/30 focus:ring-2 disabled:cursor-not-allowed disabled:opacity-60"
-        >
-          <option value="">Select one…</option>
-          {REFERRAL_SOURCES.map((item) => (
-            <option key={item.value} value={item.value}>
-              {item.label}
-            </option>
-          ))}
-        </select>
+        />
       </div>
 
       {referralSource === "other" ? (

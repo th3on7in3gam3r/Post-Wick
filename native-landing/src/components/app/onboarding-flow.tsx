@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { CheckCircle2, Globe, Loader2, Sparkles } from "lucide-react";
 import { BrandVoiceEditor } from "@/components/app/brand-voice-editor";
+import { OnboardingBrandBar } from "@/components/app/onboarding-brand-bar";
 import { OnboardingWelcome } from "@/components/app/onboarding-welcome";
 import { TextureButton } from "@/components/ui/texture-button";
 import {
@@ -145,6 +146,7 @@ export function OnboardingFlow({
       );
       setWorkingPhase(0);
       setStep("review");
+      router.refresh();
     } catch (err) {
       clearPhaseTimers();
       setStep("error");
@@ -183,6 +185,8 @@ export function OnboardingFlow({
       if (data.imageHint) {
         setStatusNote(data.imageHint);
       }
+
+      router.refresh();
 
       window.setTimeout(() => {
         router.push(
@@ -273,12 +277,15 @@ export function OnboardingFlow({
   return (
     <div className="mx-auto w-full max-w-xl">
       <div className="rounded-2xl border border-black/[0.06] bg-white p-8 shadow-card">
+        {step !== "welcome" ? <OnboardingBrandBar /> : null}
+
         {step === "welcome" ? (
           <>
             <OnboardingWelcome
               initialName={initialName}
               initialEmail={initialEmail}
               onComplete={() => {
+                router.refresh();
                 if (websiteUrl) {
                   void analyzeWebsite(websiteUrl);
                   return;

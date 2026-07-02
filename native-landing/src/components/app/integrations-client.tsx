@@ -419,7 +419,7 @@ export function IntegrationsClient({
         <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div className="w-full max-w-md">
             <label className="text-sm font-medium text-near-black" htmlFor="integration-brand">
-              Active brand
+              My brands
             </label>
             <select
               id="integration-brand"

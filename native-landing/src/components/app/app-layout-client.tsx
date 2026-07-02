@@ -10,17 +10,24 @@ import type { AccountPlan } from "@/lib/server/account-plan";
 export function AppLayoutClient({
   clients,
   plan,
+  hasAgency,
   children,
 }: {
   clients: Client[];
   plan: AccountPlan;
+  hasAgency: boolean;
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
 
   return (
     <ClientProvider clients={clients}>
-      <AppShell pathname={pathname} plan={plan} hasBrands={clients.length > 0}>
+      <AppShell
+        pathname={pathname}
+        plan={plan}
+        hasBrands={clients.length > 0}
+        hasAgency={hasAgency}
+      >
         {children}
       </AppShell>
     </ClientProvider>
