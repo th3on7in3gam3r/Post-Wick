@@ -2,8 +2,9 @@
 
 import Link from "next/link";
 import { useEffect, useState, type FormEvent } from "react";
-import { BarChart3, Loader2, Sparkles } from "lucide-react";
+import { BarChart3, Sparkles } from "lucide-react";
 import { TextureButton } from "@/components/ui/texture-button";
+import { SocialGraderLoader } from "@/components/tools/social-grader-loader";
 import {
   gradeSocialPresence,
   graderSignUpHref,
@@ -127,13 +128,7 @@ export function SocialGraderClient() {
         ) : null}
 
         {step === "loading" ? (
-          <div className="flex flex-col items-center py-10 text-center" role="status" aria-live="polite">
-            <div className="rounded-full bg-cream p-4">
-              <Loader2 className="h-8 w-8 animate-spin text-gold" />
-            </div>
-            <p className="mt-6 font-medium text-near-black">{loadingMessage}</p>
-            <p className="mt-2 text-sm text-gray-body">This usually takes a few seconds.</p>
-          </div>
+          <SocialGraderLoader message={loadingMessage} />
         ) : null}
 
         {step === "results" && result ? (

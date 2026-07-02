@@ -1,5 +1,7 @@
 import { Inter, Playfair_Display } from "next/font/google";
 import { ClerkProvider } from "@clerk/nextjs";
+import { Suspense } from "react";
+import { AppNavigationLoader } from "@/components/app-navigation-loader";
 import { CookieAnalytics } from "@/components/cookie-analytics";
 import { CookieConsentUI } from "@/components/cookie-banner";
 import { CookieConsentProvider } from "@/components/cookie-consent-provider";
@@ -70,6 +72,9 @@ export default function RootLayout({
             dangerouslySetInnerHTML={{ __html: JSON.stringify(softwareJsonLd) }}
           />
           <CookieConsentProvider>
+            <Suspense fallback={null}>
+              <AppNavigationLoader />
+            </Suspense>
             {children}
             <CookieConsentUI />
             <CookieAnalytics />
