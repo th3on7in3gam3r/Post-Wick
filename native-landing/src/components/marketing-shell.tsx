@@ -39,16 +39,21 @@ export function MarketingShell({
       <Navbar />
       <main
         className={cn(
-          "relative z-0 min-h-screen px-6 pb-32 pt-32 md:px-10",
+          "relative isolate min-h-screen px-6 pb-32 pt-32 md:px-10",
           resolvedImage ? "overflow-hidden" : "bg-cream",
         )}
       >
-        {useDefaultHomeLayers ? <HomeWatercolorBackground /> : null}
-        {resolvedImage && !useDefaultHomeLayers ? (
-          <MarketingWatercolorBackground
-            imageSrc={resolvedImage}
-            imagePosition={backgroundPosition}
-          />
+        {resolvedImage ? (
+          <div className="pointer-events-none absolute inset-0 -z-10 min-h-full w-full">
+            {useDefaultHomeLayers ? (
+              <HomeWatercolorBackground />
+            ) : (
+              <MarketingWatercolorBackground
+                imageSrc={resolvedImage}
+                imagePosition={backgroundPosition}
+              />
+            )}
+          </div>
         ) : null}
         <div
           className={cn(
