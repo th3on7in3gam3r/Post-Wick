@@ -1,3 +1,5 @@
+import { normalizeBaseUrl } from "@/lib/brand";
+
 const PINTEREST_SCOPES = [
   "user_accounts:read",
   "boards:read",
@@ -31,10 +33,7 @@ type PinterestTokenResponse = {
 };
 
 function appBaseUrl() {
-  return (process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000").replace(
-    /\/+$/,
-    "",
-  );
+  return normalizeBaseUrl(process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000");
 }
 
 export function pinterestAppId() {

@@ -18,6 +18,22 @@ export function integrationsOAuthRedirect(req: Request, params: URLSearchParams)
   return new URL(`/settings/integrations?${params.toString()}`, req.url);
 }
 
+export function oauthConnectRedirect(
+  _req: Request,
+  providerUrl: string,
+  debug: OAuthDebugInfo,
+) {
+  const response = NextResponse.redirect(providerUrl);
+  response.cookies.set(OAUTH_DEBUG_COOKIE, JSON.stringify(debug), {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax",
+    maxAge: 300,
+    path: "/",
+  });
+  return response;
+}
+
 export function oauthFailureRedirect(
   req: Request,
   debug: OAuthDebugInfo,

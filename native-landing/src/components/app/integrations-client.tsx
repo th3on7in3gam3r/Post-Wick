@@ -106,7 +106,10 @@ function flashFromParams(searchParams: {
     meta_oauth_error: "Meta returned an OAuth error during login.",
     brand_not_found:
       "The brand for this connection was not found. Select your brand on this page and try again.",
-    linkedin_exchange_failed: "LinkedIn authorization failed. Try again or use demo mode.",
+    linkedin_exchange_failed:
+      "LinkedIn authorization failed during token exchange. See the debug details below.",
+    linkedin_oauth_error:
+      "LinkedIn rejected the OAuth request. See the debug details below — usually a redirect URI mismatch.",
     meta_no_pages:
       "No Facebook Page was found on this account. Create or admin a Page, then try again.",
     meta_no_instagram:
@@ -200,6 +203,7 @@ export function IntegrationsClient({
   runtimeConfig,
   metaSetup,
   xSetup,
+  linkedInSetup,
   showMetaAdminGuide,
   showXAdminGuide,
   flashParams,
@@ -211,6 +215,7 @@ export function IntegrationsClient({
   runtimeConfig: PlatformRuntimeConfig[];
   metaSetup: MetaSetupInfo;
   xSetup: XSetupInfo;
+  linkedInSetup: XSetupInfo;
   showMetaAdminGuide: boolean;
   showXAdminGuide: boolean;
   flashParams?: { connected?: string; error?: string; detail?: string };
@@ -235,6 +240,14 @@ export function IntegrationsClient({
   }, [activeClient.id, brands]);
 
   const flash = flashParams ? flashFromParams(flashParams) : null;
+  const showOAuthDebug =
+    Boolean(oauthDebug) || flash?.kind === "error";
+  const oauthRedirectUri =
+    oauthDebug?.flow === "linkedin"
+      ? linkedInSetup.redirectUri
+      : oauthDebug?.flow === "x"
+        ? xSetup.redirectUri
+        : metaSetup.redirectUri;
   const activeBrand = brands.find((brand) => brand.id === brandId);
   const brandConnections = connections.filter((item) => item.brandId === brandId);
   const configById = useMemo(
@@ -402,18 +415,19 @@ export function IntegrationsClient({
       ) : null}
 
       {flash?.kind === "error" ? (
-        <div className="space-y-3">
-          <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-900">
-            {flash.message}
-          </div>
-          <OAuthDebugPanel
-            errorCode={flashParams?.error}
-            detail={flashParams?.detail}
-            debug={oauthDebug}
-            redirectUri={metaSetup.redirectUri}
-            showAdminLinks={showMetaAdminGuide}
-          />
+        <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-900">
+          {flash.message}
         </div>
+      ) : null}
+
+      {showOAuthDebug && flash?.kind !== "success" ? (
+        <OAuthDebugPanel
+          errorCode={flashParams?.error}
+          detail={flashParams?.detail}
+          debug={oauthDebug}
+          redirectUri={oauthRedirectUri}
+          showAdminLinks={showMetaAdminGuide || showXAdminGuide}
+        />
       ) : null}
 
       {actionError ? (

@@ -1,7 +1,11 @@
 import { auth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 import { getBrandById } from "@/lib/db";
-import { getLinkedInAuthUrl } from "@/lib/social/linkedin";
+import { oauthConnectRedirect } from "@/lib/integrations/oauth-debug";
+import {
+  getLinkedInAuthUrl,
+  linkedInRedirectHint,
+} from "@/lib/social/linkedin";
 
 export async function GET(req: Request) {
   const { userId } = await auth();
@@ -22,7 +26,14 @@ export async function GET(req: Request) {
 
   try {
     const url = getLinkedInAuthUrl(brandId);
-    return NextResponse.redirect(url);
+    return oauthConnectRedirect(req, url, {
+      flow: "linkedin",
+      step: "authorization_redirect",
+      at: new Date().toISOString(),
+      hasState: true,
+      message: `Starting LinkedIn connect for ${brand.name}. OAuth uses the Kerygma app URL, not the brand website.`,
+      hint: linkedInRedirectHint(),
+    });
   } catch {
     return NextResponse.json(
       { error: "LinkedIn OAuth is not configured. Use demo connect instead." },

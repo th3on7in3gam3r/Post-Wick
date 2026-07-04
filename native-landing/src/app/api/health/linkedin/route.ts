@@ -1,10 +1,11 @@
 import { NextResponse } from "next/server";
+import { siteUrl } from "@/lib/brand";
 import { linkedInRedirectUri } from "@/lib/social/linkedin";
 
 export async function GET() {
   const redirectUri = linkedInRedirectUri();
   const clientId = process.env.LINKEDIN_CLIENT_ID?.trim() ?? null;
-  const appUrl = (process.env.NEXT_PUBLIC_APP_URL ?? "").replace(/\/+$/, "");
+  const appUrl = siteUrl() || null;
 
   return NextResponse.json({
     ok: Boolean(clientId),

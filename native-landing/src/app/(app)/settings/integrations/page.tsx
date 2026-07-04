@@ -19,6 +19,7 @@ import {
 import { isXConfigured, xRedirectUri } from "@/lib/social/x";
 import { isPlatformAdmin } from "@/lib/server/platform-admin";
 import { siteUrl } from "@/lib/brand";
+import { linkedInRedirectUri } from "@/lib/social/linkedin";
 import { requireUserId } from "@/lib/server/app-data";
 
 export default async function IntegrationsPage({
@@ -70,6 +71,10 @@ export default async function IntegrationsPage({
           xSetup={{
             configured: isXConfigured(),
             redirectUri: xRedirectUri(),
+            appUrl: siteUrl(),
+          }}
+          linkedInSetup={{
+            redirectUri: linkedInRedirectUri(),
             appUrl: siteUrl(),
           }}
           flashParams={searchParams}

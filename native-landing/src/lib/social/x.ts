@@ -1,4 +1,5 @@
 import { createHash, randomBytes } from "node:crypto";
+import { normalizeBaseUrl } from "@/lib/brand";
 
 const X_OAUTH_SCOPES = [
   "tweet.read",
@@ -16,10 +17,7 @@ export type XConnectionMetadata = {
 };
 
 function appBaseUrl() {
-  return (process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000").replace(
-    /\/+$/,
-    "",
-  );
+  return normalizeBaseUrl(process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000");
 }
 
 function base64UrlEncode(buffer: Buffer) {

@@ -1,12 +1,19 @@
+import { normalizeBaseUrl } from "@/lib/brand";
+
 function appBaseUrl() {
-  return (process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000").replace(
-    /\/+$/,
-    "",
-  );
+  return normalizeBaseUrl(process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000");
 }
 
 export function linkedInRedirectUri() {
   return `${appBaseUrl()}/api/social/linkedin/callback`;
+}
+
+export function linkedInRedirectHint(message?: string) {
+  const uri = linkedInRedirectUri();
+  if (message?.toLowerCase().includes("redirect")) {
+    return `LinkedIn OAuth redirect URI must match exactly: ${uri}`;
+  }
+  return `In LinkedIn Developers → Auth → OAuth 2.0 redirect URLs, add EXACTLY: ${uri}`;
 }
 
 export function getLinkedInAuthUrl(brandId: string) {
@@ -52,7 +59,9 @@ export async function exchangeLinkedInCode(code: string) {
   if (!response.ok) {
     const detail = await response.text();
     console.error("[linkedin-token]", response.status, detail.slice(0, 240));
-    throw new Error(`Failed to exchange LinkedIn authorization code (${response.status})`);
+    throw new Error(
+      `Failed to exchange LinkedIn authorization code (${response.status}): ${detail.slice(0, 240)}`,
+    );
   }
 
   return (await response.json()) as {
