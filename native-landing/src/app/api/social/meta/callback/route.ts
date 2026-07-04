@@ -7,22 +7,24 @@ import {
   upsertConnection,
 } from "@/lib/db";
 import {
+  oauthFailureRedirect,
+  integrationsOAuthRedirect,
+  type OAuthDebugInfo,
+} from "@/lib/integrations/oauth-debug";
+import {
   buildFacebookConnectionFromPage,
   exchangeInstagramCode,
   exchangeMetaCode,
   fetchMetaPagesForSelection,
   resolveInstagramConnection,
   resolveMetaConnection,
+  metaRedirectUri,
   type MetaPlatform,
 } from "@/lib/social/meta";
 import {
   META_FACEBOOK_PAGE_PICK_COOKIE,
   META_OAUTH_PENDING_TTL_SECONDS,
 } from "@/lib/social/meta-pending";
-
-function integrationsUrl(req: Request, query: string) {
-  return new URL(`/settings/integrations?${query}`, req.url);
-}
 
 function facebookSelectPageUrl(req: Request, brandId: string) {
   return new URL(
@@ -31,7 +33,25 @@ function facebookSelectPageUrl(req: Request, brandId: string) {
   );
 }
 
+function debugBase(
+  step: string,
+  overrides: Omit<Partial<OAuthDebugInfo>, "flow" | "step" | "at"> & { message: string },
+): OAuthDebugInfo {
+  return {
+    flow: "meta",
+    step,
+    at: new Date().toISOString(),
+    ...overrides,
+  };
+}
+
 export async function GET(req: Request) {
+  const { searchParams } = new URL(req.url);
+  const code = searchParams.get("code");
+  const state = searchParams.get("state");
+  const oauthError = searchParams.get("error");
+  const statePlatform = state?.includes(":") ? (state.split(":")[1] as MetaPlatform) : undefined;
+
   try {
     const { userId } = await auth();
     if (!userId) {
@@ -40,30 +60,96 @@ export async function GET(req: Request) {
       );
     }
 
-    const { searchParams } = new URL(req.url);
-    const code = searchParams.get("code");
-    const state = searchParams.get("state");
-    const oauthError = searchParams.get("error");
-
     if (oauthError) {
-      return NextResponse.redirect(
-        integrationsUrl(req, `error=${encodeURIComponent(oauthError)}`),
+      return oauthFailureRedirect(
+        req,
+        debugBase("oauth_denied", {
+          metaError: oauthError,
+          hasCode: Boolean(code),
+          hasState: Boolean(state),
+          platform: statePlatform,
+          message:
+            oauthError === "access_denied"
+              ? "Meta authorization was cancelled or permissions were denied."
+              : `Meta returned OAuth error: ${oauthError}`,
+          hint: "Try Connect again and approve all requested permissions in the Meta dialog.",
+        }),
+        oauthError === "access_denied" ? "meta_access_denied" : "meta_oauth_error",
       );
     }
 
-    if (!code || !state || !state.includes(":")) {
-      return NextResponse.redirect(integrationsUrl(req, "error=invalid_callback"));
+    if (!code && !state) {
+      return oauthFailureRedirect(
+        req,
+        debugBase("validate_callback", {
+          hasCode: false,
+          hasState: false,
+          message:
+            "Meta redirect arrived without an authorization code or state. The OAuth flow may have been interrupted.",
+          hint: "Click Connect again and finish the Meta login without closing the tab early.",
+        }),
+        "invalid_callback_missing_params",
+      );
+    }
+
+    if (!code) {
+      return oauthFailureRedirect(
+        req,
+        debugBase("validate_callback", {
+          hasCode: false,
+          hasState: Boolean(state),
+          platform: statePlatform,
+          message:
+            "Meta redirect arrived without an authorization code. This usually means the login was cancelled or the redirect URI does not match Meta settings.",
+          hint: `Confirm Meta has exactly this redirect URI: ${metaRedirectUri()}`,
+        }),
+        "invalid_callback_missing_code",
+      );
+    }
+
+    if (!state || !state.includes(":")) {
+      return oauthFailureRedirect(
+        req,
+        debugBase("validate_callback", {
+          hasCode: true,
+          hasState: Boolean(state),
+          message:
+            "Meta redirect arrived without a valid state parameter. The connection request may have expired or been tampered with.",
+          hint: "Start a fresh Connect attempt from Integrations.",
+        }),
+        "invalid_callback_missing_state",
+      );
     }
 
     const [brandId, platformRaw] = state.split(":");
     if (!brandId || (platformRaw !== "instagram" && platformRaw !== "facebook")) {
-      return NextResponse.redirect(integrationsUrl(req, "error=invalid_callback"));
+      return oauthFailureRedirect(
+        req,
+        debugBase("validate_callback", {
+          hasCode: true,
+          hasState: true,
+          platform: platformRaw,
+          message: `Unexpected OAuth state format (platform: ${platformRaw ?? "missing"}).`,
+          hint: "Start a fresh Connect attempt from Integrations.",
+        }),
+        "invalid_callback_bad_state",
+      );
     }
 
     const platform = platformRaw as MetaPlatform;
     const brand = await getBrandById(brandId, userId);
     if (!brand) {
-      return NextResponse.redirect(integrationsUrl(req, "error=brand_not_found"));
+      return oauthFailureRedirect(
+        req,
+        debugBase("load_brand", {
+          hasCode: true,
+          hasState: true,
+          platform,
+          message: "The brand for this connection request was not found in your workspace.",
+          hint: "Select the correct brand on Integrations, then connect again.",
+        }),
+        "brand_not_found",
+      );
     }
 
     const userAccessToken =
@@ -91,7 +177,9 @@ export async function GET(req: Request) {
           isDemo: false,
         });
 
-        return NextResponse.redirect(integrationsUrl(req, "connected=facebook"));
+        return NextResponse.redirect(
+          integrationsOAuthRedirect(req, new URLSearchParams({ connected: "facebook" })),
+        );
       }
 
       const pendingId = randomUUID();
@@ -135,15 +223,31 @@ export async function GET(req: Request) {
       isDemo: false,
     });
 
-    return NextResponse.redirect(integrationsUrl(req, `connected=${platform}`));
+    return NextResponse.redirect(
+      integrationsOAuthRedirect(req, new URLSearchParams({ connected: platform })),
+    );
   } catch (error) {
-    console.error("[meta-callback]", error);
-    const message = error instanceof Error ? error.message.toLowerCase() : "";
-    const code = message.includes("instagram business")
+    const errMsg = error instanceof Error ? error.message : "Unknown Meta OAuth error";
+    const lowered = errMsg.toLowerCase();
+    const code = lowered.includes("instagram business")
       ? "meta_no_instagram"
-      : message.includes("no facebook page")
+      : lowered.includes("no facebook page")
         ? "meta_no_pages"
         : "meta_exchange_failed";
-    return NextResponse.redirect(integrationsUrl(req, `error=${code}`));
+
+    return oauthFailureRedirect(
+      req,
+      debugBase("token_exchange_or_resolve", {
+        hasCode: Boolean(code),
+        hasState: Boolean(state),
+        platform: statePlatform,
+        message: errMsg,
+        hint:
+          code === "meta_exchange_failed"
+            ? "Check Vercel logs for [meta-callback] and verify Instagram/Facebook credentials plus redirect URI in Meta."
+            : undefined,
+      }),
+      code,
+    );
   }
 }

@@ -1,8 +1,13 @@
 import { Plug } from "lucide-react";
+import { cookies } from "next/headers";
 import { EmptyState } from "@/components/app/empty-state";
 import { IntegrationsClient } from "@/components/app/integrations-client";
 import { SettingsShell } from "@/components/app/settings-shell";
 import { getBrandsByUserId, getConnectionsByUserId, getOrCreateUser } from "@/lib/db";
+import {
+  OAUTH_DEBUG_COOKIE,
+  parseOAuthDebugCookie,
+} from "@/lib/integrations/oauth-debug";
 import {
   getIntegrationsRuntimeConfig,
 } from "@/lib/integrations/config";
@@ -19,9 +24,15 @@ import { requireUserId } from "@/lib/server/app-data";
 export default async function IntegrationsPage({
   searchParams,
 }: {
-  searchParams: { connected?: string; error?: string };
+  searchParams: { connected?: string; error?: string; detail?: string };
 }) {
   const userId = await requireUserId();
+  const cookieStore = cookies();
+  const oauthDebug = parseOAuthDebugCookie(cookieStore.get(OAUTH_DEBUG_COOKIE)?.value);
+  if (oauthDebug) {
+    cookieStore.delete(OAUTH_DEBUG_COOKIE);
+  }
+
   const [brands, connections, isAdmin, dbUser] = await Promise.all([
     getBrandsByUserId(userId),
     getConnectionsByUserId(userId),
@@ -65,6 +76,7 @@ export default async function IntegrationsPage({
             appUrl: siteUrl(),
           }}
           flashParams={searchParams}
+          oauthDebug={oauthDebug}
           showMetaAdminGuide={isAdmin}
           showXAdminGuide={isAdmin}
         />

@@ -12,8 +12,10 @@ import {
 import { useActiveClient } from "@/components/app/client-context";
 import { PanelCard } from "@/components/app/panel-card";
 import { MetaSetupGuide, type MetaSetupInfo } from "@/components/app/meta-setup-guide";
+import { OAuthDebugPanel } from "@/components/app/oauth-debug-panel";
 import { XSetupGuide, type XSetupInfo } from "@/components/app/x-setup-guide";
 import { TextureButton } from "@/components/ui/texture-button";
+import type { OAuthDebugInfo } from "@/lib/integrations/oauth-debug";
 import {
   INTEGRATION_CATEGORIES,
   INTEGRATION_PLATFORMS,
@@ -46,49 +48,90 @@ const PLATFORM_ACCENTS: Record<IntegrationPlatformId, string> = {
   google_business: "bg-[#4285F4]/10 text-[#4285F4]",
 };
 
-function flashMessage(searchParams: {
+type FlashResult =
+  | { kind: "success"; message: string }
+  | { kind: "error"; message: string }
+  | null;
+
+function flashFromParams(searchParams: {
   connected?: string;
   error?: string;
-}) {
+  detail?: string;
+}): FlashResult {
   if (searchParams.connected === "linkedin") {
-    return "LinkedIn connected. Approved posts can publish when they are due.";
+    return {
+      kind: "success",
+      message: "LinkedIn connected. Approved posts can publish when they are due.",
+    };
   }
   if (searchParams.connected === "instagram") {
-    return "Instagram connected. Image posts can publish to your Business account.";
+    return {
+      kind: "success",
+      message: "Instagram connected. Image posts can publish to your Business account.",
+    };
   }
   if (searchParams.connected === "facebook") {
-    return "Facebook Page connected. Text and image posts can publish when they are due.";
+    return {
+      kind: "success",
+      message: "Facebook Page connected. Text and image posts can publish when they are due.",
+    };
   }
   if (searchParams.connected === "twitter") {
-    return "X connected. Text and image posts can publish when they are due.";
+    return {
+      kind: "success",
+      message: "X connected. Text and image posts can publish when they are due.",
+    };
   }
   if (searchParams.connected === "pinterest") {
-    return "Pinterest connected. Image posts will pin to your selected board when they are due.";
+    return {
+      kind: "success",
+      message:
+        "Pinterest connected. Image posts will pin to your selected board when they are due.",
+    };
   }
-  if (searchParams.error === "linkedin_exchange_failed") {
-    return "LinkedIn authorization failed. Try again or use demo mode.";
-  }
-  if (searchParams.error === "meta_no_pages") {
-    return "No Facebook Page was found on this account. Create or admin a Page, then try again.";
-  }
-  if (searchParams.error === "meta_no_instagram") {
-    return "No Instagram Business account is linked to your Facebook Page. Link them in Meta Business Suite, then try again.";
-  }
-  if (searchParams.error === "meta_exchange_failed") {
-    return "Meta authorization failed. Confirm your Page and Instagram Business account are linked.";
-  }
-  if (searchParams.error === "x_exchange_failed") {
-    return "X authorization failed. Confirm your app callback URL matches the developer portal.";
-  }
-  if (searchParams.error === "pinterest_exchange_failed") {
-    return "Pinterest authorization failed. Confirm your app credentials and redirect URI.";
-  }
-  if (searchParams.error === "pinterest_no_boards") {
-    return "No Pinterest boards were found on this account. Create a board on Pinterest, then try again.";
-  }
+
+  const errorMessages: Record<string, string> = {
+    invalid_callback_missing_params:
+      "Meta returned to Kerygma without an authorization code or state. The OAuth flow was likely interrupted.",
+    invalid_callback_missing_code:
+      "Meta returned without an authorization code. The login may have been cancelled, or the redirect URI may not match Meta settings.",
+    invalid_callback_missing_state:
+      "Meta returned without a valid state parameter. Start a fresh Connect attempt from this page.",
+    invalid_callback_bad_state:
+      "The OAuth state from Meta was unexpected. Start a fresh Connect attempt from this page.",
+    invalid_callback:
+      "The OAuth callback was incomplete. Click Connect again and finish the Meta login without closing the tab.",
+    meta_access_denied:
+      "Meta authorization was cancelled or permissions were denied. Try again and approve all requested permissions.",
+    meta_oauth_error: "Meta returned an OAuth error during login.",
+    brand_not_found:
+      "The brand for this connection was not found. Select your brand on this page and try again.",
+    linkedin_exchange_failed: "LinkedIn authorization failed. Try again or use demo mode.",
+    meta_no_pages:
+      "No Facebook Page was found on this account. Create or admin a Page, then try again.",
+    meta_no_instagram:
+      "No Instagram Business account is linked to your Facebook Page. Link them in Meta Business Suite, then try again.",
+    meta_exchange_failed:
+      "Meta authorization failed during token exchange. See the debug details below.",
+    x_exchange_failed:
+      "X authorization failed. Confirm your app callback URL matches the developer portal.",
+    pinterest_exchange_failed:
+      "Pinterest authorization failed. Confirm your app credentials and redirect URI.",
+    pinterest_no_boards:
+      "No Pinterest boards were found on this account. Create a board on Pinterest, then try again.",
+  };
+
   if (searchParams.error) {
-    return "Connection failed. Please try again.";
+    return {
+      kind: "error",
+      message:
+        errorMessages[searchParams.error] ??
+        (searchParams.detail
+          ? searchParams.detail
+          : "Connection failed. Please try again."),
+    };
   }
+
   return null;
 }
 
@@ -160,6 +203,7 @@ export function IntegrationsClient({
   showMetaAdminGuide,
   showXAdminGuide,
   flashParams,
+  oauthDebug,
 }: {
   brands: Brand[];
   initialConnections: Connection[];
@@ -169,7 +213,8 @@ export function IntegrationsClient({
   xSetup: XSetupInfo;
   showMetaAdminGuide: boolean;
   showXAdminGuide: boolean;
-  flashParams?: { connected?: string; error?: string };
+  flashParams?: { connected?: string; error?: string; detail?: string };
+  oauthDebug?: OAuthDebugInfo | null;
 }) {
   const router = useRouter();
   const { activeClient, setActiveClientId } = useActiveClient();
@@ -189,7 +234,7 @@ export function IntegrationsClient({
     }
   }, [activeClient.id, brands]);
 
-  const flash = flashParams ? flashMessage(flashParams) : null;
+  const flash = flashParams ? flashFromParams(flashParams) : null;
   const activeBrand = brands.find((brand) => brand.id === brandId);
   const brandConnections = connections.filter((item) => item.brandId === brandId);
   const configById = useMemo(
@@ -350,9 +395,23 @@ export function IntegrationsClient({
 
   return (
     <div className="space-y-6">
-      {flash ? (
+      {flash?.kind === "success" ? (
         <div className="rounded-xl border border-gold/25 bg-cream/60 px-4 py-3 text-sm text-near-black">
-          {flash}
+          {flash.message}
+        </div>
+      ) : null}
+
+      {flash?.kind === "error" ? (
+        <div className="space-y-3">
+          <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-900">
+            {flash.message}
+          </div>
+          <OAuthDebugPanel
+            errorCode={flashParams?.error}
+            detail={flashParams?.detail}
+            debug={oauthDebug}
+            showAdminLinks={showMetaAdminGuide}
+          />
         </div>
       ) : null}
 
