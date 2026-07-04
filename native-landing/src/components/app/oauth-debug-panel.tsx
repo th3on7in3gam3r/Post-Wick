@@ -6,6 +6,7 @@ type OAuthDebugPanelProps = {
   detail?: string;
   debug?: OAuthDebugInfo | null;
   showAdminLinks?: boolean;
+  redirectUri?: string;
 };
 
 export function OAuthDebugPanel({
@@ -13,6 +14,7 @@ export function OAuthDebugPanel({
   detail,
   debug,
   showAdminLinks,
+  redirectUri,
 }: OAuthDebugPanelProps) {
   if (!errorCode && !detail && !debug) return null;
 
@@ -79,6 +81,18 @@ export function OAuthDebugPanel({
             <div>
               <dt className="text-red-900/60">Timestamp (UTC)</dt>
               <dd>{debug.at}</dd>
+            </div>
+          ) : null}
+          {detail ? (
+            <div>
+              <dt className="text-red-900/60">API message</dt>
+              <dd className="break-words">{detail}</dd>
+            </div>
+          ) : null}
+          {redirectUri ? (
+            <div>
+              <dt className="text-red-900/60">Expected redirect URI</dt>
+              <dd className="break-all">{redirectUri}</dd>
             </div>
           ) : null}
         </dl>

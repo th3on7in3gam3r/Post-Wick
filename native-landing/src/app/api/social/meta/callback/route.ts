@@ -33,6 +33,28 @@ function facebookSelectPageUrl(req: Request, brandId: string) {
   );
 }
 
+function metaExchangeHint(message: string) {
+  const lowered = message.toLowerCase();
+
+  if (lowered.includes("redirect")) {
+    return `Instagram Business Login redirect URI must match exactly: ${metaRedirectUri()}`;
+  }
+
+  if (
+    lowered.includes("client") ||
+    lowered.includes("secret") ||
+    lowered.includes("invalid app")
+  ) {
+    return "Use the Instagram App ID and Instagram App Secret from Meta → Instagram → Business login settings — not App settings → Basic.";
+  }
+
+  if (lowered.includes("authorization code") || lowered.includes("code has expired")) {
+    return "The login code expired or was already used. Click Connect Instagram again without refreshing the callback page.";
+  }
+
+  return "Check Vercel logs for [meta-callback] and verify Instagram credentials plus redirect URI in Meta.";
+}
+
 function debugBase(
   step: string,
   overrides: Omit<Partial<OAuthDebugInfo>, "flow" | "step" | "at"> & { message: string },
@@ -243,9 +265,7 @@ export async function GET(req: Request) {
         platform: statePlatform,
         message: errMsg,
         hint:
-          code === "meta_exchange_failed"
-            ? "Check Vercel logs for [meta-callback] and verify Instagram/Facebook credentials plus redirect URI in Meta."
-            : undefined,
+          code === "meta_exchange_failed" ? metaExchangeHint(errMsg) : undefined,
       }),
       code,
     );

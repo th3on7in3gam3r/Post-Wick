@@ -29,9 +29,6 @@ export default async function IntegrationsPage({
   const userId = await requireUserId();
   const cookieStore = cookies();
   const oauthDebug = parseOAuthDebugCookie(cookieStore.get(OAUTH_DEBUG_COOKIE)?.value);
-  if (oauthDebug) {
-    cookieStore.delete(OAUTH_DEBUG_COOKIE);
-  }
 
   const [brands, connections, isAdmin, dbUser] = await Promise.all([
     getBrandsByUserId(userId),

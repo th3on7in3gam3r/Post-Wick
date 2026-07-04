@@ -119,12 +119,23 @@ export function getMetaAuthUrl(brandId: string, platform: MetaPlatform) {
   return `https://www.facebook.com/${GRAPH_VERSION}/dialog/oauth?${params}`;
 }
 
-async function readGraphError(response: Response) {
+async function readOAuthError(response: Response) {
   try {
     const payload = (await response.json()) as {
+      error_message?: string;
+      error_type?: string;
       error?: { message?: string; type?: string; code?: number };
     };
-    return payload.error?.message ?? JSON.stringify(payload).slice(0, 240);
+
+    if (payload.error_message) {
+      return payload.error_message;
+    }
+
+    if (payload.error?.message) {
+      return payload.error.message;
+    }
+
+    return JSON.stringify(payload).slice(0, 240);
   } catch {
     return response.statusText;
   }
@@ -135,7 +146,7 @@ async function graphGet<T>(path: string, accessToken: string) {
   url.searchParams.set("access_token", accessToken);
   const response = await fetch(url);
   if (!response.ok) {
-    const detail = await readGraphError(response);
+    const detail = await readOAuthError(response);
     console.error("[meta-graph-get]", response.status, detail);
     throw new Error(`Meta Graph API request failed (${response.status}): ${detail}`);
   }
@@ -161,9 +172,11 @@ export async function exchangeInstagramCode(code: string) {
   });
 
   if (!response.ok) {
-    const detail = await readGraphError(response);
+    const detail = await readOAuthError(response);
     console.error("[instagram-token]", response.status, detail);
-    throw new Error(`Failed to exchange Instagram authorization code (${response.status})`);
+    throw new Error(
+      `Failed to exchange Instagram authorization code (${response.status}): ${detail}`,
+    );
   }
 
   const shortLived = (await response.json()) as { access_token: string };
@@ -177,10 +190,10 @@ export async function exchangeInstagramCode(code: string) {
     `https://graph.instagram.com/access_token?${longParams}`,
   );
   if (!longResponse.ok) {
-    const detail = await readGraphError(longResponse);
+    const detail = await readOAuthError(longResponse);
     console.error("[instagram-long-token]", longResponse.status, detail);
     throw new Error(
-      `Failed to exchange Instagram token for long-lived access (${longResponse.status})`,
+      `Failed to exchange Instagram token for long-lived access (${longResponse.status}): ${detail}`,
     );
   }
 
@@ -205,9 +218,9 @@ export async function exchangeMetaCode(code: string) {
     `https://graph.facebook.com/${GRAPH_VERSION}/oauth/access_token?${params}`,
   );
   if (!response.ok) {
-    const detail = await readGraphError(response);
+    const detail = await readOAuthError(response);
     console.error("[meta-token]", response.status, detail);
-    throw new Error(`Failed to exchange Meta authorization code (${response.status})`);
+    throw new Error(`Failed to exchange Meta authorization code (${response.status}): ${detail}`);
   }
 
   const shortLived = (await response.json()) as { access_token: string };
@@ -222,9 +235,9 @@ export async function exchangeMetaCode(code: string) {
     `https://graph.facebook.com/${GRAPH_VERSION}/oauth/access_token?${longParams}`,
   );
   if (!longResponse.ok) {
-    const detail = await readGraphError(longResponse);
+    const detail = await readOAuthError(longResponse);
     console.error("[meta-long-token]", longResponse.status, detail);
-    throw new Error(`Failed to exchange Meta token for long-lived access (${longResponse.status})`);
+    throw new Error(`Failed to exchange Meta token for long-lived access (${longResponse.status}): ${detail}`);
   }
 
   const longLived = (await longResponse.json()) as { access_token: string };
@@ -246,7 +259,7 @@ export async function resolveInstagramConnection(
 
   const response = await fetch(url);
   if (!response.ok) {
-    const detail = await readGraphError(response);
+    const detail = await readOAuthError(response);
     throw new Error(`Failed to load Instagram profile (${response.status}): ${detail}`);
   }
 
@@ -385,7 +398,7 @@ export async function publishToFacebookPage(
     );
 
     if (!response.ok) {
-      const detail = await readGraphError(response);
+      const detail = await readOAuthError(response);
       throw new Error(`Facebook photo publish failed: ${detail}`);
     }
 
@@ -408,7 +421,7 @@ export async function publishToFacebookPage(
   );
 
   if (!response.ok) {
-    const detail = await readGraphError(response);
+    const detail = await readOAuthError(response);
     throw new Error(`Facebook publish failed: ${detail}`);
   }
 
@@ -447,7 +460,7 @@ async function waitForInstagramContainer(
     );
 
     if (!response.ok) {
-      const detail = await readGraphError(response);
+      const detail = await readOAuthError(response);
       throw new Error(`Instagram media status check failed: ${detail}`);
     }
 
@@ -486,7 +499,7 @@ export async function publishToInstagram(
   });
 
   if (!container.ok) {
-    const detail = await readGraphError(container);
+    const detail = await readOAuthError(container);
     throw new Error(`Instagram media container failed: ${detail}`);
   }
 
@@ -507,7 +520,7 @@ export async function publishToInstagram(
   });
 
   if (!publish.ok) {
-    const detail = await readGraphError(publish);
+    const detail = await readOAuthError(publish);
     throw new Error(`Instagram publish failed: ${detail}`);
   }
 

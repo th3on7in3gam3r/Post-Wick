@@ -410,6 +410,7 @@ export function IntegrationsClient({
             errorCode={flashParams?.error}
             detail={flashParams?.detail}
             debug={oauthDebug}
+            redirectUri={metaSetup.redirectUri}
             showAdminLinks={showMetaAdminGuide}
           />
         </div>
