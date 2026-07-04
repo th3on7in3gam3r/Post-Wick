@@ -22,9 +22,12 @@ export const OG_IMAGE = {
   alt: "Kerygma Social — Social media on autopilot for local businesses",
 } as const;
 
+export function normalizeBaseUrl(url: string) {
+  return url.trim().replace(/\/+$/, "").replace(/\.+$/, "");
+}
+
 export function siteUrl() {
-  return (process.env.NEXT_PUBLIC_APP_URL ?? "https://kerygmasocial.com").replace(
-    /\/+$/,
-    "",
+  return normalizeBaseUrl(
+    process.env.NEXT_PUBLIC_APP_URL ?? "https://kerygmasocial.com",
   );
 }

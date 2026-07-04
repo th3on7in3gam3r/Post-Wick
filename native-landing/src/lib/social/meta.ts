@@ -1,3 +1,5 @@
+import { normalizeBaseUrl } from "@/lib/brand";
+
 export type MetaPlatform = "instagram" | "facebook";
 
 export type MetaConnectionDetails = {
@@ -20,15 +22,12 @@ const INSTAGRAM_SCOPES = [
 ] as const;
 
 function appBaseUrl() {
-  return (process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000").replace(
-    /\/+$/,
-    "",
-  );
+  return normalizeBaseUrl(process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000");
 }
 
 export function metaRedirectUri() {
   const override = process.env.META_OAUTH_REDIRECT_URI?.trim();
-  if (override) return override.replace(/\/+$/, "");
+  if (override) return normalizeBaseUrl(override);
   return `${appBaseUrl()}/api/social/meta/callback`;
 }
 

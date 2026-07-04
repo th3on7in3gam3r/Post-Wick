@@ -33,11 +33,15 @@ function facebookSelectPageUrl(req: Request, brandId: string) {
   );
 }
 
-function metaExchangeHint(message: string) {
+function metaExchangeHint(message: string, platform?: MetaPlatform) {
   const lowered = message.toLowerCase();
 
   if (lowered.includes("redirect")) {
-    return `Instagram Business Login redirect URI must match exactly: ${metaRedirectUri()}`;
+    const label =
+      platform === "facebook"
+        ? "Facebook Login for Business redirect URI"
+        : "Instagram Business Login redirect URI";
+    return `${label} must match exactly: ${metaRedirectUri()}`;
   }
 
   if (
@@ -265,7 +269,7 @@ export async function GET(req: Request) {
         platform: statePlatform,
         message: errMsg,
         hint:
-          code === "meta_exchange_failed" ? metaExchangeHint(errMsg) : undefined,
+          code === "meta_exchange_failed" ? metaExchangeHint(errMsg, statePlatform) : undefined,
       }),
       code,
     );
