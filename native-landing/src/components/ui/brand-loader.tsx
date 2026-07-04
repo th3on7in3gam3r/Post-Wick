@@ -1,9 +1,14 @@
+"use client";
+
+import Image from "next/image";
 import { cn } from "@/lib/utils";
 
+const LOADING_ICON = "/images/kerygma-loading-icon.png";
+
 const SIZE_CONFIG = {
-  sm: { box: "h-8 w-8", border: "border-2", dot: "h-1.5 w-1.5" },
-  md: { box: "h-[4.5rem] w-[4.5rem]", border: "border-[3px]", dot: "h-2.5 w-2.5" },
-  lg: { box: "h-20 w-20", border: "border-[3px]", dot: "h-3 w-3" },
+  sm: { box: "h-8 w-8", px: 32 },
+  md: { box: "h-[4.5rem] w-[4.5rem]", px: 72 },
+  lg: { box: "h-20 w-20", px: 80 },
 } as const;
 
 type BrandLoaderRingProps = {
@@ -12,23 +17,17 @@ type BrandLoaderRingProps = {
 };
 
 export function BrandLoaderRing({ size = "md", className }: BrandLoaderRingProps) {
-  const { box, border, dot } = SIZE_CONFIG[size];
+  const { box, px } = SIZE_CONFIG[size];
 
   return (
     <div className={cn("relative flex items-center justify-center", box, className)} aria-hidden>
-      <div className={cn("absolute inset-0 rounded-full border-gold/15", border)} />
-      <div
-        className={cn(
-          "absolute inset-0 animate-spin rounded-full border-transparent border-t-gold border-r-gold/50",
-          border,
-        )}
-        style={{ animationDuration: "1.1s" }}
-      />
-      <div
-        className={cn(
-          "animate-pulse rounded-full bg-gold shadow-[0_0_14px_rgba(184,122,31,0.5)]",
-          dot,
-        )}
+      <Image
+        src={LOADING_ICON}
+        alt=""
+        width={px}
+        height={px}
+        className="h-full w-full animate-brand-loader-pulse object-contain drop-shadow-[0_4px_16px_rgba(61,90,69,0.12)]"
+        priority
       />
     </div>
   );

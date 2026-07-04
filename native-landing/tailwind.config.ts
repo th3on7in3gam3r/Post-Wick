@@ -45,9 +45,14 @@ const config: Config = {
           "0%": { opacity: "0", transform: "translateY(-36px)" },
           "100%": { opacity: "1", transform: "translateY(0)" },
         },
+        brandLoaderPulse: {
+          "0%, 100%": { transform: "scale(1)", opacity: "1" },
+          "50%": { transform: "scale(0.94)", opacity: "0.88" },
+        },
       },
       animation: {
         carousel: "carousel 80s linear infinite",
+        "brand-loader-pulse": "brandLoaderPulse 1.4s ease-in-out infinite",
         "fade-drop": "fadeDrop 0.8s cubic-bezier(0.22, 1, 0.36, 1) both",
         "fade-drop-delay-1": "fadeDrop 0.8s cubic-bezier(0.22, 1, 0.36, 1) 0.14s both",
         "fade-drop-delay-2": "fadeDrop 0.8s cubic-bezier(0.22, 1, 0.36, 1) 0.28s both",
