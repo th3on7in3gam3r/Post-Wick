@@ -25,6 +25,11 @@ import {
 import type { PlatformRuntimeConfig } from "@/lib/integrations/config";
 import { cn } from "@/lib/utils";
 
+type OAuthRedirectSetup = {
+  redirectUri: string;
+  appUrl: string;
+};
+
 type Brand = {
   id: string;
   name: string;
@@ -215,7 +220,7 @@ export function IntegrationsClient({
   runtimeConfig: PlatformRuntimeConfig[];
   metaSetup: MetaSetupInfo;
   xSetup: XSetupInfo;
-  linkedInSetup: XSetupInfo;
+  linkedInSetup: OAuthRedirectSetup;
   showMetaAdminGuide: boolean;
   showXAdminGuide: boolean;
   flashParams?: { connected?: string; error?: string; detail?: string };
