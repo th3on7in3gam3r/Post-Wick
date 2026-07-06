@@ -41,6 +41,8 @@ type Connection = {
   platform: string;
   accountName: string | null;
   isDemo: boolean;
+  healthStatus?: "ok" | "error";
+  lastHealthError?: string | null;
 };
 
 const PLATFORM_ACCENTS: Record<IntegrationPlatformId, string> = {
@@ -339,6 +341,53 @@ export function IntegrationsClient({
     }
   }
 
+  async function verifyConnection(connectionId: string) {
+    setLoadingKey(`verify:${connectionId}`);
+    setActionError(null);
+
+    try {
+      const response = await fetch(`/api/connections/${connectionId}/verify`, {
+        method: "POST",
+        credentials: "same-origin",
+      });
+      const data = (await response.json().catch(() => ({}))) as {
+        ok?: boolean;
+        refreshed?: boolean;
+        error?: string;
+      };
+
+      if (!response.ok) {
+        throw new Error(
+          typeof data.error === "string" ? data.error : "Could not verify this connection",
+        );
+      }
+
+      setConnections((prev) =>
+        prev.map((item) =>
+          item.id === connectionId
+            ? {
+                ...item,
+                healthStatus: data.ok ? "ok" : "error",
+                lastHealthError: data.ok ? null : data.error ?? "Connection check failed",
+              }
+            : item,
+        ),
+      );
+
+      if (!data.ok && data.error) {
+        setActionError(data.error);
+      }
+
+      router.refresh();
+    } catch (error) {
+      setActionError(
+        error instanceof Error ? error.message : "Could not verify this connection",
+      );
+    } finally {
+      setLoadingKey(null);
+    }
+  }
+
   async function connectOAuth(platform: IntegrationPlatformId) {
     if (!brandId) {
       setActionError("Select a brand before connecting.");
@@ -562,7 +611,8 @@ export function IntegrationsClient({
               const isLoading =
                 loadingKey === `demo:${platform.id}` ||
                 loadingKey === `oauth:${platform.id}` ||
-                loadingKey === `disconnect:${connection?.id}`;
+                loadingKey === `disconnect:${connection?.id}` ||
+                loadingKey === `verify:${connection?.id}`;
 
               return (
                 <article
@@ -648,18 +698,40 @@ export function IntegrationsClient({
                           </span>
                         )}
                       </p>
-                      <TextureButton
-                        type="button"
-                        variant="secondary"
-                        size="sm"
-                        disabled={isLoading}
-                        onClick={() => void disconnect(connection.id)}
-                      >
-                        {isLoading ? (
-                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      {!connection.isDemo && connection.healthStatus === "error" ? (
+                        <p className="text-xs text-red-600">
+                          {connection.lastHealthError ??
+                            "This connection needs to be checked or reconnected."}
+                        </p>
+                      ) : null}
+                      <div className="flex flex-wrap gap-2">
+                        {!connection.isDemo ? (
+                          <TextureButton
+                            type="button"
+                            variant="secondary"
+                            size="sm"
+                            disabled={isLoading}
+                            onClick={() => void verifyConnection(connection.id)}
+                          >
+                            {loadingKey === `verify:${connection.id}` ? (
+                              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            ) : null}
+                            Check connection
+                          </TextureButton>
                         ) : null}
-                        Disconnect
-                      </TextureButton>
+                        <TextureButton
+                          type="button"
+                          variant="secondary"
+                          size="sm"
+                          disabled={isLoading}
+                          onClick={() => void disconnect(connection.id)}
+                        >
+                          {loadingKey === `disconnect:${connection.id}` ? (
+                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          ) : null}
+                          Disconnect
+                        </TextureButton>
+                      </div>
                     </div>
                   ) : (
                     <div className="mt-5 flex flex-1 flex-col justify-end gap-2">

@@ -20,6 +20,7 @@ import { isXConfigured, xRedirectUri } from "@/lib/social/x";
 import { isPlatformAdmin } from "@/lib/server/platform-admin";
 import { siteUrl } from "@/lib/brand";
 import { linkedInRedirectUri } from "@/lib/social/linkedin";
+import { parseConnectionMetadata } from "@/lib/integrations/connection-metadata";
 import { requireUserId } from "@/lib/server/app-data";
 
 export default async function IntegrationsPage({
@@ -53,13 +54,21 @@ export default async function IntegrationsPage({
         <IntegrationsClient
           brands={brands.map((brand) => ({ id: brand.id, name: brand.name }))}
           initialDemoModeEnabled={dbUser.demoModeEnabled}
-          initialConnections={connections.map((connection) => ({
-            id: connection.id,
-            brandId: connection.brandId,
-            platform: connection.platform,
-            accountName: connection.accountName,
-            isDemo: connection.isDemo,
-          }))}
+          initialConnections={connections.map((connection) => {
+            const health = parseConnectionMetadata<{
+              healthStatus?: "ok" | "error";
+              lastHealthError?: string | null;
+            }>(connection.metadata);
+            return {
+              id: connection.id,
+              brandId: connection.brandId,
+              platform: connection.platform,
+              accountName: connection.accountName,
+              isDemo: connection.isDemo,
+              healthStatus: health.healthStatus,
+              lastHealthError: health.lastHealthError ?? null,
+            };
+          })}
           runtimeConfig={getIntegrationsRuntimeConfig()}
           metaSetup={{
             instagramConfigured: isInstagramConfigured(),

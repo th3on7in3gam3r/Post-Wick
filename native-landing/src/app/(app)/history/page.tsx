@@ -63,6 +63,7 @@ export default async function HistoryPage({
           />
         ) : (
           <HistoryList
+            showRetryAll={filter === "failed"}
             posts={posts.map((post) => ({
               id: post.id,
               brandName: post.brandName,

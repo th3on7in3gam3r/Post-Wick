@@ -780,6 +780,36 @@ export async function claimDuePostForPublishing(
   return row ? parsePost(row) : null;
 }
 
+export async function claimFailedPostForRetry(
+  postId: string,
+  userId: string,
+): Promise<PostRecord | null> {
+  const db = await getDb();
+  const now = nowIso();
+  const rows = await db
+    .update(posts)
+    .set({
+      status: "published",
+      publishedAt: now,
+      externalPostId: PUBLISHING_LOCK,
+      publishError: null,
+      updatedAt: now,
+    })
+    .where(
+      and(
+        eq(posts.id, postId),
+        eq(posts.status, "failed"),
+        sql`${posts.brandId} IN (
+          SELECT id FROM brands WHERE user_id = ${userId}
+        )`,
+      ),
+    )
+    .returning();
+
+  const row = rows[0];
+  return row ? parsePost(row) : null;
+}
+
 export async function finalizePublishedPost(
   postId: string,
   userId: string,
@@ -869,6 +899,14 @@ export async function getConnectionForBrand(brandId: string, platform: string) {
       eq(connections.brandId, brandId),
       eq(connections.platform, platform.toLowerCase()),
     ),
+  });
+  return row ? parseConnection(row) : null;
+}
+
+export async function getConnectionById(connectionId: string, userId: string) {
+  const db = await getDb();
+  const row = await db.query.connections.findFirst({
+    where: and(eq(connections.id, connectionId), eq(connections.userId, userId)),
   });
   return row ? parseConnection(row) : null;
 }
