@@ -237,7 +237,9 @@ export function IntegrationsClient({
   const [loadingKey, setLoadingKey] = useState<string | null>(null);
   const [filter, setFilter] = useState<"all" | "connected">("all");
   const [actionError, setActionError] = useState<string | null>(null);
-  const [actionSuccess, setActionSuccess] = useState<string | null>(null);
+  const [verifyFeedback, setVerifyFeedback] = useState<
+    Record<string, { kind: "success" | "error"; message: string }>
+  >({});
   const [demoModeEnabled, setDemoModeEnabled] = useState(initialDemoModeEnabled);
   const [demoModeSaving, setDemoModeSaving] = useState(false);
 
@@ -344,8 +346,6 @@ export function IntegrationsClient({
 
   async function verifyConnection(connectionId: string, platformLabel: string) {
     setLoadingKey(`verify:${connectionId}`);
-    setActionError(null);
-    setActionSuccess(null);
 
     try {
       const response = await fetch(`/api/connections/${connectionId}/verify`, {
@@ -377,20 +377,30 @@ export function IntegrationsClient({
       );
 
       if (!data.ok && data.error) {
-        setActionError(data.error);
+        setVerifyFeedback((prev) => ({
+          ...prev,
+          [connectionId]: { kind: "error", message: data.error! },
+        }));
       } else if (data.ok) {
-        setActionSuccess(
-          data.refreshed
-            ? `${platformLabel} connection is healthy. Access token was refreshed.`
-            : `${platformLabel} connection looks good and is ready to publish.`,
-        );
+        setVerifyFeedback((prev) => ({
+          ...prev,
+          [connectionId]: {
+            kind: "success",
+            message: data.refreshed
+              ? `${platformLabel} connection is healthy. Access token was refreshed.`
+              : `${platformLabel} connection looks good and is ready to publish.`,
+          },
+        }));
       }
 
       router.refresh();
     } catch (error) {
-      setActionError(
-        error instanceof Error ? error.message : "Could not verify this connection",
-      );
+      const message =
+        error instanceof Error ? error.message : "Could not verify this connection";
+      setVerifyFeedback((prev) => ({
+        ...prev,
+        [connectionId]: { kind: "error", message },
+      }));
     } finally {
       setLoadingKey(null);
     }
@@ -490,12 +500,6 @@ export function IntegrationsClient({
           redirectUri={oauthRedirectUri}
           showAdminLinks={showMetaAdminGuide || showXAdminGuide}
         />
-      ) : null}
-
-      {actionSuccess ? (
-        <div className="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-900">
-          {actionSuccess}
-        </div>
       ) : null}
 
       {actionError ? (
@@ -712,13 +716,25 @@ export function IntegrationsClient({
                           </span>
                         )}
                       </p>
-                      {!connection.isDemo && connection.healthStatus === "ok" ? (
+                      {!connection.isDemo && connection.healthStatus === "ok" && !verifyFeedback[connection.id] ? (
                         <p className="text-xs text-emerald-700">Connection verified and ready to publish.</p>
                       ) : null}
-                      {!connection.isDemo && connection.healthStatus === "error" ? (
+                      {!connection.isDemo && connection.healthStatus === "error" && !verifyFeedback[connection.id] ? (
                         <p className="text-xs text-red-600">
                           {connection.lastHealthError ??
                             "This connection needs to be checked or reconnected."}
+                        </p>
+                      ) : null}
+                      {verifyFeedback[connection.id] ? (
+                        <p
+                          className={cn(
+                            "text-xs leading-relaxed",
+                            verifyFeedback[connection.id]?.kind === "success"
+                              ? "text-emerald-700"
+                              : "text-red-600",
+                          )}
+                        >
+                          {verifyFeedback[connection.id]?.message}
                         </p>
                       ) : null}
                       <div className="flex flex-wrap gap-2">

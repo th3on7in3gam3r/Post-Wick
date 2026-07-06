@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Loader2, RotateCcw } from "lucide-react";
+import { publishErrorHint } from "@/lib/integrations/publish-error-hints";
 import { formatScheduleLabel } from "@/lib/scheduling/slots";
 import { ExternalPostLink } from "@/components/app/external-post-link";
 import { TextureButton } from "@/components/ui/texture-button";
@@ -177,22 +178,19 @@ export function HistoryList({
 
             <p className="mt-4 text-sm leading-relaxed text-near-black">{post.content}</p>
 
-            <div className="mt-4 flex flex-wrap items-center justify-between gap-3 text-xs text-gray-label">
-              <div className="flex flex-wrap items-center gap-3">
-                {timestamp ? <span>{formatScheduleLabel(timestamp)}</span> : null}
-                {post.status === "published" ? (
-                  <ExternalPostLink
-                    platform={post.platform}
-                    externalPostId={post.externalPostId}
-                    className="text-xs"
-                  />
-                ) : null}
-              </div>
+            <div className="mt-4 space-y-3">
+              <div className="flex flex-wrap items-center justify-between gap-3 text-xs text-gray-label">
+                <div className="flex flex-wrap items-center gap-3">
+                  {timestamp ? <span>{formatScheduleLabel(timestamp)}</span> : null}
+                  {post.status === "published" ? (
+                    <ExternalPostLink
+                      platform={post.platform}
+                      externalPostId={post.externalPostId}
+                      className="text-xs"
+                    />
+                  ) : null}
+                </div>
 
-              <div className="flex flex-wrap items-center gap-3">
-                {post.publishError ? (
-                  <span className="text-red-600">{post.publishError}</span>
-                ) : null}
                 {post.status === "failed" ? (
                   <TextureButton
                     type="button"
@@ -215,6 +213,18 @@ export function HistoryList({
                   </TextureButton>
                 ) : null}
               </div>
+
+              {post.publishError ? (
+                <div className="rounded-xl border border-red-200/80 bg-red-50/80 px-3 py-2.5 text-xs">
+                  <p className="font-medium text-red-800">Publish failed</p>
+                  <p className="mt-1 leading-relaxed text-red-700">{post.publishError}</p>
+                  {publishErrorHint(post.platform, post.publishError) ? (
+                    <p className="mt-2 leading-relaxed text-red-900/80">
+                      {publishErrorHint(post.platform, post.publishError)}
+                    </p>
+                  ) : null}
+                </div>
+              ) : null}
             </div>
           </article>
         );
