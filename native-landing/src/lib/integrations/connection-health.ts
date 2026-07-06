@@ -7,6 +7,7 @@ import {
   parseConnectionMetadata,
 } from "@/lib/integrations/connection-metadata";
 import { notifyIntegrationFailureIfNeeded } from "@/lib/integrations/notify-integration-failure";
+import { facebookAppCredentials } from "@/lib/social/meta";
 import { parsePinterestMetadata, resolvePinterestAccessToken } from "@/lib/social/pinterest";
 import { parseXMetadata, resolveXAccessToken } from "@/lib/social/x";
 
@@ -45,20 +46,42 @@ function parseMetaMetadata(metadata: string | null): MetaMetadata {
   return parseConnectionMetadata<MetaMetadata>(metadata);
 }
 
+async function debugMetaAccessToken(accessToken: string, label: string) {
+  const { appId, appSecret } = facebookAppCredentials();
+  if (!appId || !appSecret) {
+    throw new Error("Meta OAuth is not configured");
+  }
+
+  const url = new URL(`https://graph.facebook.com/${GRAPH_VERSION}/debug_token`);
+  url.searchParams.set("input_token", accessToken);
+  url.searchParams.set("access_token", `${appId}|${appSecret}`);
+
+  const response = await fetch(url);
+  if (!response.ok) {
+    throw new Error(`${label} failed: ${await readApiError(response)}`);
+  }
+
+  const payload = (await response.json()) as {
+    data?: { is_valid?: boolean; error?: { message?: string } };
+  };
+
+  if (!payload.data?.is_valid) {
+    throw new Error(
+      `${label} failed: ${payload.data?.error?.message ?? "Token is invalid or expired"}`,
+    );
+  }
+}
+
 async function verifyFacebook(connection: ConnectionRecord) {
   const meta = parseMetaMetadata(connection.metadata);
   if (!meta.pageId || !connection.accessToken) {
     throw new Error("Facebook Page metadata is missing for this connection");
   }
 
-  const url = new URL(`https://graph.facebook.com/${GRAPH_VERSION}/${meta.pageId}`);
-  url.searchParams.set("fields", "name");
-  url.searchParams.set("access_token", connection.accessToken);
-
-  const response = await fetch(url);
-  if (!response.ok) {
-    throw new Error(`Facebook connection check failed: ${await readApiError(response)}`);
-  }
+  await debugMetaAccessToken(
+    connection.accessToken,
+    "Facebook connection check",
+  );
 }
 
 async function verifyInstagram(connection: ConnectionRecord) {
@@ -78,18 +101,10 @@ async function verifyInstagram(connection: ConnectionRecord) {
     return;
   }
 
-  const accountId = meta.instagramAccountId ?? meta.pageId;
-  if (!accountId) {
-    throw new Error("Instagram Business account metadata is missing");
-  }
-
-  const url = new URL(`https://graph.facebook.com/${GRAPH_VERSION}/${accountId}`);
-  url.searchParams.set("fields", "id,username");
-  url.searchParams.set("access_token", connection.accessToken);
-  const response = await fetch(url);
-  if (!response.ok) {
-    throw new Error(`Instagram connection check failed: ${await readApiError(response)}`);
-  }
+  await debugMetaAccessToken(
+    connection.accessToken,
+    "Instagram connection check",
+  );
 }
 
 async function verifyLinkedIn(connection: ConnectionRecord) {

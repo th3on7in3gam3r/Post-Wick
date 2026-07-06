@@ -19,5 +19,9 @@ const AUTH_FAILURE_PATTERNS = [
 
 export function isIntegrationAuthFailure(message: string) {
   const lowered = message.toLowerCase();
+  if (lowered.includes("pages_read_engagement")) {
+    return false;
+  }
+
   return AUTH_FAILURE_PATTERNS.some((pattern) => lowered.includes(pattern));
 }

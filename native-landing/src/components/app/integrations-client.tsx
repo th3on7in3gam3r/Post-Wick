@@ -237,6 +237,7 @@ export function IntegrationsClient({
   const [loadingKey, setLoadingKey] = useState<string | null>(null);
   const [filter, setFilter] = useState<"all" | "connected">("all");
   const [actionError, setActionError] = useState<string | null>(null);
+  const [actionSuccess, setActionSuccess] = useState<string | null>(null);
   const [demoModeEnabled, setDemoModeEnabled] = useState(initialDemoModeEnabled);
   const [demoModeSaving, setDemoModeSaving] = useState(false);
 
@@ -341,9 +342,10 @@ export function IntegrationsClient({
     }
   }
 
-  async function verifyConnection(connectionId: string) {
+  async function verifyConnection(connectionId: string, platformLabel: string) {
     setLoadingKey(`verify:${connectionId}`);
     setActionError(null);
+    setActionSuccess(null);
 
     try {
       const response = await fetch(`/api/connections/${connectionId}/verify`, {
@@ -376,6 +378,12 @@ export function IntegrationsClient({
 
       if (!data.ok && data.error) {
         setActionError(data.error);
+      } else if (data.ok) {
+        setActionSuccess(
+          data.refreshed
+            ? `${platformLabel} connection is healthy. Access token was refreshed.`
+            : `${platformLabel} connection looks good and is ready to publish.`,
+        );
       }
 
       router.refresh();
@@ -482,6 +490,12 @@ export function IntegrationsClient({
           redirectUri={oauthRedirectUri}
           showAdminLinks={showMetaAdminGuide || showXAdminGuide}
         />
+      ) : null}
+
+      {actionSuccess ? (
+        <div className="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-900">
+          {actionSuccess}
+        </div>
       ) : null}
 
       {actionError ? (
@@ -698,6 +712,9 @@ export function IntegrationsClient({
                           </span>
                         )}
                       </p>
+                      {!connection.isDemo && connection.healthStatus === "ok" ? (
+                        <p className="text-xs text-emerald-700">Connection verified and ready to publish.</p>
+                      ) : null}
                       {!connection.isDemo && connection.healthStatus === "error" ? (
                         <p className="text-xs text-red-600">
                           {connection.lastHealthError ??
@@ -711,7 +728,7 @@ export function IntegrationsClient({
                             variant="secondary"
                             size="sm"
                             disabled={isLoading}
-                            onClick={() => void verifyConnection(connection.id)}
+                            onClick={() => void verifyConnection(connection.id, platform.name)}
                           >
                             {loadingKey === `verify:${connection.id}` ? (
                               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
