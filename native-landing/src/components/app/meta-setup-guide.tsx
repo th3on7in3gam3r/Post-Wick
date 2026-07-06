@@ -43,6 +43,15 @@ const FACEBOOK_ADMIN_CHECKLIST = [
   "Set META_APP_ID and META_APP_SECRET from App settings → Basic, then redeploy.",
 ];
 
+const FACEBOOK_APP_REVIEW_CHECKLIST = [
+  "App Review → Permissions and Features → request Advanced Access for pages_manage_posts (required to publish).",
+  "Also request Advanced Access for pages_show_list. pages_read_engagement is optional but recommended.",
+  "Prepare a screencast: sign in at kerygmasocial.com → Settings → Integrations → Connect Facebook → approve → approve a post → show it on the Page.",
+  "Privacy Policy URL: https://kerygmasocial.com/privacy — Terms: https://kerygmasocial.com/terms.",
+  "Explain use case: customers connect their own Facebook Page; Kerygma publishes approved posts only after they swipe to approve.",
+  "While Development mode: only App roles (Admin/Developer/Tester) can publish. After approval, switch the app to Live.",
+];
+
 function ConnectSteps({
   title,
   steps,
@@ -146,6 +155,15 @@ export function MetaSetupGuide({
           { ok: Boolean(setup.appUrl), label: "NEXT_PUBLIC_APP_URL set" },
         ]}
       />
+
+      <AdminChecklist
+        title="Facebook App Review (required for customer publishing)"
+        steps={FACEBOOK_APP_REVIEW_CHECKLIST}
+        configured={setup.facebookConfigured}
+        redirectUri={setup.redirectUri}
+        copied={copied}
+        onCopy={() => void copyRedirectUri()}
+      />
     </div>
   );
 }
@@ -165,7 +183,7 @@ function AdminChecklist({
   redirectUri: string;
   copied: boolean;
   onCopy: () => void;
-  pills: Array<{ ok: boolean; label: string }>;
+  pills?: Array<{ ok: boolean; label: string }>;
 }) {
   return (
     <div className="rounded-xl border border-black/[0.06] bg-cream/40 px-4 py-4">
@@ -201,11 +219,13 @@ function AdminChecklist({
         </div>
       </div>
 
-      <div className="mt-4 flex flex-wrap gap-2 text-xs">
-        {pills.map((pill) => (
-          <StatusPill key={pill.label} ok={pill.ok} label={pill.label} />
-        ))}
-      </div>
+      {pills && pills.length > 0 ? (
+        <div className="mt-4 flex flex-wrap gap-2 text-xs">
+          {pills.map((pill) => (
+            <StatusPill key={pill.label} ok={pill.ok} label={pill.label} />
+          ))}
+        </div>
+      ) : null}
     </div>
   );
 }
