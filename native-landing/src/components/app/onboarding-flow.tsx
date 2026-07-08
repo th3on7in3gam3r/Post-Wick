@@ -277,7 +277,7 @@ export function OnboardingFlow({
   return (
     <div className="mx-auto w-full max-w-xl">
       <div className="rounded-2xl border border-black/[0.06] bg-white p-8 shadow-card">
-        {step !== "welcome" ? <OnboardingBrandBar /> : null}
+        {step !== "welcome" && !addingAnother ? <OnboardingBrandBar /> : null}
 
         {step === "welcome" ? (
           <>
@@ -311,32 +311,36 @@ export function OnboardingFlow({
 
         {step !== "review" && step !== "welcome" ? (
           <>
-            <div className="flex items-center gap-3">
-              <div className="rounded-full bg-cream p-3">
-                {isBusy ? (
-                  <Loader2 className="h-5 w-5 animate-spin text-gold" />
-                ) : (
-                  <Globe className="h-5 w-5 text-gold" />
-                )}
+            {addingAnother && step === "idle" ? null : (
+              <div className="flex items-center gap-3">
+                <div className="rounded-full bg-cream p-3">
+                  {isBusy ? (
+                    <Loader2 className="h-5 w-5 animate-spin text-gold" />
+                  ) : (
+                    <Globe className="h-5 w-5 text-gold" />
+                  )}
+                </div>
+                <div>
+                  <h2 className="font-playfair text-2xl italic text-near-black">
+                    {addingAnother ? "Add another brand" : "Set up your brand"}
+                  </h2>
+                  <p className="text-sm text-gray-body">
+                    {isAnalyzing
+                      ? "Hang tight — we're learning your business."
+                      : isGenerating
+                        ? "Drafting your first posts from the brand voice you approved."
+                        : addingAnother
+                          ? "Enter a new website URL to crawl and review your brand voice."
+                          : "We'll crawl your site, confirm your brand voice, then draft posts."}
+                  </p>
+                </div>
               </div>
-              <div>
-                <h2 className="font-playfair text-2xl italic text-near-black">
-                  {addingAnother ? "Add another brand" : "Set up your brand"}
-                </h2>
-                <p className="text-sm text-gray-body">
-                  {isAnalyzing
-                    ? "Hang tight — we're learning your business."
-                    : isGenerating
-                      ? "Drafting your first posts from the brand voice you approved."
-                      : addingAnother
-                        ? "Enter a new website URL to crawl and review your brand voice."
-                        : "We'll crawl your site, confirm your brand voice, then draft posts."}
-                </p>
-              </div>
-            </div>
+            )}
 
             {!websiteUrl && step === "idle" ? (
-              <div className="mt-6 space-y-4">
+              <div
+                className={addingAnother ? "space-y-4" : "mt-6 space-y-4"}
+              >
                 <label className="block text-sm font-medium text-near-black">
                   Website URL
                 </label>

@@ -46,7 +46,7 @@ export default async function OnboardingPage({
             : "We'll learn your business, confirm your brand voice, then draft your first posts."
         }
       />
-      <div className="flex flex-1 items-center justify-center overflow-y-auto px-6 py-10">
+      <div className="flex flex-1 justify-center overflow-y-auto px-6 pb-10 pt-8">
         <OnboardingFlow
           websiteUrl={addingAnother ? null : websiteUrl}
           brandName={brandName}
