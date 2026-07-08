@@ -486,6 +486,41 @@ export async function countBrandAutopilotPostsInWeek(
   return row?.total ?? 0;
 }
 
+/** Counts scheduled/published autopilot posts for a user across all brands in a UTC week. */
+export async function countUserAutopilotPostsInWeek(
+  userId: string,
+  weekStartIso: string,
+  weekEndIso: string,
+  excludePostId?: string,
+) {
+  const db = await getDb();
+  const weekConditions = or(
+    and(
+      eq(posts.status, "approved"),
+      isNotNull(posts.scheduledAt),
+      gte(posts.scheduledAt, weekStartIso),
+      lt(posts.scheduledAt, weekEndIso),
+    ),
+    and(
+      eq(posts.status, "published"),
+      isNotNull(posts.publishedAt),
+      gte(posts.publishedAt, weekStartIso),
+      lt(posts.publishedAt, weekEndIso),
+    ),
+  );
+
+  const where = excludePostId
+    ? and(eq(brands.userId, userId), weekConditions, ne(posts.id, excludePostId))
+    : and(eq(brands.userId, userId), weekConditions);
+
+  const [row] = await db
+    .select({ total: count() })
+    .from(posts)
+    .innerJoin(brands, eq(brands.id, posts.brandId))
+    .where(where);
+  return row?.total ?? 0;
+}
+
 export async function createPosts(
   items: Array<{
     id: string;
@@ -632,8 +667,8 @@ export async function scheduleApprovedPost(postId: string, userId: string) {
   const scheduledAt = await getNextScheduleSlotWithWeeklyCap(
     existing,
     async (weekStart, weekEnd) => {
-      const used = await countBrandAutopilotPostsInWeek(
-        post.brandId,
+      const used = await countUserAutopilotPostsInWeek(
+        userId,
         weekStart.toISOString(),
         weekEnd.toISOString(),
         postId,
@@ -688,15 +723,15 @@ export async function reschedulePost(
   const user = await getOrCreateUser(userId);
   const { postsPerWeek } = getPlanLimits(user.subscriptionTier);
   const { start, end } = getUtcWeekRange(slot);
-  const used = await countBrandAutopilotPostsInWeek(
-    post.brandId,
+  const used = await countUserAutopilotPostsInWeek(
+    userId,
     start.toISOString(),
     end.toISOString(),
     postId,
   );
   if (used >= postsPerWeek) {
     throw new WeeklyScheduleLimitError(
-      "That week is full on your current plan. Pick another date or upgrade for more posts per week.",
+      "That week is full on your current plan across all brands. Pick another date or upgrade for more posts per week.",
     );
   }
 

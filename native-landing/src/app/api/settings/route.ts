@@ -2,6 +2,10 @@ import { auth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { getOrCreateUser, updateUserSettings } from "@/lib/db";
+import {
+  isPostingFrequencyAllowed,
+  maxPostingFrequencyForTier,
+} from "@/lib/plans";
 import { TIMEZONE_OPTIONS } from "@/lib/user-settings";
 
 const timezoneValues = TIMEZONE_OPTIONS.map((option) => option.value) as [
@@ -50,6 +54,20 @@ export async function PATCH(req: Request) {
   try {
     const body = await req.json();
     const data = settingsSchema.parse(body);
+
+    if (data.defaultPostingFrequency !== undefined) {
+      const user = await getOrCreateUser(userId);
+      if (!isPostingFrequencyAllowed(user.subscriptionTier, data.defaultPostingFrequency)) {
+        const max = maxPostingFrequencyForTier(user.subscriptionTier);
+        return NextResponse.json(
+          {
+            error: `Your plan allows up to ${max} posts per week on autopilot. Upgrade for a higher cadence.`,
+          },
+          { status: 400 },
+        );
+      }
+    }
+
     const user = await updateUserSettings(userId, data);
     return NextResponse.json({ settings: serializeSettings(user) });
   } catch (error) {

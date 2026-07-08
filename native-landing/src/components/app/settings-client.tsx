@@ -14,6 +14,7 @@ import {
   Globe,
   Link2,
   Loader2,
+  Lock,
   Plug,
   Shield,
   User,
@@ -21,7 +22,7 @@ import {
 import { PanelCard } from "@/components/app/panel-card";
 import { CookieSettingsTrigger } from "@/components/cookie-settings-trigger";
 import { TextureButton } from "@/components/ui/texture-button";
-import { getPlanLimits, type SubscriptionTier } from "@/lib/plans";
+import { getPlanLimits, maxPostingFrequencyForTier, type SubscriptionTier } from "@/lib/plans";
 import {
   POSTING_FREQUENCY_OPTIONS,
   TIMEZONE_OPTIONS,
@@ -133,6 +134,7 @@ export function SettingsClient({
   const [savedMessageFading, setSavedMessageFading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const plan = getPlanLimits(workspace.tier);
+  const maxPostingFrequency = maxPostingFrequencyForTier(workspace.tier);
 
   useEffect(() => {
     if (!savedMessage) return;
@@ -344,7 +346,8 @@ export function SettingsClient({
                 Default posting frequency
               </label>
               <p className="mt-1 text-sm text-gray-body">
-                How often new brands post once content is approved.
+                How often new brands post once content is approved. Your {plan.label} plan
+                allows up to {plan.postsPerWeek} posts/week on autopilot across all brands.
               </p>
               <div
                 role="radiogroup"
@@ -353,45 +356,67 @@ export function SettingsClient({
               >
                 {POSTING_FREQUENCY_OPTIONS.map((option) => {
                   const selected = settings.defaultPostingFrequency === option.value;
+                  const locked = option.value > maxPostingFrequency;
                   return (
                     <button
                       key={option.value}
                       type="button"
                       role="radio"
                       aria-checked={selected}
-                      disabled={savingKey === "frequency"}
-                      onClick={() =>
+                      aria-disabled={locked}
+                      disabled={savingKey === "frequency" || locked}
+                      onClick={() => {
+                        if (locked) return;
                         void saveSettings(
                           { defaultPostingFrequency: option.value },
                           "frequency",
-                        )
-                      }
+                        );
+                      }}
                       className={cn(
                         "flex w-full items-center justify-between rounded-xl border px-4 py-3 text-left transition",
-                        selected
-                          ? "border-gold/40 bg-cream/70"
-                          : "border-black/[0.08] bg-white hover:border-black/[0.12]",
+                        locked
+                          ? "cursor-not-allowed border-black/[0.06] bg-cream/20 opacity-70"
+                          : selected
+                            ? "border-gold/40 bg-cream/70"
+                            : "border-black/[0.08] bg-white hover:border-black/[0.12]",
                       )}
                     >
                       <div>
                         <p className="text-sm font-medium text-near-black">
                           {option.label}
                         </p>
-                        <p className="text-xs text-gray-body">{option.description}</p>
+                        <p className="text-xs text-gray-body">
+                          {locked
+                            ? `Requires ${option.value > 5 ? "Pro or Max" : "Pro"} — upgrade to unlock`
+                            : option.description}
+                        </p>
                       </div>
-                      <span
-                        aria-hidden
-                        className={cn(
-                          "h-4 w-4 rounded-full border",
-                          selected
-                            ? "border-gold bg-gold"
-                            : "border-black/20 bg-white",
-                        )}
-                      />
+                      {locked ? (
+                        <Lock className="h-4 w-4 shrink-0 text-gray-label" aria-hidden />
+                      ) : (
+                        <span
+                          aria-hidden
+                          className={cn(
+                            "h-4 w-4 rounded-full border",
+                            selected
+                              ? "border-gold bg-gold"
+                              : "border-black/20 bg-white",
+                          )}
+                        />
+                      )}
                     </button>
                   );
                 })}
               </div>
+              {workspace.tier === "free" ? (
+                <p className="mt-3 text-xs text-gray-label">
+                  Need more than 3 posts per week?{" "}
+                  <Link href="/settings/billing" className="font-medium text-gold hover:underline">
+                    Upgrade your plan
+                  </Link>
+                  .
+                </p>
+              ) : null}
             </div>
           </div>
         </PanelCard>

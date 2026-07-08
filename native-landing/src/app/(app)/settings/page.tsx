@@ -5,7 +5,9 @@ import {
   countConnectionsByUserId,
   getBrandsByUserId,
   getOrCreateUser,
+  updateUserSettings,
 } from "@/lib/db";
+import { clampPostingFrequencyForTier } from "@/lib/plans";
 import { requireUserId } from "@/lib/server/app-data";
 
 export default async function SettingsPage() {
@@ -16,6 +18,14 @@ export default async function SettingsPage() {
     getBrandsByUserId(userId),
     countConnectionsByUserId(userId),
   ]);
+
+  const defaultPostingFrequency = clampPostingFrequencyForTier(
+    dbUser.subscriptionTier,
+    dbUser.defaultPostingFrequency,
+  );
+  if (defaultPostingFrequency !== dbUser.defaultPostingFrequency) {
+    await updateUserSettings(userId, { defaultPostingFrequency });
+  }
 
   return (
     <SettingsShell
@@ -36,7 +46,7 @@ export default async function SettingsPage() {
         }}
         initialSettings={{
           timezone: dbUser.timezone,
-          defaultPostingFrequency: dbUser.defaultPostingFrequency,
+          defaultPostingFrequency,
           notifyQueue: dbUser.notifyQueue,
           notifyPublish: dbUser.notifyPublish,
           notifyWeeklyDigest: dbUser.notifyWeeklyDigest,
