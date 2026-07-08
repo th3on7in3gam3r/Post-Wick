@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Loader2 } from "lucide-react";
+import { GenerateImagesButton } from "@/components/app/generate-images-button";
 import { TextureButton } from "@/components/ui/texture-button";
 import {
   IMAGE_STYLE_OPTIONS,
@@ -13,9 +14,11 @@ import { cn } from "@/lib/utils";
 export function BrandImageStylePicker({
   brandId,
   initialPreset,
+  postCount = 0,
 }: {
   brandId: string;
   initialPreset?: ImageStylePresetId | string | null;
+  postCount?: number;
 }) {
   const [preset, setPreset] = useState<ImageStylePresetId>(
     parseImageStylePreset(initialPreset),
@@ -24,6 +27,7 @@ export function BrandImageStylePicker({
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+  const [showRegenerate, setShowRegenerate] = useState(false);
 
   const selected = IMAGE_STYLE_OPTIONS.find((option) => option.id === preset);
   const isDirty = preset !== savedPreset;
@@ -32,6 +36,7 @@ export function BrandImageStylePicker({
     setSaving(true);
     setError(null);
     setSuccess(null);
+    setShowRegenerate(false);
 
     try {
       const response = await fetch(`/api/brands/${brandId}/image-style`, {
@@ -51,7 +56,12 @@ export function BrandImageStylePicker({
       const nextPreset = parseImageStylePreset(data.imageStylePreset);
       setPreset(nextPreset);
       setSavedPreset(nextPreset);
-      setSuccess("Image style saved. New images will use this look.");
+      setShowRegenerate(true);
+      setSuccess(
+        postCount > 0
+          ? "Image style saved. Regenerate existing images below to apply the new look."
+          : "Image style saved. New images will use this look.",
+      );
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong.");
     } finally {
@@ -80,6 +90,7 @@ export function BrandImageStylePicker({
               onChange={() => {
                 setPreset(option.id);
                 setSuccess(null);
+                setShowRegenerate(false);
               }}
               className="mt-1 h-4 w-4 shrink-0 accent-gold"
             />
@@ -99,7 +110,7 @@ export function BrandImageStylePicker({
         <p className="text-xs text-gray-body">
           {preset === "auto"
             ? "Auto-detect uses your industry and brand keywords to pick a style."
-            : `All new generated images will use the ${selected.label.toLowerCase()} look.`}
+            : `Generated images will use the ${selected.label.toLowerCase()} look.`}
         </p>
       ) : null}
 
@@ -113,6 +124,15 @@ export function BrandImageStylePicker({
         {saving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
         Save image style
       </TextureButton>
+
+      {showRegenerate && postCount > 0 ? (
+        <GenerateImagesButton
+          brandId={brandId}
+          postCount={postCount}
+          regenerate
+          variant="minimal"
+        />
+      ) : null}
 
       {success ? (
         <p className="text-sm text-emerald-700" role="status">

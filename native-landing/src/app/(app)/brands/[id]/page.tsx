@@ -146,21 +146,7 @@ export default async function BrandPage({
             brandId={brand.id}
             generateMax={plan.generateMax}
             connectedPlatforms={connections.map((connection) => connection.platform)}
-            research={
-              research
-                ? {
-                    source: research.source ? String(research.source) : undefined,
-                    industry: research.industry ? String(research.industry) : undefined,
-                    tone: research.tone ? String(research.tone) : undefined,
-                    uniqueValueProposition: research.uniqueValueProposition
-                      ? String(research.uniqueValueProposition)
-                      : undefined,
-                    keyTopics: Array.isArray(research.keyTopics)
-                      ? (research.keyTopics as string[])
-                      : undefined,
-                  }
-                : null
-            }
+            research={research}
           />
 
           <div className="space-y-6">
@@ -171,6 +157,7 @@ export default async function BrandPage({
               <BrandImageStylePicker
                 brandId={brand.id}
                 initialPreset={imageStylePreset}
+                postCount={posts.length}
               />
             </PanelCard>
 

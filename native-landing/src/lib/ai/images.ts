@@ -4,7 +4,7 @@ import { join } from "node:path";
 import { randomUUID } from "node:crypto";
 import { put } from "@vercel/blob";
 import type { buildResearchFromCrawl } from "@/lib/crawl/website";
-import { resolveImageStyle } from "@/lib/ai/image-style-presets";
+import { resolveImageStyle, parseImageStylePreset } from "@/lib/ai/image-style-presets";
 import {
   callProviderWithResilience,
   getCachedImageUrl,
@@ -112,11 +112,13 @@ export function buildImagePrompt(
 ) {
   const topic = research.keyTopics?.[0] ?? research.companyName;
   const isInstagram = platform.toLowerCase() === "instagram";
+  const preset = parseImageStylePreset(research.imageStylePreset);
   const style = resolveImageStyle(research);
   const composition =
     COMPOSITION_VARIANTS[variantIndex % COMPOSITION_VARIANTS.length]!;
 
   return [
+    `Visual style preset: ${preset}.`,
     `${style.medium} for ${research.companyName}, a ${research.industry} brand.`,
     `Concept: ${topic}. Inspired by this post: ${content.slice(0, 200)}.`,
     `Art direction: ${style.aesthetic}.`,

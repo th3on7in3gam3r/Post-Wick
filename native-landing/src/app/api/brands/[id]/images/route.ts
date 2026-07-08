@@ -7,6 +7,7 @@ import { getBrandById, getPostsByBrandId, updatePostImageUrl } from "@/lib/db";
 
 const bodySchema = z.object({
   limit: z.number().int().min(1).max(20).optional(),
+  regenerate: z.boolean().optional(),
 });
 
 export const maxDuration = 300;
@@ -37,7 +38,7 @@ export async function POST(
 
   try {
     const body = await req.json().catch(() => ({}));
-    const { limit = 20 } = bodySchema.parse(body);
+    const { limit = 20, regenerate = false } = bodySchema.parse(body);
 
     const research = brand.researchData
       ? JSON.parse(brand.researchData)
@@ -45,11 +46,13 @@ export async function POST(
           companyName: brand.name,
           industry: "Small business",
           keyTopics: [brand.name],
+          imageStylePreset: "auto",
         };
 
-    const posts = (await getPostsByBrandId(brand.id)).filter((post) =>
-      postNeedsImageGeneration(post.imageUrl),
-    );
+    const allPosts = await getPostsByBrandId(brand.id);
+    const posts = regenerate
+      ? allPosts
+      : allPosts.filter((post) => postNeedsImageGeneration(post.imageUrl));
     const targets = posts.slice(0, limit);
 
     let updated = 0;
@@ -72,7 +75,8 @@ export async function POST(
     return NextResponse.json({
       updated,
       attempted: targets.length,
-      remaining: Math.max(posts.length - updated, 0),
+      remaining: Math.max(posts.length - targets.length, 0),
+      regenerate,
       imageHint: imageGenerationHint({
         configured: true,
         generated: updated,

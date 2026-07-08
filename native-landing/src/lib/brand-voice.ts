@@ -71,3 +71,41 @@ export function mergeBrandVoiceIntoResearch(
     thingsToAvoid: voice.thingsToAvoid.map((item) => item.trim()).filter(Boolean),
   };
 }
+
+export type BrandProfileForm = {
+  tone: string;
+  uniqueValueProposition: string;
+  keyTopics: string[];
+};
+
+export function brandProfileFromResearch(
+  research: BrandResearchRecord,
+): BrandProfileForm {
+  const keyTopics = Array.isArray(research.keyTopics)
+    ? research.keyTopics.map(String).filter(Boolean)
+    : [];
+
+  return {
+    tone: String(research.tone ?? "Professional, approachable, and helpful").trim(),
+    uniqueValueProposition: String(
+      research.uniqueValueProposition ?? research.summary ?? "",
+    ).trim(),
+    keyTopics: keyTopics.length
+      ? keyTopics
+      : ["Your services", "Customer success", "Behind the scenes"],
+  };
+}
+
+export function mergeBrandProfileIntoResearch(
+  research: BrandResearchRecord,
+  profile: BrandProfileForm,
+): BrandResearchRecord {
+  const uniqueValueProposition = profile.uniqueValueProposition.trim();
+  return {
+    ...research,
+    tone: profile.tone.trim(),
+    uniqueValueProposition,
+    keyTopics: profile.keyTopics.map((topic) => topic.trim()).filter(Boolean),
+    summary: uniqueValueProposition || research.summary,
+  };
+}
