@@ -1134,6 +1134,14 @@ export async function getUserByStripeCustomerId(stripeCustomerId: string) {
   return row ? parseUser(row) : null;
 }
 
+export async function getUserByEmail(email: string) {
+  const db = await getDb();
+  const row = await db.query.users.findFirst({
+    where: eq(users.email, email.trim().toLowerCase()),
+  });
+  return row ? parseUser(row) : null;
+}
+
 export async function getOrCreateUser(userId: string, email?: string | null) {
   const existing = await getUserById(userId);
   if (existing) {
@@ -1503,6 +1511,110 @@ export async function getAnalyticsSummary(userId: string): Promise<AnalyticsSumm
       published: stats.published,
     })),
     weeklyPublished,
+  };
+}
+
+export type WeeklyDigestPost = {
+  platform: string;
+  brandName: string;
+  content: string;
+  scheduledAt: string | null;
+  publishedAt: string | null;
+};
+
+export type WeeklyDigestData = {
+  publishedCount: number;
+  scheduledCount: number;
+  pendingCount: number;
+  failedCount: number;
+  published: WeeklyDigestPost[];
+  scheduled: WeeklyDigestPost[];
+};
+
+export async function getUsersForWeeklyDigest() {
+  const db = await getDb();
+  const rows = await db.query.users.findMany({
+    where: eq(users.notifyWeeklyDigest, true),
+  });
+  return rows.map(parseUser);
+}
+
+export async function getUsersForQueueReminders() {
+  const db = await getDb();
+  const rows = await db.query.users.findMany({
+    where: eq(users.notifyQueue, true),
+  });
+  return rows.map(parseUser);
+}
+
+export async function getWeeklyDigestForUser(
+  userId: string,
+): Promise<WeeklyDigestData> {
+  const db = await getDb();
+  const now = nowIso();
+
+  const publishedRows = await db
+    .select({ post: posts, brandName: brands.name })
+    .from(posts)
+    .innerJoin(brands, eq(brands.id, posts.brandId))
+    .where(
+      and(
+        eq(brands.userId, userId),
+        eq(posts.status, "published"),
+        isNotNull(posts.publishedAt),
+        gte(posts.publishedAt, sql`NOW() - INTERVAL '7 days'`),
+      ),
+    )
+    .orderBy(desc(posts.publishedAt));
+
+  const scheduledRows = await db
+    .select({ post: posts, brandName: brands.name })
+    .from(posts)
+    .innerJoin(brands, eq(brands.id, posts.brandId))
+    .where(
+      and(
+        eq(brands.userId, userId),
+        eq(posts.status, "approved"),
+        isNotNull(posts.scheduledAt),
+        gte(posts.scheduledAt, now),
+        lte(posts.scheduledAt, sql`NOW() + INTERVAL '7 days'`),
+      ),
+    )
+    .orderBy(asc(posts.scheduledAt));
+
+  const [pendingRow] = await db
+    .select({ count: count() })
+    .from(posts)
+    .innerJoin(brands, eq(brands.id, posts.brandId))
+    .where(and(eq(brands.userId, userId), eq(posts.status, "pending")));
+
+  const [failedRow] = await db
+    .select({ count: count() })
+    .from(posts)
+    .innerJoin(brands, eq(brands.id, posts.brandId))
+    .where(and(eq(brands.userId, userId), eq(posts.status, "failed")));
+
+  const toDigestPost = (row: {
+    post: typeof posts.$inferSelect;
+    brandName: string;
+  }): WeeklyDigestPost => {
+    const parsed = parsePost(row.post);
+    return {
+      platform: parsed.platform,
+      brandName: row.brandName,
+      content: parsed.content,
+      scheduledAt: parsed.scheduledAt,
+      publishedAt: parsed.publishedAt,
+    };
+  };
+
+  return {
+    publishedCount: publishedRows.length,
+    scheduledCount: scheduledRows.length,
+    pendingCount: pendingRow?.count ?? 0,
+    failedCount: failedRow?.count ?? 0,
+    published: publishedRows.map(toDigestPost),
+    scheduled: scheduledRows.map(toDigestPost),
   };
 }
 

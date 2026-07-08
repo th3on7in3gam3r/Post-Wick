@@ -4,6 +4,7 @@ import { CookieSettingsTrigger } from "@/components/cookie-settings-trigger";
 import { FaqJsonLd } from "@/components/faq-json-ld";
 import { TextureButton } from "@/components/ui/texture-button";
 import { BIBLEFUNLAND_STUDIOS_URL, SITE_TAGLINE } from "@/lib/brand";
+import { GROWTH_STACK, aiCmoAppHref } from "@/lib/growth-stack";
 import { INDUSTRY_FOOTER_LINKS } from "@/lib/industries/verticals";
 import { SITE_FAQS } from "@/lib/faq";
 
@@ -155,6 +156,35 @@ export function Footer() {
                 </li>
               ))}
             </ul>
+          </nav>
+          <nav className="flex flex-col items-center gap-3 text-sm sm:items-start">
+            <p className="text-[0.65rem] font-semibold uppercase tracking-[0.18em] text-gray-label">
+              Growth stack
+            </p>
+            <Link
+              href={GROWTH_STACK.citePilot.href}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-gray-body hover:text-near-black"
+            >
+              CitePilot
+            </Link>
+            <Link
+              href={aiCmoAppHref()}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-gray-body hover:text-near-black"
+            >
+              AI CMO
+            </Link>
+            <Link
+              href={GROWTH_STACK.aegis.href}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-gray-body hover:text-near-black"
+            >
+              Aegis Loop
+            </Link>
           </nav>
           <nav className="flex flex-col items-center gap-3 text-sm sm:items-start">
             <p className="text-[0.65rem] font-semibold uppercase tracking-[0.18em] text-gray-label">

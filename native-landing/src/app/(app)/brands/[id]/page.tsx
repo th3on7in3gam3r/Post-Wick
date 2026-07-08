@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import { AppHeader } from "@/components/app/app-header";
 import { BrandDirectoryToggle } from "@/components/app/brand-directory-toggle";
+import { BrandImageStylePicker } from "@/components/app/brand-image-style-picker";
 import { BrandProfileCard } from "@/components/app/brand-profile-card";
 import { BrandSitePreview } from "@/components/app/brand-site-preview";
 import { GenerateImagesButton } from "@/components/app/generate-images-button";
@@ -27,6 +28,7 @@ import {
 } from "@/lib/db";
 import { getPlanLimits } from "@/lib/plans";
 import { postNeedsImageGeneration } from "@/lib/posts/image-url";
+import { parseImageStylePreset } from "@/lib/ai/image-style-presets";
 import { requireUserId } from "@/lib/server/app-data";
 import { websiteHostname } from "@/lib/website-url";
 
@@ -73,6 +75,7 @@ export default async function BrandPage({
   ).length;
   const assets = await resolveBrandAssets(brand.websiteUrl, research);
   const industry = research?.industry?.trim() || "Business";
+  const imageStylePreset = parseImageStylePreset(research?.imageStylePreset);
 
   return (
     <>
@@ -161,6 +164,16 @@ export default async function BrandPage({
           />
 
           <div className="space-y-6">
+            <PanelCard
+              title="Image style"
+              description="Choose how AI-generated post images look for this brand."
+            >
+              <BrandImageStylePicker
+                brandId={brand.id}
+                initialPreset={imageStylePreset}
+              />
+            </PanelCard>
+
             {brand.crawlStatus === "completed" ? (
               <PanelCard
                 title="Directory listing"

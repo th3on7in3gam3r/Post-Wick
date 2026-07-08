@@ -18,6 +18,7 @@ import {
 } from "@/lib/social/pinterest";
 import { parseXMetadata, publishToX } from "@/lib/social/x";
 import { notifyIntegrationFailureIfNeeded } from "@/lib/integrations/notify-integration-failure";
+import { notifyPublishSuccessIfNeeded } from "@/lib/notifications/publish-confirmation";
 import {
   postHasBrokenImageUrl,
   postNeedsRepair,
@@ -259,15 +260,45 @@ export async function retryFailedPost(
     };
   }
 
-  return attemptPublishClaimedPost(claimed, userId);
+  const result = await attemptPublishClaimedPost(claimed, userId);
+  if (result.status === "published") {
+    void notifyPublishSuccessIfNeeded(userId, [
+      { post: claimed, externalPostId: result.externalPostId },
+    ]).catch((notifyError) => {
+      console.error("[publish-confirmation]", notifyError);
+    });
+  }
+
+  return result;
 }
 
 export async function retryAllFailedPosts(userId: string): Promise<RetryPublishResult[]> {
   const failedPosts = await getPostHistory(userId, "failed", 100);
   const results: RetryPublishResult[] = [];
+  const published: Array<{ post: PostRecord; externalPostId?: string }> = [];
 
   for (const post of failedPosts) {
-    results.push(await retryFailedPost(post.id, userId));
+    const claimed = await claimFailedPostForRetry(post.id, userId);
+    if (!claimed) {
+      results.push({
+        postId: post.id,
+        status: "failed",
+        error: "Post not found or is not in failed status",
+      });
+      continue;
+    }
+
+    const result = await attemptPublishClaimedPost(claimed, userId);
+    results.push(result);
+    if (result.status === "published") {
+      published.push({ post: claimed, externalPostId: result.externalPostId });
+    }
+  }
+
+  if (published.length > 0) {
+    void notifyPublishSuccessIfNeeded(userId, published).catch((notifyError) => {
+      console.error("[publish-confirmation]", notifyError);
+    });
   }
 
   return results;

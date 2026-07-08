@@ -7,6 +7,7 @@ import { Pricing } from "@/components/pricing";
 import { Comparison, ComparisonTable } from "@/components/comparison";
 import { TestimonialsSection } from "@/components/testimonials-section";
 import { FAQ, GraderPromoSection, Guides, CTASection, Footer } from "@/components/sections";
+import { GrowthStackPromo } from "@/components/growth-stack-promo";
 import { createPageMetadata } from "@/lib/metadata";
 import { homepageSoftwareJsonLd } from "@/lib/seo/structured-data";
 
@@ -31,6 +32,7 @@ export default function Home() {
         <TestimonialsSection />
         <ComparisonTable />
         <FAQ />
+        <GrowthStackPromo />
         <Guides />
         <CTASection />
       </main>

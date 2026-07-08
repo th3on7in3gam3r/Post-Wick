@@ -4,6 +4,7 @@ import { join } from "node:path";
 import { randomUUID } from "node:crypto";
 import { put } from "@vercel/blob";
 import type { buildResearchFromCrawl } from "@/lib/crawl/website";
+import { resolveImageStyle } from "@/lib/ai/image-style-presets";
 import {
   callProviderWithResilience,
   getCachedImageUrl,
@@ -12,7 +13,12 @@ import {
   type ImageProviderId,
 } from "@/lib/ai/image-runtime";
 
-type Research = ReturnType<typeof buildResearchFromCrawl>;
+export { IMAGE_STYLE_OPTIONS, parseImageStylePreset } from "@/lib/ai/image-style-presets";
+export type { ImageStylePresetId } from "@/lib/ai/image-style-presets";
+
+type Research = ReturnType<typeof buildResearchFromCrawl> & {
+  imageStylePreset?: string | null;
+};
 
 const DEFAULT_GEMINI_IMAGE_MODEL = "gemini-2.5-flash-image";
 const PROVIDER_ORDER: ImageProviderId[] = ["openai", "gemini", "ideogram"];
@@ -88,23 +94,41 @@ export function getLastImageGenerationProvider() {
 
 export { getImageProviderCircuitHealth };
 
+// Rotating composition directions add variety across a carousel so slides
+// don't all look identical.
+const COMPOSITION_VARIANTS = [
+  "bold central hero subject with generous negative space and clear focal point",
+  "dynamic off-center composition with layered foreground and background depth",
+  "energetic scene with floating decorative elements framing the edges",
+  "clean minimal layout with a single striking illustrated motif",
+  "immersive full-bleed scene with atmospheric depth and rich detail",
+];
+
 export function buildImagePrompt(
   content: string,
   research: Research,
   platform = "linkedin",
+  variantIndex = 0,
 ) {
   const topic = research.keyTopics?.[0] ?? research.companyName;
   const isInstagram = platform.toLowerCase() === "instagram";
+  const style = resolveImageStyle(research);
+  const composition =
+    COMPOSITION_VARIANTS[variantIndex % COMPOSITION_VARIANTS.length]!;
 
   return [
-    `Professional social media graphic for ${research.companyName}.`,
-    `Industry: ${research.industry}.`,
-    `Theme: ${topic}.`,
-    `Inspired by this post: ${content.slice(0, 220)}.`,
+    `${style.medium} for ${research.companyName}, a ${research.industry} brand.`,
+    `Concept: ${topic}. Inspired by this post: ${content.slice(0, 200)}.`,
+    `Art direction: ${style.aesthetic}.`,
+    `Color palette: ${style.palette}.`,
+    `Lighting and mood: ${style.lighting}.`,
+    `Composition: ${composition}.`,
     isInstagram
-      ? "Square 1:1 Instagram feed image, bold visual hook, mobile-first, vibrant but on-brand."
-      : "Clean composition, warm lighting, no text, no logos, no watermarks.",
-    "No text, no logos, no watermarks.",
+      ? "Square 1:1 Instagram feed format, scroll-stopping visual hook, mobile-first framing."
+      : "Balanced landscape-friendly framing, strong focal hierarchy.",
+    "Highly polished, professionally art-directed, cohesive brand look, rich detail and depth, painterly texture and gradients.",
+    "Avoid generic stock photography, avoid clip-art, avoid boring beige desk flatlays, avoid plain flat corporate vectors, avoid low-effort templates.",
+    "No text, no words, no letters, no logos, no watermarks.",
   ].join(" ");
 }
 
@@ -168,11 +192,11 @@ async function generateWithIdeogram(prompt: string) {
     {
       prompt,
       aspect_ratio: "1x1",
-      rendering_speed: "TURBO",
+      rendering_speed: "QUALITY",
       style_type: "GENERAL",
     },
     {
-      timeout: 90_000,
+      timeout: 120_000,
       headers: {
         "Api-Key": process.env.IDEOGRAM_API_KEY!.trim(),
         "Content-Type": "application/json",
@@ -336,7 +360,7 @@ export async function generateImagesForPosts(
 
   if (posts.length > 0) {
     const probeUrl = await generatePostImage(
-      buildImagePrompt(posts[0]!.content, research, platform),
+      buildImagePrompt(posts[0]!.content, research, platform, 0),
     );
     if (!probeUrl && lastImageGenerationError) {
       return posts.map(() => null);
@@ -347,8 +371,13 @@ export async function generateImagesForPosts(
   for (let index = 1; index < posts.length; index += 2) {
     const batch = posts.slice(index, index + 2);
     const batchUrls = await Promise.all(
-      batch.map(async (post) => {
-        const prompt = buildImagePrompt(post.content, research, platform);
+      batch.map(async (post, offset) => {
+        const prompt = buildImagePrompt(
+          post.content,
+          research,
+          platform,
+          index + offset,
+        );
         return generatePostImage(prompt);
       }),
     );

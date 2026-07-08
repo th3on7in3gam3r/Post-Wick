@@ -403,19 +403,21 @@ export function SettingsClient({
           <div className="space-y-4">
             {[
               {
+                key: "notifyWeeklyDigest" as const,
+                title: "Weekly digest",
+                description:
+                  "A Monday email summarizing what published, what's scheduled, and drafts awaiting approval.",
+              },
+              {
                 key: "notifyQueue" as const,
                 title: "Approval queue reminders",
-                description: "When posts are waiting for your review.",
+                description:
+                  "A daily email when drafts are waiting for your review.",
               },
               {
                 key: "notifyPublish" as const,
                 title: "Publish confirmations",
-                description: "When autopilot successfully publishes a post.",
-              },
-              {
-                key: "notifyWeeklyDigest" as const,
-                title: "Weekly digest",
-                description: "A summary of scheduled and published content.",
+                description: "An email when autopilot successfully publishes a post.",
               },
             ].map((item) => (
               <div
@@ -439,8 +441,8 @@ export function SettingsClient({
             ))}
           </div>
           <p className="mt-4 text-xs text-gray-label">
-            Email delivery is rolling out. Your preferences are saved now so notifications
-            work as soon as they launch.
+            All notification emails respect these toggles. Manage them anytime here in
+            Settings → Notifications.
           </p>
         </PanelCard>
       </div>

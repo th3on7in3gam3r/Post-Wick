@@ -55,8 +55,9 @@ export async function POST(
     let updated = 0;
     let lastError: string | null = null;
 
-    for (const post of targets) {
-      const prompt = buildImagePrompt(post.content, research);
+    for (let index = 0; index < targets.length; index += 1) {
+      const post = targets[index]!;
+      const prompt = buildImagePrompt(post.content, research, "linkedin", index);
       const imageUrl = await generatePostImage(prompt);
       if (!imageUrl) continue;
 

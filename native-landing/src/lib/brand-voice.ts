@@ -28,6 +28,7 @@ export type BrandResearchRecord = Record<string, unknown> & {
   thingsToAvoid?: string[];
   summary?: string;
   uniqueValueProposition?: string;
+  imageStylePreset?: string;
 };
 
 export function brandVoiceFromResearch(research: BrandResearchRecord): BrandVoiceForm {

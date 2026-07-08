@@ -53,11 +53,6 @@ export async function notifyIntegrationFailureIfNeeded(input: {
     return { notified: false as const, reason: "not_auth_failure" };
   }
 
-  const dbUser = await getOrCreateUser(input.userId);
-  if (input.context === "publish" && !dbUser.notifyPublish) {
-    return { notified: false as const, reason: "user_opted_out" };
-  }
-
   const connection =
     input.connection ??
     (await getConnectionForBrand(input.brandId, input.platform));

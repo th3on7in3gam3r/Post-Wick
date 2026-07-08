@@ -1,5 +1,6 @@
 import { Comparison, ComparisonTable } from "@/components/comparison";
 import { Pricing } from "@/components/pricing";
+import { StudioBundleCta } from "@/components/studio-bundle-cta";
 import { Navbar } from "@/components/navbar";
 import { FAQ, Footer } from "@/components/sections";
 import { createPageMetadata } from "@/lib/metadata";
@@ -29,6 +30,7 @@ export default function PricingPage() {
           headingTag="h1"
           heading="Affordable AI Social Media Pricing for Local Businesses & Churches"
         />
+        <StudioBundleCta />
         <Comparison />
         <ComparisonTable />
         <FAQ />

@@ -2,12 +2,15 @@ import {
   claimDuePostForPublishing,
   getDuePosts,
   getUserIdsWithDuePosts,
+  type PostRecord,
 } from "@/lib/db";
+import { notifyPublishSuccessIfNeeded } from "@/lib/notifications/publish-confirmation";
 import { attemptPublishClaimedPost } from "@/lib/publish/retry-failed";
 
 export async function processDuePostsForUser(userId: string) {
   const duePosts = await getDuePosts(userId);
   const results: Array<{ postId: string; status: "published" | "failed" }> = [];
+  const published: Array<{ post: PostRecord; externalPostId?: string }> = [];
 
   for (const post of duePosts) {
     const claimed = await claimDuePostForPublishing(post.id, userId);
@@ -17,6 +20,15 @@ export async function processDuePostsForUser(userId: string) {
 
     const result = await attemptPublishClaimedPost(claimed, userId);
     results.push({ postId: result.postId, status: result.status });
+    if (result.status === "published") {
+      published.push({ post: claimed, externalPostId: result.externalPostId });
+    }
+  }
+
+  if (published.length > 0) {
+    void notifyPublishSuccessIfNeeded(userId, published).catch((error) => {
+      console.error("[publish-confirmation]", error);
+    });
   }
 
   return results;
