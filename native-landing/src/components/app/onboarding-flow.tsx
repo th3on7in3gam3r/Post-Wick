@@ -100,6 +100,14 @@ export function OnboardingFlow({
     const value = (targetUrl ?? url).trim();
     if (!value) {
       setError("Enter your website URL to continue.");
+      setStep("error");
+      return;
+    }
+
+    const normalized = normalizeWebsiteUrl(value);
+    if (!normalized) {
+      setError("Enter a valid website URL like https://yourcompany.com");
+      setStep("error");
       return;
     }
 
@@ -116,7 +124,7 @@ export function OnboardingFlow({
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          websiteUrl: value,
+          websiteUrl: normalized,
           name: brandName ?? undefined,
           analyzeOnly: true,
         }),
@@ -130,12 +138,14 @@ export function OnboardingFlow({
       clearPhaseTimers();
 
       if (data.created === false) {
-        setStatusNote("This website was already set up. Opening your brand…");
+        setStatusNote(
+          "This website is already in your account. Opening it now…",
+        );
         setStep("done");
         window.setTimeout(() => {
           router.push(`/brands/${data.brand.id}`);
           router.refresh();
-        }, 1200);
+        }, 1500);
         return;
       }
 
@@ -273,6 +283,8 @@ export function OnboardingFlow({
                 : -1;
 
   const showProgressList = step !== "review" && step !== "welcome";
+  const showUrlForm =
+    !websiteUrl && (step === "idle" || step === "error" || step === "analyzing");
 
   return (
     <div className="mx-auto w-full max-w-xl">
@@ -337,38 +349,52 @@ export function OnboardingFlow({
               </div>
             )}
 
-            {!websiteUrl && step === "idle" ? (
-              <div
+            {showUrlForm ? (
+              <form
                 className={addingAnother ? "space-y-4" : "mt-6 space-y-4"}
+                onSubmit={(event) => {
+                  event.preventDefault();
+                  if (!isBusy) {
+                    void analyzeWebsite();
+                  }
+                }}
               >
+                {error ? (
+                  <p className="text-sm text-red-600" role="alert">
+                    {error}
+                  </p>
+                ) : null}
+
                 <label className="block text-sm font-medium text-near-black">
                   Website URL
                 </label>
                 <input
-                  type="url"
+                  type="text"
+                  inputMode="url"
+                  autoComplete="url"
                   value={url}
                   onChange={(event) => setUrl(event.target.value)}
                   placeholder="https://yourbusiness.com"
                   disabled={isBusy}
                   className="w-full rounded-xl border border-black/[0.1] bg-cream/50 px-4 py-3 text-sm outline-none ring-gold/30 focus:ring-2 disabled:cursor-not-allowed disabled:opacity-60"
-                  onKeyDown={(event) => {
-                    if (event.key === "Enter" && !isBusy) {
-                      event.preventDefault();
-                      void analyzeWebsite();
-                    }
-                  }}
                 />
                 <TextureButton
-                  type="button"
+                  type="submit"
                   variant="primary"
                   size="lg"
-                  onClick={() => void analyzeWebsite()}
-                  disabled={isBusy}
+                  disabled={isBusy || !url.trim()}
                   className="w-full"
                 >
-                  Analyze my website
+                  {isAnalyzing ? (
+                    <>
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      Analyzing your website…
+                    </>
+                  ) : (
+                    "Analyze my website"
+                  )}
                 </TextureButton>
-              </div>
+              </form>
             ) : null}
 
             {isAnalyzing ? (
@@ -424,6 +450,12 @@ export function OnboardingFlow({
                   ((item.id === "crawling" && workingPhase === 0) ||
                     (item.id === "research" && workingPhase === 1))) ||
                 (step === "generating" && item.id === "posts");
+              const spinning =
+                (step === "analyzing" &&
+                  (item.id === "crawling" || item.id === "research") &&
+                  ((item.id === "crawling" && workingPhase === 0) ||
+                    (item.id === "research" && workingPhase === 1))) ||
+                (step === "generating" && item.id === "posts");
               return (
                 <li
                   key={item.id}
@@ -436,7 +468,7 @@ export function OnboardingFlow({
                 >
                   {complete ? (
                     <CheckCircle2 className="h-4 w-4 shrink-0 text-gold" />
-                  ) : active ? (
+                  ) : spinning ? (
                     <Loader2 className="h-4 w-4 shrink-0 animate-spin text-gold" />
                   ) : (
                     <Sparkles className="h-4 w-4 shrink-0 text-gray-label" />
@@ -458,11 +490,16 @@ export function OnboardingFlow({
           </p>
         ) : null}
 
-        {statusNote && step === "done" ? (
-          <p className="mt-2 text-xs text-gray-label">{statusNote}</p>
+        {statusNote && (step === "done" || step === "analyzing") ? (
+          <div
+            className="mt-4 rounded-xl border border-gold/25 bg-cream/70 px-4 py-3 text-sm text-gray-body"
+            role="status"
+          >
+            {statusNote}
+          </div>
         ) : null}
 
-        {error ? (
+        {error && step === "review" ? (
           <div className="mt-6 space-y-3">
             <p className="text-sm text-red-600" role="alert">
               {error}
@@ -471,16 +508,9 @@ export function OnboardingFlow({
               type="button"
               variant="secondary"
               size="default"
-              onClick={() => {
-                if (step === "review") {
-                  setError(null);
-                  return;
-                }
-                setStep("idle");
-                setError(null);
-              }}
+              onClick={() => setError(null)}
             >
-              {step === "review" ? "Dismiss" : "Try again"}
+              Dismiss
             </TextureButton>
           </div>
         ) : null}
