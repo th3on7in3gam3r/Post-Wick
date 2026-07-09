@@ -15,8 +15,8 @@ export function StudioBundleCta() {
         </h2>
         <p className="body-copy mx-auto mt-3 max-w-xl text-gray-body">
           Subscribe to the <strong>Social Stack</strong> or full <strong>Studio Bundle</strong> through
-          AI CMO — one Stripe bill, Kerygma Pro included. Already on Kerygma? Link the same email in
-          AI CMO Settings → Studio after checkout.
+          Cadence — one Stripe bill, Kerygma Pro included. Already on Kerygma? Link the same email in
+          Cadence Settings → Studio after checkout.
         </p>
         <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
           <Link

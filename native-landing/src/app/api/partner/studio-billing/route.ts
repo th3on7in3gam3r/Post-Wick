@@ -34,7 +34,7 @@ export async function POST(req: Request) {
 
   if (!userId) {
     return NextResponse.json(
-      { error: "No Kerygma user — sign up with the same email or link in AI CMO Studio settings" },
+      { error: "No Kerygma user — sign up with the same email or link in Cadence Studio settings" },
       { status: 404 },
     );
   }

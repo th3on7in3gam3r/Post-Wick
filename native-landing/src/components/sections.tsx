@@ -190,7 +190,7 @@ export function Footer() {
               rel="noopener noreferrer"
               className="text-gray-body hover:text-near-black"
             >
-              AI CMO
+              Cadence
             </Link>
             <Link
               href={GROWTH_STACK.aegis.href}

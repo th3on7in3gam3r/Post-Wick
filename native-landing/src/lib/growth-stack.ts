@@ -12,7 +12,7 @@ export const GROWTH_STACK = {
     href: "https://getcitepilot.com",
   },
   aiCmo: {
-    name: "AI CMO",
+    name: "Cadence",
     tagline: "Strategy, SEO audits, and campaign workspace",
   },
   aegis: {
@@ -27,15 +27,20 @@ export const GROWTH_STACK = {
   },
 } as const;
 
-/** Set NEXT_PUBLIC_AI_CMO_APP_URL in production (e.g. https://cmo.yourdomain.com/app). */
+/** Set NEXT_PUBLIC_AI_CMO_APP_URL in production (e.g. https://growth.biblefunland.com/app). */
 export function aiCmoAppHref(): string {
-  return process.env.NEXT_PUBLIC_AI_CMO_APP_URL ?? "http://localhost:3000/app";
+  return (
+    process.env.NEXT_PUBLIC_AI_CMO_APP_URL ?? "https://growth.biblefunland.com/app"
+  );
 }
 
 export type StudioBundleId = "growth" | "social" | "devsec" | "studio";
 
 export function aiCmoPublicOrigin(): string {
-  return aiCmoAppHref().replace(/\/app\/?$/, "").replace(/\/+$/, "") || "http://localhost:3000";
+  return (
+    aiCmoAppHref().replace(/\/app\/?$/, "").replace(/\/+$/, "") ||
+    "https://growth.biblefunland.com"
+  );
 }
 
 export function aiCmoStudioBillingUrl(bundle?: StudioBundleId): string {
