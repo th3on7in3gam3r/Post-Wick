@@ -20,6 +20,7 @@ import { decryptOptional, encryptOptional } from "@/lib/crypto";
 import { WeeklyScheduleLimitError } from "@/lib/usage/schedule-limit";
 import { getDb } from "./client";
 import { brands, connections, metaOauthPending, posts, users, agencies, affiliateReferrals } from "./schema";
+import { emitStudioOpsEvent } from "@/lib/studio-ops";
 
 export type BrandRecord = {
   id: string;
@@ -328,7 +329,19 @@ export async function createBrand(input: {
     createdAt: now,
     updatedAt: now,
   });
-  return (await getBrandById(input.id, input.userId))!;
+  const brand = (await getBrandById(input.id, input.userId))!;
+  emitStudioOpsEvent({
+    product: "kerygma",
+    event: "brand.created",
+    email: user.email,
+    externalUserId: input.userId,
+    metadata: {
+      brandId: input.id,
+      websiteUrl: input.websiteUrl,
+      name: input.name,
+    },
+  });
+  return brand;
 }
 
 export async function updateBrand(
@@ -1201,6 +1214,14 @@ export async function getOrCreateUser(userId: string, email?: string | null) {
     updatedAt: now,
   });
 
+  emitStudioOpsEvent({
+    product: "kerygma",
+    event: "user.signup",
+    email: email ?? null,
+    externalUserId: userId,
+    metadata: { source: "clerk" },
+  });
+
   return (await getUserById(userId))!;
 }
 
@@ -1239,6 +1260,7 @@ export async function updateUserSubscription(
   const db = await getDb();
   const now = nowIso();
   const existing = await getUserById(userId);
+  const priorTier = existing?.subscriptionTier ?? "free";
 
   await db
     .insert(users)
@@ -1259,7 +1281,22 @@ export async function updateUserSubscription(
       },
     });
 
-  return (await getUserById(userId))!;
+  const updated = (await getUserById(userId))!;
+  if (
+    updated &&
+    priorTier === "free" &&
+    (data.subscriptionTier === "pro" || data.subscriptionTier === "max")
+  ) {
+    emitStudioOpsEvent({
+      product: "kerygma",
+      event: "subscription.upgraded",
+      email: updated.email,
+      externalUserId: userId,
+      metadata: { from: priorTier, to: data.subscriptionTier },
+    });
+  }
+
+  return updated;
 }
 
 export async function updateUserSettings(

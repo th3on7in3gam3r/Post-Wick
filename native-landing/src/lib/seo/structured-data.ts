@@ -10,6 +10,22 @@ export function pricingProductsJsonLd() {
     "@graph": [
       {
         "@type": "Product",
+        name: `${SITE_NAME} Free`,
+        description: `Free AI social media plan — up to ${PLAN_LIMITS.free.generateMax} posts per batch, ${PLAN_LIMITS.free.postsPerWeek} posts per week on autopilot, no credit card required.`,
+        brand: {
+          "@type": "Brand",
+          name: SITE_NAME,
+        },
+        offers: {
+          "@type": "Offer",
+          url: `${base}/guides/free-plan`,
+          priceCurrency: "USD",
+          price: "0",
+          availability: "https://schema.org/InStock",
+        },
+      },
+      {
+        "@type": "Product",
         name: `${SITE_NAME} Pro`,
         description: `AI social media automation Pro plan — up to ${PLAN_LIMITS.pro.generateMax} posts per generation batch with approval workflow and multi-channel publishing.`,
         brand: {
@@ -63,7 +79,7 @@ export function homepageSoftwareJsonLd() {
         name: "Free",
         price: "0",
         priceCurrency: "USD",
-        url: `${base}/sign-up`,
+        url: `${base}/guides/free-plan`,
       },
       {
         "@type": "Offer",

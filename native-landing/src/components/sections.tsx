@@ -5,6 +5,7 @@ import { FaqJsonLd } from "@/components/faq-json-ld";
 import { TextureButton } from "@/components/ui/texture-button";
 import { BIBLEFUNLAND_STUDIOS_URL, SITE_TAGLINE } from "@/lib/brand";
 import { GROWTH_STACK, aiCmoAppHref } from "@/lib/growth-stack";
+import { GUIDE_ARTICLES } from "@/lib/guides";
 import { INDUSTRY_FOOTER_LINKS } from "@/lib/industries/verticals";
 import { SITE_FAQS } from "@/lib/faq";
 
@@ -40,21 +41,35 @@ export function FAQ() {
 export function Guides() {
   return (
     <section className="bg-cream px-10 py-24">
-      <div className="mx-auto max-w-[720px] text-center">
+      <div className="mx-auto max-w-[900px] text-center">
         <h2 className="font-playfair text-[clamp(1.75rem,3vw,2.5rem)] italic text-near-black">
           Guides &amp; insights
         </h2>
         <p className="body-copy mt-3">
-          Practical tips on growing your business with consistent social media —
-          articles coming soon.
+          Clear answers to buyer questions — including pricing, workflows, and who
+          Kerygma Social is built for.
         </p>
-        <p className="mt-8 text-sm font-medium text-gray-label">
-          Check back for launch updates, or{" "}
-          <Link href="/contact" className="text-gold hover:opacity-80">
-            get in touch
-          </Link>{" "}
-          if you&apos;d like early access.
-        </p>
+        <ul className="mt-10 grid gap-5 text-left sm:grid-cols-2">
+          {GUIDE_ARTICLES.map((article) => (
+            <li key={article.slug}>
+              <Link
+                href={`/guides/${article.slug}`}
+                className="group flex h-full flex-col rounded-2xl border border-black/[0.06] bg-white p-6 shadow-card transition hover:border-gold/30"
+              >
+                <h3 className="font-playfair text-lg italic text-near-black group-hover:text-gold">
+                  {article.title}
+                </h3>
+                <p className="body-copy mt-2 flex-1 text-sm">{article.summary}</p>
+                <span className="mt-4 text-sm font-medium text-gold">Read guide →</span>
+              </Link>
+            </li>
+          ))}
+        </ul>
+        <div className="mt-8">
+          <TextureButton asChild variant="minimal" size="sm">
+            <Link href="/guides">View all guides</Link>
+          </TextureButton>
+        </div>
       </div>
     </section>
   );
@@ -192,6 +207,18 @@ export function Footer() {
             </p>
             <Link href="/tools/grading" className="text-gray-body hover:text-near-black">
               Social grader
+            </Link>
+            <Link href="/guides/free-plan" className="text-gray-body hover:text-near-black">
+              Free plan
+            </Link>
+            <Link
+              href="/guides/10-ai-generated-posts-per-month"
+              className="text-gray-body hover:text-near-black"
+            >
+              10 posts/month
+            </Link>
+            <Link href="/guides" className="text-gray-body hover:text-near-black">
+              Guides
             </Link>
             <Link href="/directory" className="text-gray-body hover:text-near-black">
               Business directory

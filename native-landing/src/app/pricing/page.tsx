@@ -7,7 +7,7 @@ import { createPageMetadata } from "@/lib/metadata";
 import { pricingProductsJsonLd } from "@/lib/seo/structured-data";
 
 const description =
-  "Simple pricing for AI-generated social content. Pro and Max plans with monthly or yearly billing.";
+  "Simple pricing for AI-generated social content. Start free with no credit card, then upgrade to Pro or Max for higher volume.";
 
 export const metadata = createPageMetadata({
   title: "Pricing",

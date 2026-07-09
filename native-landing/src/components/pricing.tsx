@@ -47,8 +47,14 @@ export function Pricing({
               {heading}
             </HeadingTag>
             <p className="body-copy mt-3 max-w-xl text-[#EDE8F5]">
-              Pick the batch size that matches your posting rhythm. Free includes{" "}
-              {PLAN_LIMITS.free.generateMax} posts to try the workflow.
+              Pick the batch size that matches your posting rhythm.{" "}
+              <Link
+                href="/guides/free-plan"
+                className="font-medium text-white underline decoration-white/40 underline-offset-2 hover:decoration-white"
+              >
+                Kerygma Social&apos;s free plan
+              </Link>{" "}
+              includes {PLAN_LIMITS.free.generateMax} posts to try the workflow — no credit card.
             </p>
 
             <div className="mt-6 inline-flex gap-1 rounded-full bg-white/90 p-1 text-sm shadow-card backdrop-blur-sm">
@@ -143,6 +149,32 @@ export function Pricing({
         </div>
 
         <div className="mt-10 rounded-2xl border border-black/[0.08] bg-white/80 p-8 shadow-card">
+          <div className="flex flex-col items-start justify-between gap-4 md:flex-row md:items-center">
+            <div>
+              <p className="text-[0.7rem] font-semibold uppercase tracking-[0.15em] text-gold">
+                Free plan
+              </p>
+              <h3 className="mt-1 font-playfair text-xl italic text-near-black">
+                Start at $0 — no credit card
+              </h3>
+              <p className="mt-2 text-sm text-gray-body">
+                Up to {PLAN_LIMITS.free.generateMax} posts per batch and{" "}
+                {PLAN_LIMITS.free.postsPerWeek} posts/week on autopilot (~
+                {PLAN_LIMITS.free.postsPerWeek * 4}/month).
+              </p>
+            </div>
+            <div className="flex flex-col gap-2 sm:flex-row">
+              <TextureButton asChild variant="secondary" size="default" className="shrink-0">
+                <Link href="/guides/free-plan">Free plan guide →</Link>
+              </TextureButton>
+              <TextureButton asChild variant="minimal" size="default" className="shrink-0">
+                <Link href="/guides/10-ai-generated-posts-per-month">10 posts/month →</Link>
+              </TextureButton>
+            </div>
+          </div>
+        </div>
+
+        <div className="mt-6 rounded-2xl border border-black/[0.08] bg-white/80 p-8 shadow-card">
           <p className="text-center text-sm text-gray-body">
             Live publishing is available on the channels marked active. Others are on the roadmap.
           </p>

@@ -1,6 +1,7 @@
 import type { MetadataRoute } from "next";
 import { siteUrl } from "@/lib/brand";
 import { getPublicDirectoryBrands } from "@/lib/db";
+import { GUIDE_SLUGS } from "@/lib/guides";
 import { INDUSTRY_SLUGS } from "@/lib/industries/verticals";
 
 const PUBLIC_PAGES: Array<{
@@ -12,8 +13,11 @@ const PUBLIC_PAGES: Array<{
   { path: "/pricing", changeFrequency: "weekly", priority: 0.9 },
   { path: "/about", changeFrequency: "monthly", priority: 0.7 },
   { path: "/contact", changeFrequency: "monthly", priority: 0.7 },
+  { path: "/get-started", changeFrequency: "monthly", priority: 0.8 },
+  { path: "/guides", changeFrequency: "weekly", priority: 0.85 },
   { path: "/tools/grading", changeFrequency: "weekly", priority: 0.8 },
   { path: "/directory", changeFrequency: "weekly", priority: 0.8 },
+  { path: "/agency", changeFrequency: "monthly", priority: 0.7 },
   { path: "/agency/register", changeFrequency: "monthly", priority: 0.7 },
   { path: "/sign-up", changeFrequency: "monthly", priority: 0.6 },
   { path: "/privacy", changeFrequency: "yearly", priority: 0.3 },
@@ -61,7 +65,14 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 0.75,
   }));
 
+  const guideEntries: MetadataRoute.Sitemap = GUIDE_SLUGS.map((slug) => ({
+    url: `${base}/guides/${slug}`,
+    lastModified,
+    changeFrequency: "weekly",
+    priority: 0.85,
+  }));
+
   const directoryEntries = await directoryListingEntries(base);
 
-  return [...staticEntries, ...industryEntries, ...directoryEntries];
+  return [...staticEntries, ...industryEntries, ...guideEntries, ...directoryEntries];
 }

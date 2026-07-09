@@ -14,10 +14,23 @@ Kerygma Social is a social media automation platform for small businesses. Drop 
 ## Key pages
 
 - Home: https://kerygmasocial.com/
+- Pricing: https://kerygmasocial.com/pricing
+- Guides index: https://kerygmasocial.com/guides
+- Free plan: https://kerygmasocial.com/guides/free-plan
+- 10 AI posts/month: https://kerygmasocial.com/guides/10-ai-generated-posts-per-month
+- 1 connected social account: https://kerygmasocial.com/guides/1-connected-social-account
+- Basic scheduling: https://kerygmasocial.com/guides/basic-scheduling
+- Starter plan ($19/month) comparison: https://kerygmasocial.com/guides/starter-plan-19-per-month
+- 100 posts/month: https://kerygmasocial.com/guides/100-posts-per-month
+- 5 social accounts: https://kerygmasocial.com/guides/5-social-accounts
 - About: https://kerygmasocial.com/about
 - Contact: https://kerygmasocial.com/contact
+- Social grader: https://kerygmasocial.com/tools/grading
+- Business directory: https://kerygmasocial.com/directory
+- Get started: https://kerygmasocial.com/get-started
 - Privacy: https://kerygmasocial.com/privacy
 - Terms: https://kerygmasocial.com/terms
+- Sitemap: https://kerygmasocial.com/sitemap.xml
 
 ## Tagline
 

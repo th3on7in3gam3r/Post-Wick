@@ -56,3 +56,8 @@ export function clampPostingFrequencyForTier(
   }
   return max;
 }
+
+/** Conservative ~4-week month estimate for autopilot volume copy. */
+export function estimatedMonthlyAutopilotPosts(tier: SubscriptionTier) {
+  return getPlanLimits(tier).postsPerWeek * 4;
+}
