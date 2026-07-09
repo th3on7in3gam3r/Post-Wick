@@ -1,19 +1,24 @@
 import Link from "next/link";
+import {
+  GuideHeroPanel,
+  guideHeroLeadClassName,
+  guideHeroTitleClassName,
+} from "@/components/guides/guide-hero-panel";
 import { TextureButton } from "@/components/ui/texture-button";
 import type { IndustryVertical } from "@/lib/industries/verticals";
 
 export function IndustryLandingTemplate({ vertical }: { vertical: IndustryVertical }) {
   return (
     <article className="mx-auto max-w-[760px]">
-      <header className="text-center">
-        <span className="inline-block rounded-full bg-white px-4 py-1.5 text-sm font-medium text-near-black shadow-sm">
+      <GuideHeroPanel>
+        <span className="inline-block rounded-full bg-white/95 px-4 py-1.5 text-sm font-medium text-near-black shadow-sm">
           Solutions by industry
         </span>
-        <h1 className="mt-6 font-playfair text-[clamp(2rem,4vw,3rem)] italic leading-tight text-near-black">
+        <h1 className={`mt-6 ${guideHeroTitleClassName}`}>
           Social Media Automation for {vertical.title}
         </h1>
-        <p className="body-copy mx-auto mt-4 max-w-[600px] text-[1.05rem]">{vertical.intro}</p>
-      </header>
+        <p className={`${guideHeroLeadClassName} max-w-[600px]`}>{vertical.intro}</p>
+      </GuideHeroPanel>
 
       <section className="mt-12 space-y-5 rounded-3xl border border-black/[0.06] bg-white p-8 shadow-card md:p-10">
         {vertical.paragraphs.map((paragraph) => (

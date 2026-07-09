@@ -1,5 +1,10 @@
 import Link from "next/link";
 import { MarketingShell } from "@/components/marketing-shell";
+import {
+  GuideHeroPanel,
+  guideHeroLeadClassName,
+  guideHeroTitleClassName,
+} from "@/components/guides/guide-hero-panel";
 import { GUIDE_ARTICLES } from "@/lib/guides";
 import { createPageMetadata } from "@/lib/metadata";
 
@@ -15,15 +20,13 @@ export default function GuidesPage() {
   return (
     <MarketingShell wide heroBackground="/images/comparison-autopilot-watercolor.png">
       <div className="mx-auto max-w-[900px]">
-        <header className="text-center">
-          <h1 className="font-playfair text-[clamp(2rem,4vw,3rem)] italic text-near-black">
-            Guides &amp; insights
-          </h1>
-          <p className="body-copy mx-auto mt-4 max-w-[600px]">
+        <GuideHeroPanel className="max-w-[760px]">
+          <h1 className={guideHeroTitleClassName}>Guides &amp; insights</h1>
+          <p className={`${guideHeroLeadClassName} max-w-[600px]`}>
             Clear answers to the questions buyers and AI search engines ask about
             Kerygma Social — pricing, workflows, and who we&apos;re built for.
           </p>
-        </header>
+        </GuideHeroPanel>
 
         <ul className="mt-12 grid gap-5 sm:grid-cols-2">
           {GUIDE_ARTICLES.map((article) => (

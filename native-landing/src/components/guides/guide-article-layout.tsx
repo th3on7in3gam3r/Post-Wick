@@ -1,31 +1,34 @@
 import Link from "next/link";
 import { TextureButton } from "@/components/ui/texture-button";
+import {
+  GuideHeroPanel,
+  guideHeroLeadClassName,
+  guideHeroMetaClassName,
+  guideHeroTitleClassName,
+} from "@/components/guides/guide-hero-panel";
 import type { GuideArticle } from "@/lib/guides/types";
 
 export function GuideArticleLayout({ article }: { article: GuideArticle }) {
   return (
     <article className="mx-auto max-w-[760px]">
-      <header className="text-center">
+      <GuideHeroPanel>
         <Link
           href="/guides"
-          className="inline-block rounded-full bg-white px-4 py-1.5 text-sm font-medium text-near-black shadow-sm transition hover:bg-cream"
+          className="inline-block rounded-full bg-white/95 px-4 py-1.5 text-sm font-medium text-near-black shadow-sm transition hover:bg-white"
         >
           Guides &amp; insights
         </Link>
-        <h1 className="mt-6 font-playfair text-[clamp(2rem,4vw,3rem)] italic leading-tight text-near-black">
-          {article.title}
-        </h1>
-        <p className="body-copy mx-auto mt-4 max-w-[640px] text-[1.05rem] font-medium text-near-black">
-          {article.answerParagraph}
-        </p>
-        <p className="mt-3 text-sm text-gray-label">
-          Updated {new Date(article.publishedAt).toLocaleDateString(undefined, {
+        <h1 className={`mt-6 ${guideHeroTitleClassName}`}>{article.title}</h1>
+        <p className={guideHeroLeadClassName}>{article.answerParagraph}</p>
+        <p className={guideHeroMetaClassName}>
+          Updated{" "}
+          {new Date(article.publishedAt).toLocaleDateString(undefined, {
             month: "long",
             day: "numeric",
             year: "numeric",
           })}
         </p>
-      </header>
+      </GuideHeroPanel>
 
       <section className="mt-12 space-y-10 rounded-3xl border border-black/[0.06] bg-white p-8 shadow-card md:p-10">
         {article.sections.map((section) => (
@@ -70,7 +73,7 @@ export function GuideArticleLayout({ article }: { article: GuideArticle }) {
 
         <div>
           <h2 className="font-playfair text-[clamp(1.35rem,2.5vw,1.75rem)] italic text-near-black">
-            Free Plan FAQ
+            {article.title} FAQ
           </h2>
           <div className="mt-5 space-y-4">
             {article.faqs.map((item) => (
