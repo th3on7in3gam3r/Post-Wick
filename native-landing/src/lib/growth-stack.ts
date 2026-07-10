@@ -18,7 +18,7 @@ export const GROWTH_STACK = {
   aegis: {
     name: "Aegis Loop",
     tagline: "Find vulnerabilities before you ship",
-    href: "https://aegis-loop.onrender.com",
+    href: "https://aegis-loop.com",
   },
   kerygma: {
     name: "Kerygma Social",
