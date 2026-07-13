@@ -4,7 +4,7 @@ import { CookieSettingsTrigger } from "@/components/cookie-settings-trigger";
 import { FaqJsonLd } from "@/components/faq-json-ld";
 import { TextureButton } from "@/components/ui/texture-button";
 import { BIBLEFUNLAND_STUDIOS_URL, SITE_TAGLINE } from "@/lib/brand";
-import { GROWTH_STACK, aiCmoAppHref } from "@/lib/growth-stack";
+import { GROWTH_STACK } from "@/lib/growth-stack";
 import { GUIDE_ARTICLES } from "@/lib/guides";
 import { INDUSTRY_FOOTER_LINKS } from "@/lib/industries/verticals";
 import { SITE_FAQS } from "@/lib/faq";
@@ -185,7 +185,7 @@ export function Footer() {
               CitePilot
             </Link>
             <Link
-              href={aiCmoAppHref()}
+              href={GROWTH_STACK.aiCmo.href}
               target="_blank"
               rel="noopener noreferrer"
               className="text-gray-body hover:text-near-black"

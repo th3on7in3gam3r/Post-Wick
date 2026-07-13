@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { BIBLEFUNLAND_STUDIOS_URL, GROWTH_STACK, aiCmoAppHref } from "@/lib/growth-stack";
+import { BIBLEFUNLAND_STUDIOS_URL, GROWTH_STACK } from "@/lib/growth-stack";
 import { TextureButton } from "@/components/ui/texture-button";
 
 const SISTERS = [
@@ -45,7 +45,7 @@ export function GrowthStackPromo() {
 
           {SISTERS.map(({ key, accent }) => {
             const product = GROWTH_STACK[key];
-            const href = "href" in product ? product.href : aiCmoAppHref();
+            const href = product.href;
             return (
               <Link
                 key={key}

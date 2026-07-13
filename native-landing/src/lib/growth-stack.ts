@@ -5,6 +5,8 @@
 
 export const BIBLEFUNLAND_STUDIOS_URL = "https://www.biblefunlandstudios.com/";
 
+export const CADENCE_URL = "https://cadence.biblefunland.com";
+
 export const GROWTH_STACK = {
   citePilot: {
     name: "CitePilot",
@@ -14,6 +16,7 @@ export const GROWTH_STACK = {
   aiCmo: {
     name: "Cadence",
     tagline: "Strategy, SEO audits, and campaign workspace",
+    href: CADENCE_URL,
   },
   aegis: {
     name: "Aegis Loop",
@@ -27,19 +30,16 @@ export const GROWTH_STACK = {
   },
 } as const;
 
-/** Set NEXT_PUBLIC_AI_CMO_APP_URL in production (e.g. https://growth.biblefunland.com/app). */
+/** Set NEXT_PUBLIC_AI_CMO_APP_URL in production (e.g. https://cadence.biblefunland.com/app). */
 export function aiCmoAppHref(): string {
-  return (
-    process.env.NEXT_PUBLIC_AI_CMO_APP_URL ?? "https://growth.biblefunland.com/app"
-  );
+  return process.env.NEXT_PUBLIC_AI_CMO_APP_URL ?? `${CADENCE_URL}/app`;
 }
 
 export type StudioBundleId = "growth" | "social" | "devsec" | "studio";
 
 export function aiCmoPublicOrigin(): string {
   return (
-    aiCmoAppHref().replace(/\/app\/?$/, "").replace(/\/+$/, "") ||
-    "https://growth.biblefunland.com"
+    aiCmoAppHref().replace(/\/app\/?$/, "").replace(/\/+$/, "") || CADENCE_URL
   );
 }
 
