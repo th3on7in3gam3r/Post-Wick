@@ -1,11 +1,11 @@
 import { Resend } from "resend";
-import { siteUrl } from "@/lib/brand";
 import {
   escapeHtml,
   mailFromAddress,
   platformLabel,
   truncateText,
 } from "@/lib/email/mail";
+import { siteUrlWithUtm } from "@/lib/utm";
 
 export type PublishedPostSummary = {
   platform: string;
@@ -23,7 +23,11 @@ export function buildPublishConfirmationEmail(input: PublishConfirmationEmailInp
   const count = input.posts.length;
   const greetingName = input.displayName?.trim();
   const greeting = greetingName ? `Hi ${greetingName},` : "Hi there,";
-  const base = siteUrl();
+  const historyUrl = siteUrlWithUtm("/history", {
+    source: "kerygma",
+    campaign: "publish-confirmation",
+    medium: "email",
+  });
 
   const subject =
     count === 1
@@ -44,7 +48,7 @@ export function buildPublishConfirmationEmail(input: PublishConfirmationEmailInp
     "",
     ...textLines,
     "",
-    `View history: ${base}/history`,
+    `View history: ${historyUrl}`,
     "",
     "Manage email preferences in Settings → Notifications.",
   ].join("\n");
@@ -70,7 +74,7 @@ export function buildPublishConfirmationEmail(input: PublishConfirmationEmailInp
         : `Autopilot just published <strong>${count}</strong> posts for you:`
     }</p>
     <table style="width:100%;border-collapse:collapse;margin:16px 0;">${rows}</table>
-    <p style="margin:20px 0;"><a href="${escapeHtml(`${base}/history`)}" style="background:#c9a24b;color:#fff;padding:10px 18px;border-radius:8px;text-decoration:none;font-size:14px;">View history</a></p>
+    <p style="margin:20px 0;"><a href="${escapeHtml(historyUrl)}" style="background:#c9a24b;color:#fff;padding:10px 18px;border-radius:8px;text-decoration:none;font-size:14px;">View history</a></p>
     <hr style="border:none;border-top:1px solid #eee;margin:24px 0;" />
     <p style="font-size:12px;color:#8a8a8a;">You're receiving this because publish confirmations are on. Manage them in Settings → Notifications.</p>
   </div>`;

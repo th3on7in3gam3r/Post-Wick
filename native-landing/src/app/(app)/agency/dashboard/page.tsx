@@ -6,8 +6,7 @@ import {
   getAgencyDashboardStats,
   getAgencyReferrals,
 } from "@/lib/db";
-import { agencyReferralSignupPath } from "@/lib/agency/referral";
-import { siteUrl } from "@/lib/brand";
+import { agencyReferralSignupUrl } from "@/lib/agency/referral";
 import { requireUserId } from "@/lib/server/app-data";
 
 export default async function AgencyDashboardPage() {
@@ -23,7 +22,7 @@ export default async function AgencyDashboardPage() {
     getAgencyReferrals(agency.id),
   ]);
 
-  const referralUrl = `${siteUrl()}${agencyReferralSignupPath(agency.referralCode)}`;
+  const referralUrl = agencyReferralSignupUrl(agency.referralCode);
 
   return (
     <>

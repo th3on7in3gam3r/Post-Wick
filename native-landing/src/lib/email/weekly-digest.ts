@@ -1,6 +1,6 @@
 import { Resend } from "resend";
-import { siteUrl } from "@/lib/brand";
 import type { WeeklyDigestData, WeeklyDigestPost } from "@/lib/db";
+import { siteUrlWithUtm } from "@/lib/utm";
 
 function mailFromAddress() {
   return (
@@ -69,7 +69,24 @@ export type WeeklyDigestEmailInput = {
 
 export function buildWeeklyDigestEmail(input: WeeklyDigestEmailInput) {
   const { data } = input;
-  const base = siteUrl();
+  const queueUrl = siteUrlWithUtm("/queue", {
+    source: "kerygma",
+    campaign: "weekly-digest",
+    medium: "email",
+    content: "queue-cta",
+  });
+  const dashboardUrl = siteUrlWithUtm("/dashboard", {
+    source: "kerygma",
+    campaign: "weekly-digest",
+    medium: "email",
+    content: "dashboard-cta",
+  });
+  const historyUrl = siteUrlWithUtm("/history", {
+    source: "kerygma",
+    campaign: "weekly-digest",
+    medium: "email",
+    content: "history-cta",
+  });
   const greetingName = input.displayName?.trim();
   const greeting = greetingName ? `Hi ${greetingName},` : "Hi there,";
 
@@ -109,13 +126,13 @@ export function buildWeeklyDigestEmail(input: WeeklyDigestEmailInput) {
   if (data.pendingCount > 0) {
     textParts.push(
       "",
-      `You have ${data.pendingCount} draft${data.pendingCount === 1 ? "" : "s"} waiting for approval: ${base}/queue`,
+      `You have ${data.pendingCount} draft${data.pendingCount === 1 ? "" : "s"} waiting for approval: ${queueUrl}`,
     );
   }
 
   textParts.push(
     "",
-    `Open your dashboard: ${base}/dashboard`,
+    `Open your dashboard: ${dashboardUrl}`,
     "",
     "Manage email preferences anytime in Settings → Notifications.",
     "To stop the weekly digest, turn it off there.",
@@ -139,12 +156,12 @@ export function buildWeeklyDigestEmail(input: WeeklyDigestEmailInput) {
 
   const pendingHtml =
     data.pendingCount > 0
-      ? `<p style="margin:20px 0;"><a href="${escapeHtml(`${base}/queue`)}" style="background:#c9a24b;color:#fff;padding:10px 18px;border-radius:8px;text-decoration:none;font-size:14px;">Review ${data.pendingCount} draft${data.pendingCount === 1 ? "" : "s"}</a></p>`
+      ? `<p style="margin:20px 0;"><a href="${escapeHtml(queueUrl)}" style="background:#c9a24b;color:#fff;padding:10px 18px;border-radius:8px;text-decoration:none;font-size:14px;">Review ${data.pendingCount} draft${data.pendingCount === 1 ? "" : "s"}</a></p>`
       : "";
 
   const failedHtml =
     data.failedCount > 0
-      ? `<p style="font-size:14px;color:#b42318;">${data.failedCount} post${data.failedCount === 1 ? "" : "s"} failed to publish — <a href="${escapeHtml(`${base}/history`)}">retry from History</a>.</p>`
+      ? `<p style="font-size:14px;color:#b42318;">${data.failedCount} post${data.failedCount === 1 ? "" : "s"} failed to publish — <a href="${escapeHtml(historyUrl)}">retry from History</a>.</p>`
       : "";
 
   const html = `
@@ -173,7 +190,7 @@ export function buildWeeklyDigestEmail(input: WeeklyDigestEmailInput) {
     ${publishedHtml}
     ${scheduledHtml}
     ${pendingHtml}
-    <p style="margin:24px 0;"><a href="${escapeHtml(`${base}/dashboard`)}" style="font-size:14px;color:#c9a24b;">Open your dashboard →</a></p>
+    <p style="margin:24px 0;"><a href="${escapeHtml(dashboardUrl)}" style="font-size:14px;color:#c9a24b;">Open your dashboard →</a></p>
     <hr style="border:none;border-top:1px solid #eee;margin:24px 0;" />
     <p style="font-size:12px;color:#8a8a8a;">You're receiving this because the weekly digest is on. Manage it in Settings → Notifications.</p>
   </div>`;

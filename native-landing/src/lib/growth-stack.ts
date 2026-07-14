@@ -3,12 +3,21 @@
  * @see ai-cmo/docs/GROWTH_STACK_PLAN.md
  */
 
+import { withUtm } from "@/lib/utm";
+
 export const BIBLEFUNLAND_STUDIOS_URL = "https://www.biblefunlandstudios.com/";
 
 export const CADENCE_URL = "https://cadence.biblefunland.com";
 
 /** Cadence Settings — Growth stack API keys live here. */
 export const CADENCE_SETTINGS_URL = "https://cadence.biblefunland.com/app/settings";
+
+/** Canonical Kerygma home with Pulse UTMs for cross-product / stack referral links. */
+export const KERYGMA_SITE_URL = withUtm("https://kerygmasocial.com/", {
+  source: "kerygma",
+  campaign: "growth-stack",
+  medium: "referral",
+});
 
 export const GROWTH_STACK = {
   citePilot: {
@@ -29,7 +38,7 @@ export const GROWTH_STACK = {
   kerygma: {
     name: "Kerygma Social",
     tagline: "Social posts on autopilot from your URL",
-    href: "https://kerygmasocial.com",
+    href: KERYGMA_SITE_URL,
   },
 } as const;
 

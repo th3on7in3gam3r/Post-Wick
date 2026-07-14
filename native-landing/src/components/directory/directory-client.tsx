@@ -11,6 +11,7 @@ import {
   type DirectoryNicheFilterId,
   type PublicBrandListing,
 } from "@/lib/directory/public-brands";
+import { directorySignUpHref } from "@/lib/directory/signup-href";
 import { cn } from "@/lib/utils";
 
 export function DirectoryClient({ listings }: { listings: PublicBrandListing[] }) {
@@ -82,7 +83,7 @@ export function DirectoryClient({ listings }: { listings: PublicBrandListing[] }
               : "No businesses match your search. Try another niche or clear the search box."}
           </p>
           <TextureButton asChild variant="primary" size="lg" className="mt-6">
-            <Link href="/get-started?ref=directory">Get started with Kerygma Social</Link>
+            <Link href={directorySignUpHref()}>Get started with Kerygma Social</Link>
           </TextureButton>
         </div>
       ) : (
@@ -126,7 +127,7 @@ export function DirectoryClient({ listings }: { listings: PublicBrandListing[] }
           brand settings.
         </p>
         <TextureButton asChild variant="accent" size="lg" className="mt-6">
-          <Link href="/get-started?ref=directory">Start free</Link>
+          <Link href={directorySignUpHref()}>Start free</Link>
         </TextureButton>
       </div>
     </div>

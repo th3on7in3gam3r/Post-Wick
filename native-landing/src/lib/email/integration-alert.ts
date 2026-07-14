@@ -1,5 +1,5 @@
 import { Resend } from "resend";
-import { siteUrl } from "@/lib/brand";
+import { siteUrlWithUtm } from "@/lib/utm";
 
 const DEFAULT_ADMIN_NOTIFY_TO = "jerlessm@gmail.com";
 
@@ -39,6 +39,11 @@ function buildMessage(input: IntegrationAlertInput) {
     input.context === "verify"
       ? "failed a connection check"
       : "could not publish because the integration failed";
+  const reconnectUrl = siteUrlWithUtm("/settings/integrations", {
+    source: "kerygma",
+    campaign: "integration-alert",
+    medium: "email",
+  });
 
   const text = [
     `Your ${channel} connection for ${input.brandName} ${action}.`,
@@ -46,7 +51,7 @@ function buildMessage(input: IntegrationAlertInput) {
     `Account: ${account}`,
     `Error: ${input.error}`,
     "",
-    `Reconnect in Kerygma Social: ${siteUrl()}/settings/integrations`,
+    `Reconnect in Kerygma Social: ${reconnectUrl}`,
     "",
     "If you already reconnected, you can retry failed posts from History.",
   ].join("\n");
@@ -55,7 +60,7 @@ function buildMessage(input: IntegrationAlertInput) {
     <p>Your <strong>${escapeHtml(channel)}</strong> connection for <strong>${escapeHtml(input.brandName)}</strong> ${escapeHtml(action)}.</p>
     <p><strong>Account:</strong> ${escapeHtml(account)}</p>
     <p><strong>Error:</strong> ${escapeHtml(input.error)}</p>
-    <p><a href="${escapeHtml(`${siteUrl()}/settings/integrations`)}">Reconnect in Kerygma Social</a></p>
+    <p><a href="${escapeHtml(reconnectUrl)}">Reconnect in Kerygma Social</a></p>
     <p>If you already reconnected, retry failed posts from History.</p>
   `;
 

@@ -1,11 +1,11 @@
 import { Resend } from "resend";
-import { siteUrl } from "@/lib/brand";
 import {
   escapeHtml,
   mailFromAddress,
   platformLabel,
   truncateText,
 } from "@/lib/email/mail";
+import { siteUrlWithUtm } from "@/lib/utm";
 
 export type QueueReminderPost = {
   platform: string;
@@ -23,7 +23,11 @@ export type QueueReminderEmailInput = {
 export function buildQueueReminderEmail(input: QueueReminderEmailInput) {
   const greetingName = input.displayName?.trim();
   const greeting = greetingName ? `Hi ${greetingName},` : "Hi there,";
-  const base = siteUrl();
+  const queueUrl = siteUrlWithUtm("/queue", {
+    source: "kerygma",
+    campaign: "queue-reminder",
+    medium: "email",
+  });
   const count = input.pendingCount;
   const preview = input.posts.slice(0, 6);
 
@@ -50,7 +54,7 @@ export function buildQueueReminderEmail(input: QueueReminderEmailInput) {
   }
 
   textParts.push(
-    `Review now: ${base}/queue`,
+    `Review now: ${queueUrl}`,
     "",
     "Manage email preferences in Settings → Notifications.",
   );
@@ -83,7 +87,7 @@ export function buildQueueReminderEmail(input: QueueReminderEmailInput) {
         ? `<table style="width:100%;border-collapse:collapse;margin:16px 0;">${rows}</table>${moreHtml}`
         : ""
     }
-    <p style="margin:20px 0;"><a href="${escapeHtml(`${base}/queue`)}" style="background:#c9a24b;color:#fff;padding:10px 18px;border-radius:8px;text-decoration:none;font-size:14px;">Review queue</a></p>
+    <p style="margin:20px 0;"><a href="${escapeHtml(queueUrl)}" style="background:#c9a24b;color:#fff;padding:10px 18px;border-radius:8px;text-decoration:none;font-size:14px;">Review queue</a></p>
     <hr style="border:none;border-top:1px solid #eee;margin:24px 0;" />
     <p style="font-size:12px;color:#8a8a8a;">You're receiving this because approval reminders are on. Manage them in Settings → Notifications.</p>
   </div>`;

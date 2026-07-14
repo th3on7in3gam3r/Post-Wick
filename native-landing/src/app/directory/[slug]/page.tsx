@@ -6,6 +6,7 @@ import { TextureButton } from "@/components/ui/texture-button";
 import { siteUrl } from "@/lib/brand";
 import { getPublicBrandBySlug } from "@/lib/db";
 import { toPublicBrandListing } from "@/lib/directory/public-brands";
+import { directorySignUpHref } from "@/lib/directory/signup-href";
 import { createPageMetadata } from "@/lib/metadata";
 
 type PageProps = {
@@ -68,7 +69,7 @@ export default async function PublicBrandDirectoryPage({ params }: PageProps) {
             </a>
           </TextureButton>
           <TextureButton asChild variant="primary" size="lg">
-            <Link href="/get-started?ref=directory">Start with Kerygma Social</Link>
+            <Link href={directorySignUpHref()}>Start with Kerygma Social</Link>
           </TextureButton>
         </div>
         <p className="mt-8 text-center text-xs text-gray-label">

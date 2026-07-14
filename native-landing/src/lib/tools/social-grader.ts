@@ -1,3 +1,5 @@
+import { pathWithUtm } from "@/lib/utm";
+
 export type SocialGradeBreakdown = {
   label: string;
   score: number;
@@ -87,5 +89,10 @@ export function gradeSocialPresence(rawInput: string): SocialGradeResult {
 }
 
 export function graderSignUpHref() {
-  return "/get-started?ref=grader";
+  return pathWithUtm("/get-started?ref=grader", {
+    source: "kerygma",
+    campaign: "social-grader",
+    medium: "referral",
+    content: "grader-cta",
+  });
 }
