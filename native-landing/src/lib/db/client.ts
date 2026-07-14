@@ -200,6 +200,18 @@ async function ensureSchema() {
       created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
       UNIQUE (user_id, brand_id, platform)
     )`;
+  await sql`
+    CREATE TABLE IF NOT EXISTS api_keys (
+      id TEXT PRIMARY KEY,
+      user_id TEXT NOT NULL,
+      name TEXT NOT NULL DEFAULT 'Cadence',
+      key_prefix TEXT NOT NULL,
+      key_hash TEXT NOT NULL UNIQUE,
+      last_used_at TIMESTAMPTZ,
+      revoked_at TIMESTAMPTZ,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    )`;
+  await sql`CREATE INDEX IF NOT EXISTS idx_api_keys_user_id ON api_keys(user_id)`;
 }
 
 async function ensureTokenMigration() {

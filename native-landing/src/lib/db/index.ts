@@ -19,8 +19,10 @@ import { getPlanLimits } from "@/lib/plans";
 import { decryptOptional, encryptOptional } from "@/lib/crypto";
 import { WeeklyScheduleLimitError } from "@/lib/usage/schedule-limit";
 import { getDb } from "./client";
-import { brands, connections, metaOauthPending, posts, users, agencies, affiliateReferrals } from "./schema";
+import { brands, connections, metaOauthPending, posts, users, agencies, affiliateReferrals, apiKeys } from "./schema";
 import { emitStudioOpsEvent } from "@/lib/studio-ops";
+import { generateApiKey, hashApiKey } from "@/lib/api-keys";
+import { websiteHostname } from "@/lib/website-url";
 
 export type BrandRecord = {
   id: string;
@@ -1949,4 +1951,119 @@ export async function markAffiliateReferralConverted(
         sql`${affiliateReferrals.convertedAt} IS NULL`,
       ),
     );
+}
+
+export type ApiKeyRecord = {
+  id: string;
+  userId: string;
+  name: string;
+  keyPrefix: string;
+  lastUsedAt: string | null;
+  revokedAt: string | null;
+  createdAt: string;
+};
+
+function parseApiKey(row: typeof apiKeys.$inferSelect): ApiKeyRecord {
+  return {
+    id: row.id,
+    userId: row.userId,
+    name: row.name,
+    keyPrefix: row.keyPrefix,
+    lastUsedAt: row.lastUsedAt,
+    revokedAt: row.revokedAt,
+    createdAt: row.createdAt,
+  };
+}
+
+export async function listApiKeysForUser(userId: string) {
+  const db = await getDb();
+  const rows = await db
+    .select()
+    .from(apiKeys)
+    .where(and(eq(apiKeys.userId, userId), sql`${apiKeys.revokedAt} IS NULL`))
+    .orderBy(desc(apiKeys.createdAt));
+  return rows.map(parseApiKey);
+}
+
+export async function createApiKeyForUser(
+  userId: string,
+  name = "Cadence",
+): Promise<{ key: ApiKeyRecord; rawKey: string }> {
+  const db = await getDb();
+  const { rawKey, keyPrefix, keyHash } = generateApiKey();
+  const id = randomUUID();
+  const now = nowIso();
+
+  await db.insert(apiKeys).values({
+    id,
+    userId,
+    name: name.trim() || "Cadence",
+    keyPrefix,
+    keyHash,
+    createdAt: now,
+  });
+
+  return {
+    key: {
+      id,
+      userId,
+      name: name.trim() || "Cadence",
+      keyPrefix,
+      lastUsedAt: null,
+      revokedAt: null,
+      createdAt: now,
+    },
+    rawKey,
+  };
+}
+
+export async function revokeApiKeyForUser(keyId: string, userId: string) {
+  const db = await getDb();
+  const now = nowIso();
+  const updated = await db
+    .update(apiKeys)
+    .set({ revokedAt: now })
+    .where(
+      and(
+        eq(apiKeys.id, keyId),
+        eq(apiKeys.userId, userId),
+        sql`${apiKeys.revokedAt} IS NULL`,
+      ),
+    )
+    .returning({ id: apiKeys.id });
+  return Boolean(updated[0]);
+}
+
+export async function authenticateWithApiKey(
+  rawKey: string,
+): Promise<{ userId: string; keyId: string } | null> {
+  const db = await getDb();
+  const keyHash = hashApiKey(rawKey);
+  const row = await db.query.apiKeys.findFirst({
+    where: and(eq(apiKeys.keyHash, keyHash), sql`${apiKeys.revokedAt} IS NULL`),
+  });
+  if (!row) return null;
+
+  const now = nowIso();
+  await db
+    .update(apiKeys)
+    .set({ lastUsedAt: now })
+    .where(eq(apiKeys.id, row.id));
+
+  return { userId: row.userId, keyId: row.id };
+}
+
+export async function findBrandByWebsiteForUser(
+  userId: string,
+  websiteUrl: string,
+) {
+  const exact = await getBrandByWebsite(userId, websiteUrl);
+  if (exact) return exact;
+
+  const host = websiteHostname(websiteUrl).toLowerCase();
+  const userBrands = await getBrandsByUserId(userId);
+  return (
+    userBrands.find((brand) => websiteHostname(brand.websiteUrl).toLowerCase() === host) ??
+    null
+  );
 }

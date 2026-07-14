@@ -20,6 +20,7 @@ import {
   User,
 } from "lucide-react";
 import { PanelCard } from "@/components/app/panel-card";
+import { ApiKeysPanel } from "@/components/app/api-keys-panel";
 import { CookieSettingsTrigger } from "@/components/cookie-settings-trigger";
 import { TextureButton } from "@/components/ui/texture-button";
 import { getPlanLimits, maxPostingFrequencyForTier, type SubscriptionTier } from "@/lib/plans";
@@ -300,6 +301,8 @@ export function SettingsClient({
           </div>
         </PanelCard>
       </div>
+
+      <ApiKeysPanel />
 
       <div className="grid gap-6 xl:grid-cols-2">
         <PanelCard
