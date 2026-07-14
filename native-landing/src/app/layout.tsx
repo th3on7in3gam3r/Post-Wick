@@ -1,5 +1,6 @@
 import { Inter, Playfair_Display } from "next/font/google";
 import { ClerkProvider } from "@clerk/nextjs";
+import Script from "next/script";
 import { Suspense } from "react";
 import { AppNavigationLoader } from "@/components/app-navigation-loader";
 import { CookieAnalytics } from "@/components/cookie-analytics";
@@ -79,6 +80,12 @@ export default function RootLayout({
             <CookieConsentUI />
             <CookieAnalytics />
           </CookieConsentProvider>
+          <Script
+            src="https://pulse-5o1m.onrender.com/pulse.js"
+            strategy="afterInteractive"
+            data-site="kerygmasocial-com"
+            defer
+          />
         </body>
       </html>
     </ClerkProvider>
