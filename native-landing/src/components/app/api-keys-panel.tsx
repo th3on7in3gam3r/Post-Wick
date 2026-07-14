@@ -4,7 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import { Copy, KeyRound, Loader2, Trash2 } from "lucide-react";
 import { PanelCard } from "@/components/app/panel-card";
 import { TextureButton } from "@/components/ui/texture-button";
-import { CADENCE_URL } from "@/lib/growth-stack";
+import { CADENCE_SETTINGS_URL } from "@/lib/growth-stack";
 import { cn } from "@/lib/utils";
 
 type ApiKeyRow = {
@@ -123,7 +123,7 @@ export function ApiKeysPanel() {
           Keys start with <code className="rounded bg-cream px-1.5 py-0.5 text-xs">ks_live_</code>.
           Paste the full key into{" "}
           <a
-            href={`${CADENCE_URL}/app/settings`}
+            href={CADENCE_SETTINGS_URL}
             target="_blank"
             rel="noopener noreferrer"
             className="font-medium text-gold hover:underline"

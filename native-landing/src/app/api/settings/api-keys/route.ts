@@ -43,7 +43,7 @@ export async function POST(req: Request) {
       key,
       rawKey,
       notice:
-        "Copy this key now — it won’t be shown again. Paste it into Cadence → Settings → Growth stack API keys → Kerygma Social.",
+        "Copy this key now — it won’t be shown again. Paste it into Cadence Settings (https://cadence.biblefunland.com/app/settings) → Growth stack API keys → Kerygma Social.",
     });
   } catch (error) {
     if (error instanceof z.ZodError) {

@@ -7,6 +7,9 @@ export const BIBLEFUNLAND_STUDIOS_URL = "https://www.biblefunlandstudios.com/";
 
 export const CADENCE_URL = "https://cadence.biblefunland.com";
 
+/** Cadence Settings — Growth stack API keys live here. */
+export const CADENCE_SETTINGS_URL = "https://cadence.biblefunland.com/app/settings";
+
 export const GROWTH_STACK = {
   citePilot: {
     name: "CitePilot",
@@ -16,7 +19,7 @@ export const GROWTH_STACK = {
   aiCmo: {
     name: "Cadence",
     tagline: "Strategy, SEO audits, and campaign workspace",
-    href: CADENCE_URL,
+    href: CADENCE_SETTINGS_URL,
   },
   aegis: {
     name: "Aegis Loop",
