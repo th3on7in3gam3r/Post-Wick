@@ -3,7 +3,7 @@ import { NextResponse } from "next/server";
 export const OAUTH_DEBUG_COOKIE = "kerygma_oauth_debug";
 
 export type OAuthDebugInfo = {
-  flow: "meta" | "linkedin" | "x" | "pinterest";
+  flow: "meta" | "linkedin" | "x" | "pinterest" | "bluesky";
   step: string;
   at: string;
   hasCode?: boolean;

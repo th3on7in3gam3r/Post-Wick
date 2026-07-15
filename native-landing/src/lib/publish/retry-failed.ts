@@ -9,6 +9,12 @@ import {
   type ConnectionRecord,
   type PostRecord,
 } from "@/lib/db";
+import {
+  blueskyPostUrl,
+  parseBlueskyMetadata,
+  publishToBluesky,
+  resolveBlueskyDid,
+} from "@/lib/social/bluesky";
 import { publishToLinkedIn } from "@/lib/social/linkedin";
 import { publishToFacebookPage, publishToInstagram } from "@/lib/social/meta";
 import {
@@ -188,6 +194,26 @@ async function publishLivePost(
       imageUrl,
       brand?.websiteUrl ?? null,
     );
+  }
+
+  if (platform === "bluesky") {
+    const did = resolveBlueskyDid(connection);
+    if (!did) {
+      throw new Error("Bluesky DID is missing for this connection. Disconnect and reconnect.");
+    }
+    if (post.imageUrl && postHasBrokenImageUrl(post.imageUrl)) {
+      throw new Error(
+        "Post image is not in cloud storage. Open Brands and click Fix images before publishing.",
+      );
+    }
+    const imageUrl = post.imageUrl ? resolvePostImageUrl(post.imageUrl) : null;
+    const uri = await publishToBluesky({
+      did,
+      content: post.content,
+      imageUrl,
+    });
+    const handle = parseBlueskyMetadata(connection.metadata)?.handle;
+    return blueskyPostUrl(uri, handle ?? did);
   }
 
   throw new Error(`Live publishing for ${post.platform} is not available yet`);

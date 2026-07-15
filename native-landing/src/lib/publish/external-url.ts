@@ -3,6 +3,8 @@ const PLATFORM_LABELS: Record<string, string> = {
   instagram: "Instagram",
   facebook: "Facebook",
   pinterest: "Pinterest",
+  bluesky: "Bluesky",
+  twitter: "X",
 };
 
 export function platformLabel(platform: string) {
@@ -36,6 +38,17 @@ export function resolveExternalPostUrl(
 
   if (normalized === "facebook") {
     return `https://www.facebook.com/${externalPostId}`;
+  }
+
+  if (normalized === "bluesky") {
+    if (externalPostId.startsWith("at://")) {
+      const match = externalPostId.match(
+        /^at:\/\/([^/]+)\/app\.bsky\.feed\.post\/([^/]+)$/,
+      );
+      if (match) {
+        return `https://bsky.app/profile/${encodeURIComponent(match[1]!)}/post/${match[2]}`;
+      }
+    }
   }
 
   return null;

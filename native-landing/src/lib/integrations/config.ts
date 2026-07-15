@@ -6,6 +6,7 @@ import {
   isFacebookConfigured,
   isInstagramConfigured,
 } from "@/lib/social/meta";
+import { isBlueskyConfigured } from "@/lib/social/bluesky";
 import { isPinterestConfigured } from "@/lib/social/pinterest";
 import { isXConfigured } from "@/lib/social/x";
 
@@ -71,6 +72,15 @@ export function getPlatformRuntimeConfig(
     };
   }
 
+  if (platform.oauthProvider === "bluesky") {
+    const oauthConfigured = isBlueskyConfigured();
+    return {
+      id: platformId,
+      oauthConfigured,
+      connectionMode: oauthConfigured ? "oauth" : platform.demoAvailable ? "demo" : "unavailable",
+    };
+  }
+
   return {
     id: platformId,
     oauthConfigured: false,
@@ -91,5 +101,6 @@ export function getIntegrationProvidersSummary() {
     facebook: isFacebookConfigured(),
     x: isXConfigured(),
     pinterest: isPinterestConfigured(),
+    bluesky: isBlueskyConfigured(),
   };
 }

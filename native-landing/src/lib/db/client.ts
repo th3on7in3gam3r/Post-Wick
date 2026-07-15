@@ -212,6 +212,18 @@ async function ensureSchema() {
       created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
     )`;
   await sql`CREATE INDEX IF NOT EXISTS idx_api_keys_user_id ON api_keys(user_id)`;
+  await sql`
+    CREATE TABLE IF NOT EXISTS bluesky_oauth_state (
+      key TEXT PRIMARY KEY,
+      value TEXT NOT NULL,
+      updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    )`;
+  await sql`
+    CREATE TABLE IF NOT EXISTS bluesky_oauth_session (
+      key TEXT PRIMARY KEY,
+      value TEXT NOT NULL,
+      updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    )`;
 }
 
 async function ensureTokenMigration() {

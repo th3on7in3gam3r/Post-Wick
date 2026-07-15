@@ -1,5 +1,13 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  experimental: {
+    serverComponentsExternalPackages: [
+      "@atproto/oauth-client-node",
+      "@atproto/oauth-client",
+      "@atproto/api",
+      "@atproto/jwk-jose",
+    ],
+  },
   async redirects() {
     return [
       { source: "/signup.html", destination: "/sign-up", permanent: false },

@@ -52,6 +52,7 @@ const PLATFORM_ACCENTS: Record<IntegrationPlatformId, string> = {
   twitter: "bg-black/10 text-near-black",
   tiktok: "bg-black/10 text-near-black",
   pinterest: "bg-[#BD081C]/10 text-[#BD081C]",
+  bluesky: "bg-[#1185FE]/10 text-[#1185FE]",
   google_business: "bg-[#4285F4]/10 text-[#4285F4]",
 };
 
@@ -96,6 +97,12 @@ function flashFromParams(searchParams: {
         "Pinterest connected. Image posts will pin to your selected board when they are due.",
     };
   }
+  if (searchParams.connected === "bluesky") {
+    return {
+      kind: "success",
+      message: "Bluesky connected. Approved posts can publish when they are due.",
+    };
+  }
 
   const errorMessages: Record<string, string> = {
     invalid_callback_missing_params:
@@ -129,6 +136,10 @@ function flashFromParams(searchParams: {
       "Pinterest authorization failed. Confirm your app credentials and redirect URI.",
     pinterest_no_boards:
       "No Pinterest boards were found on this account. Create a board on Pinterest, then try again.",
+    bluesky_exchange_failed:
+      "Bluesky authorization failed. For local testing use http://127.0.0.1, and confirm your handle.",
+    bluesky_oauth_error:
+      "Bluesky rejected the OAuth request. Try again and approve the requested permissions.",
   };
 
   if (searchParams.error) {
@@ -158,6 +169,9 @@ function oauthConnectUrl(platform: IntegrationPlatformId, brandId: string) {
   }
   if (platform === "pinterest") {
     return `/api/social/pinterest/connect?brandId=${id}`;
+  }
+  if (platform === "bluesky") {
+    return `/settings/integrations/bluesky/connect?brandId=${id}`;
   }
   return null;
 }
@@ -699,6 +713,13 @@ export function IntegrationsClient({
                     <p className="mt-3 text-xs text-gray-body">
                       Pins require an image. Connect a board you manage, then use Fix images
                       on the brand page before publishing.
+                    </p>
+                  ) : null}
+
+                  {platform.id === "bluesky" && !connection ? (
+                    <p className="mt-3 text-xs text-gray-body">
+                      Enter your Bluesky handle, then approve Kerygma Social via AT Protocol
+                      OAuth. Image posts need Fix images on the brand page first.
                     </p>
                   ) : null}
 

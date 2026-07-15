@@ -5,13 +5,15 @@ export type IntegrationPlatformId =
   | "twitter"
   | "tiktok"
   | "pinterest"
+  | "bluesky"
   | "google_business";
 
 export type IntegrationOAuthProvider =
   | "linkedin"
   | "meta"
   | "x"
-  | "pinterest";
+  | "pinterest"
+  | "bluesky";
 
 export type IntegrationCategory = "professional" | "social" | "local";
 
@@ -103,6 +105,16 @@ export const INTEGRATION_PLATFORMS: IntegrationDefinition[] = [
     supportsImages: true,
     demoAvailable: true,
     oauthProvider: "pinterest",
+  },
+  {
+    id: "bluesky",
+    name: "Bluesky",
+    tagline: "Publish short posts to the open AT Protocol network.",
+    category: "social",
+    charLimit: 300,
+    supportsImages: true,
+    demoAvailable: true,
+    oauthProvider: "bluesky",
   },
   {
     id: "google_business",

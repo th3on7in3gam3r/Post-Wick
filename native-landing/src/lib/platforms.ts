@@ -1,6 +1,12 @@
 import { getIntegrationPlatform } from "@/lib/integrations/catalog";
 
-export const GENERATE_PLATFORMS = ["linkedin", "instagram", "facebook", "pinterest"] as const;
+export const GENERATE_PLATFORMS = [
+  "linkedin",
+  "instagram",
+  "facebook",
+  "pinterest",
+  "bluesky",
+] as const;
 
 export type GeneratePlatform = (typeof GENERATE_PLATFORMS)[number];
 

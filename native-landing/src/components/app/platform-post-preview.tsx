@@ -284,6 +284,52 @@ export function PlatformPostPreview({
     );
   }
 
+  if (normalized === "bluesky") {
+    const handle =
+      accountName.startsWith("@")
+        ? accountName
+        : `@${(accountName.replace(/\s+/g, "").slice(0, 24) || "brand").toLowerCase()}`;
+    return (
+      <article
+        className={cn(
+          "overflow-hidden rounded-2xl border border-black/[0.08] bg-white shadow-card",
+          className,
+        )}
+      >
+        <div className="flex gap-3 px-4 py-4">
+          <PreviewAvatar
+            name={accountName}
+            logoUrl={accountAvatarUrl}
+            initials={accountInitials}
+            className="h-10 w-10"
+          />
+          <div className="min-w-0 flex-1">
+            <p className="text-sm text-near-black">
+              <span className="font-semibold">{accountName.replace(/^@/, "")}</span>{" "}
+              <span className="text-gray-label">{handle}</span>
+            </p>
+            <p className="mt-2 text-sm leading-relaxed text-near-black">{content}</p>
+            {imageSrc ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={imageSrc}
+                alt=""
+                className="mt-3 aspect-video w-full rounded-2xl border border-black/[0.06] object-cover"
+                referrerPolicy="no-referrer"
+              />
+            ) : null}
+            <div className="mt-3 flex items-center gap-5 text-[#1185FE]/80">
+              <MessageCircle className="h-4 w-4" />
+              <Repeat2 className="h-4 w-4" />
+              <Heart className="h-4 w-4" />
+              <Share2 className="h-4 w-4" />
+            </div>
+          </div>
+        </div>
+      </article>
+    );
+  }
+
   return (
     <article
       className={cn(

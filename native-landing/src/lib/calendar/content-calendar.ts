@@ -24,6 +24,7 @@ export const PLATFORM_DOT_COLORS: Record<string, string> = {
   x: "bg-near-black",
   tiktok: "bg-near-black",
   pinterest: "bg-[#BD081C]",
+  bluesky: "bg-[#1185FE]",
 };
 
 export function platformDotColor(platform: string) {

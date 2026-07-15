@@ -19,6 +19,8 @@ export async function GET() {
       meta: `${siteUrl()}/api/social/meta/callback`,
       x: `${siteUrl()}/api/social/x/callback`,
       pinterest: `${siteUrl()}/api/social/pinterest/callback`,
+      bluesky: `${siteUrl()}/api/social/bluesky/callback`,
     },
+    blueskyClientMetadata: `${siteUrl()}/oauth-client-metadata.json`,
   });
 }

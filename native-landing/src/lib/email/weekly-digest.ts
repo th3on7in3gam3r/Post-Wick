@@ -11,6 +11,7 @@ function mailFromAddress() {
 
 function platformLabel(platform: string) {
   if (platform === "twitter") return "X";
+  if (platform === "bluesky") return "Bluesky";
   return platform.charAt(0).toUpperCase() + platform.slice(1);
 }
 

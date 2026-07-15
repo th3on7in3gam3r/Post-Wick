@@ -19,7 +19,18 @@ import { getPlanLimits } from "@/lib/plans";
 import { decryptOptional, encryptOptional } from "@/lib/crypto";
 import { WeeklyScheduleLimitError } from "@/lib/usage/schedule-limit";
 import { getDb } from "./client";
-import { brands, connections, metaOauthPending, posts, users, agencies, affiliateReferrals, apiKeys } from "./schema";
+import {
+  brands,
+  connections,
+  metaOauthPending,
+  posts,
+  users,
+  agencies,
+  affiliateReferrals,
+  apiKeys,
+  blueskyOauthSession,
+  blueskyOauthState,
+} from "./schema";
 import { emitStudioOpsEvent } from "@/lib/studio-ops";
 import { generateApiKey, hashApiKey } from "@/lib/api-keys";
 import { websiteHostname } from "@/lib/website-url";
@@ -2066,4 +2077,60 @@ export async function findBrandByWebsiteForUser(
     userBrands.find((brand) => websiteHostname(brand.websiteUrl).toLowerCase() === host) ??
     null
   );
+}
+
+export async function getBlueskyOauthState(key: string) {
+  const db = await getDb();
+  const row = await db.query.blueskyOauthState.findFirst({
+    where: eq(blueskyOauthState.key, key),
+  });
+  if (!row?.value) return undefined;
+  return decryptOptional(row.value) ?? undefined;
+}
+
+export async function setBlueskyOauthState(key: string, value: string) {
+  const db = await getDb();
+  const encrypted = encryptOptional(value);
+  if (!encrypted) throw new Error("Failed to encrypt Bluesky OAuth state");
+  const now = nowIso();
+  await db
+    .insert(blueskyOauthState)
+    .values({ key, value: encrypted, updatedAt: now })
+    .onConflictDoUpdate({
+      target: blueskyOauthState.key,
+      set: { value: encrypted, updatedAt: now },
+    });
+}
+
+export async function deleteBlueskyOauthState(key: string) {
+  const db = await getDb();
+  await db.delete(blueskyOauthState).where(eq(blueskyOauthState.key, key));
+}
+
+export async function getBlueskyOauthSession(key: string) {
+  const db = await getDb();
+  const row = await db.query.blueskyOauthSession.findFirst({
+    where: eq(blueskyOauthSession.key, key),
+  });
+  if (!row?.value) return undefined;
+  return decryptOptional(row.value) ?? undefined;
+}
+
+export async function setBlueskyOauthSession(key: string, value: string) {
+  const db = await getDb();
+  const encrypted = encryptOptional(value);
+  if (!encrypted) throw new Error("Failed to encrypt Bluesky OAuth session");
+  const now = nowIso();
+  await db
+    .insert(blueskyOauthSession)
+    .values({ key, value: encrypted, updatedAt: now })
+    .onConflictDoUpdate({
+      target: blueskyOauthSession.key,
+      set: { value: encrypted, updatedAt: now },
+    });
+}
+
+export async function deleteBlueskyOauthSession(key: string) {
+  const db = await getDb();
+  await db.delete(blueskyOauthSession).where(eq(blueskyOauthSession.key, key));
 }

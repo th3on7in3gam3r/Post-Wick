@@ -174,6 +174,24 @@ export const affiliateReferrals = pgTable(
   }),
 );
 
+/** AT Protocol OAuth transient state (CSRF / PKCE / DPoP during authorize). */
+export const blueskyOauthState = pgTable("bluesky_oauth_state", {
+  key: text("key").primaryKey(),
+  value: text("value").notNull(),
+  updatedAt: timestamp("updated_at", { withTimezone: true, mode: "string" })
+    .notNull()
+    .defaultNow(),
+});
+
+/** AT Protocol OAuth sessions keyed by user DID. */
+export const blueskyOauthSession = pgTable("bluesky_oauth_session", {
+  key: text("key").primaryKey(),
+  value: text("value").notNull(),
+  updatedAt: timestamp("updated_at", { withTimezone: true, mode: "string" })
+    .notNull()
+    .defaultNow(),
+});
+
 /** Partner API keys for Cadence / growth-stack integrations (hash only stored). */
 export const apiKeys = pgTable(
   "api_keys",

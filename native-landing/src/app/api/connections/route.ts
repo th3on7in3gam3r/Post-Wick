@@ -2,7 +2,15 @@ import { randomUUID } from "node:crypto";
 import { auth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import { deleteConnection, getBrandById, getConnectionsByUserId, getOrCreateUser, upsertConnection } from "@/lib/db";
+import {
+  deleteConnection,
+  getBrandById,
+  getConnectionById,
+  getConnectionsByUserId,
+  getOrCreateUser,
+  upsertConnection,
+} from "@/lib/db";
+import { resolveBlueskyDid, revokeBlueskySession } from "@/lib/social/bluesky";
 
 export async function GET() {
   const { userId } = await auth();
@@ -77,6 +85,22 @@ export async function DELETE(req: Request) {
   const connectionId = searchParams.get("id");
   if (!connectionId) {
     return NextResponse.json({ error: "Connection id required" }, { status: 400 });
+  }
+
+  const existing = await getConnectionById(connectionId, userId);
+  if (!existing) {
+    return NextResponse.json({ error: "Not found" }, { status: 404 });
+  }
+
+  if (existing.platform.toLowerCase() === "bluesky" && !existing.isDemo) {
+    const did = resolveBlueskyDid(existing);
+    if (did) {
+      try {
+        await revokeBlueskySession(did);
+      } catch (error) {
+        console.warn("[connections-delete] bluesky revoke failed", error);
+      }
+    }
   }
 
   const removed = await deleteConnection(connectionId, userId);

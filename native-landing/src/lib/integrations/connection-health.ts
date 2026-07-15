@@ -8,6 +8,11 @@ import {
 } from "@/lib/integrations/connection-metadata";
 import { notifyIntegrationFailureIfNeeded } from "@/lib/integrations/notify-integration-failure";
 import { facebookAppCredentials } from "@/lib/social/meta";
+import {
+  parseBlueskyMetadata,
+  resolveBlueskyDid,
+  verifyBlueskySession,
+} from "@/lib/social/bluesky";
 import { parsePinterestMetadata, resolvePinterestAccessToken } from "@/lib/social/pinterest";
 import { parseXMetadata, resolveXAccessToken } from "@/lib/social/x";
 
@@ -188,6 +193,44 @@ async function verifyPinterest(connection: ConnectionRecord) {
   return { refreshed: false };
 }
 
+async function verifyBluesky(connection: ConnectionRecord) {
+  const did = resolveBlueskyDid(connection);
+  if (!did) {
+    throw new Error("Bluesky DID is missing for this connection");
+  }
+
+  const profile = await verifyBlueskySession(did);
+  const existing = parseBlueskyMetadata(connection.metadata);
+  const handle = profile.handle || existing?.handle;
+  const accountName = handle
+    ? handle.startsWith("@")
+      ? handle
+      : `@${handle}`
+    : connection.accountName ?? undefined;
+
+  if (
+    handle &&
+    (existing?.handle !== handle || connection.accountName !== accountName)
+  ) {
+    await upsertConnection({
+      id: connection.id,
+      userId: connection.userId,
+      brandId: connection.brandId,
+      platform: connection.platform,
+      accountName,
+      accessToken: did,
+      metadata: {
+        did,
+        handle: handle.replace(/^@/, ""),
+      },
+      isDemo: connection.isDemo,
+    });
+    return { refreshed: true };
+  }
+
+  return { refreshed: false };
+}
+
 async function persistHealth(
   connection: ConnectionRecord,
   result: { ok: boolean; error?: string },
@@ -238,6 +281,9 @@ export async function verifyConnection(
     } else if (platform === "pinterest") {
       const pinterestResult = await verifyPinterest(connection);
       refreshed = pinterestResult.refreshed;
+    } else if (platform === "bluesky") {
+      const blueskyResult = await verifyBluesky(connection);
+      refreshed = blueskyResult.refreshed;
     } else {
       throw new Error(`Connection checks are not available for ${connection.platform}`);
     }
