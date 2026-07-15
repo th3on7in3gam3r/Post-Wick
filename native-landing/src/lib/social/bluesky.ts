@@ -76,9 +76,19 @@ export function isBlueskyLoopbackMode() {
   return isLocalOrigin(appOrigin());
 }
 
+/** Prefer confidential client when BLUESKY_OAUTH_PRIVATE_JWK is set. */
+export function isBlueskyConfidentialClient() {
+  return Boolean(privateJwkRaw()) && appOrigin().startsWith("https://");
+}
+
+/**
+ * Live Bluesky OAuth is available for:
+ * - local loopback (127.0.0.1 / localhost)
+ * - production https apps (public client), or confidential when JWK is set
+ */
 export function isBlueskyConfigured() {
   if (isBlueskyLoopbackMode()) return true;
-  return Boolean(privateJwkRaw() && appOrigin().startsWith("https://"));
+  return appOrigin().startsWith("https://");
 }
 
 export function blueskyRedirectUri() {
@@ -105,6 +115,29 @@ function getClientMetadata(): OAuthClientMetadataInput {
   }
 
   const origin = appOrigin();
+  const redirectUri = `${origin}/api/social/bluesky/callback` as const;
+
+  if (isBlueskyConfidentialClient()) {
+    return {
+      client_id: `${origin}/oauth-client-metadata.json`,
+      client_name: "Kerygma Social",
+      client_uri: origin,
+      logo_uri: `${origin}/opengraph-image`,
+      tos_uri: `${origin}/terms`,
+      policy_uri: `${origin}/privacy`,
+      redirect_uris: [redirectUri],
+      grant_types: ["authorization_code", "refresh_token"],
+      response_types: ["code"],
+      scope: BLUESKY_OAUTH_SCOPE,
+      token_endpoint_auth_method: "private_key_jwt",
+      token_endpoint_auth_signing_alg: "ES256",
+      jwks_uri: `${origin}/.well-known/jwks.json`,
+      dpop_bound_access_tokens: true,
+      application_type: "web",
+    };
+  }
+
+  // Public web client — works without BLUESKY_OAUTH_PRIVATE_JWK.
   return {
     client_id: `${origin}/oauth-client-metadata.json`,
     client_name: "Kerygma Social",
@@ -112,13 +145,11 @@ function getClientMetadata(): OAuthClientMetadataInput {
     logo_uri: `${origin}/opengraph-image`,
     tos_uri: `${origin}/terms`,
     policy_uri: `${origin}/privacy`,
-    redirect_uris: [`${origin}/api/social/bluesky/callback`],
+    redirect_uris: [redirectUri],
     grant_types: ["authorization_code", "refresh_token"],
     response_types: ["code"],
     scope: BLUESKY_OAUTH_SCOPE,
-    token_endpoint_auth_method: "private_key_jwt",
-    token_endpoint_auth_signing_alg: "ES256",
-    jwks_uri: `${origin}/.well-known/jwks.json`,
+    token_endpoint_auth_method: "none",
     dpop_bound_access_tokens: true,
     application_type: "web",
   };

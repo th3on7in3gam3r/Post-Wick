@@ -432,6 +432,12 @@ export function IntegrationsClient({
     setActionError(null);
     setLoadingKey(`oauth:${platform}`);
 
+    // Bluesky uses a handle form page (not a direct API OAuth redirect).
+    if (platform === "bluesky") {
+      window.location.assign(url);
+      return;
+    }
+
     try {
       const response = await fetch(url, {
         redirect: "manual",
