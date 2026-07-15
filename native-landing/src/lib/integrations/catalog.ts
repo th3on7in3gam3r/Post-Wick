@@ -84,8 +84,8 @@ export const INTEGRATION_PLATFORMS: IntegrationDefinition[] = [
     category: "social",
     charLimit: 280,
     supportsImages: true,
-    demoAvailable: true,
-    oauthProvider: "x",
+    // Paid X API — keep backend for later; no live Connect yet.
+    demoAvailable: false,
   },
   {
     id: "tiktok",
@@ -94,7 +94,8 @@ export const INTEGRATION_PLATFORMS: IntegrationDefinition[] = [
     category: "social",
     charLimit: 2200,
     supportsImages: false,
-    demoAvailable: true,
+    // Content Posting API audit required — roadmap / Coming soon.
+    demoAvailable: false,
   },
   {
     id: "pinterest",

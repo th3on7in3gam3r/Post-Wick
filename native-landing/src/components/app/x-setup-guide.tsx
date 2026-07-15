@@ -11,21 +11,15 @@ export type XSetupInfo = {
   appUrl: string;
 };
 
-const X_CONNECT_STEPS = [
-  "Click Connect X and sign in with the account that should publish posts.",
-  "Approve Kerygma Social when X asks for read and write permissions.",
-  "Approved text posts publish automatically when they are due (images need media.write + reconnect).",
-];
-
 const X_ADMIN_CHECKLIST = [
-  "Create an app at developer.x.com with a Free or paid API tier, and keep it inside a Project (not standalone).",
+  "X is Coming soon for customers (paid API). Keep credentials ready for a later re-enable.",
+  "Create an app at developer.x.com with a paid API tier, inside a Project (not standalone).",
   "User authentication settings → Enable OAuth 2.0 → Type: Web App → App permissions: Read and write.",
   "Add the exact OAuth redirect URI below under Callback URI / Redirect URL (no trailing slash).",
   "Set Website URL to your production domain (e.g. https://kerygmasocial.com).",
-  "If the app is in Development mode, add the approving X account as a team member before Connect.",
+  "Optional images: set X_OAUTH_INCLUDE_MEDIA_WRITE=1 when re-enabling Connect.",
   "Copy OAuth 2.0 Client ID and Client Secret into X_CLIENT_ID and X_CLIENT_SECRET.",
-  "Optional images: set X_OAUTH_INCLUDE_MEDIA_WRITE=1, redeploy, disconnect X, then Connect again.",
-  "Redeploy, then verify GET /api/health/x shows ok: true and the redirect URI matches the portal.",
+  "When re-enabling: restore oauthProvider on twitter in catalog, redeploy, verify GET /api/health/x.",
 ];
 
 export function XSetupGuide({
@@ -46,22 +40,11 @@ export function XSetupGuide({
   if (!showAdminGuide) {
     return (
       <div className="rounded-xl border border-black/[0.06] bg-white px-4 py-4">
-        <p className="text-sm font-medium text-near-black">How to connect X</p>
-        <ol className="mt-4 space-y-2 text-sm text-gray-body">
-          {X_CONNECT_STEPS.map((step, index) => (
-            <li key={step} className="flex gap-2">
-              <span className="font-medium text-gold">{index + 1}.</span>
-              <span>{step}</span>
-            </li>
-          ))}
-        </ol>
-        {!setup.configured ? (
-          <p className="mt-4 text-sm text-gray-body">
-            Live connect isn&apos;t enabled on this workspace yet. Use{" "}
-            <span className="font-medium text-near-black">Try demo mode</span> on the
-            X card below to preview publishing.
-          </p>
-        ) : null}
+        <p className="text-sm font-medium text-near-black">X</p>
+        <p className="mt-2 text-sm text-gray-body">
+          Live Connect for X is Coming soon. You can still use Facebook, Instagram, LinkedIn,
+          Pinterest, and Bluesky today.
+        </p>
       </div>
     );
   }
@@ -69,6 +52,9 @@ export function XSetupGuide({
   return (
     <div className="rounded-xl border border-black/[0.06] bg-cream/40 px-4 py-4">
       <p className="text-sm font-medium text-near-black">X setup (Kerygma Social team)</p>
+      <p className="mt-2 text-sm text-gray-body">
+        Customer-facing Connect is disabled (Coming soon). This checklist is for a future re-enable.
+      </p>
       {!setup.configured ? (
         <p className="mt-2 text-sm text-gray-body">X credentials not detected on the server yet.</p>
       ) : null}
@@ -118,6 +104,9 @@ export function XSetupGuide({
           )}
         >
           NEXT_PUBLIC_APP_URL set
+        </span>
+        <span className="rounded-full bg-cream px-2.5 py-1 font-medium text-gray-body">
+          Coming soon (catalog gated)
         </span>
       </div>
     </div>

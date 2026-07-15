@@ -710,10 +710,13 @@ export function IntegrationsClient({
 
                   {platform.id === "twitter" && !connection ? (
                     <p className="mt-3 text-xs text-gray-body">
-                      Connect the X account that should publish approved posts. Portal callback
-                      must match exactly (see X setup). Text posts work by default; images need{" "}
-                      <code className="rounded bg-cream px-1">X_OAUTH_INCLUDE_MEDIA_WRITE=1</code>{" "}
-                      and a reconnect. Image files still need Fix images on the brand page.
+                      X publishing is on the roadmap (paid API access required). Coming soon.
+                    </p>
+                  ) : null}
+
+                  {platform.id === "tiktok" && !connection ? (
+                    <p className="mt-3 text-xs text-gray-body">
+                      TikTok publishing is on the roadmap (app audit required). Coming soon.
                     </p>
                   ) : null}
 
