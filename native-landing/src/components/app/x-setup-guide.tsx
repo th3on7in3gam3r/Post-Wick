@@ -14,16 +14,18 @@ export type XSetupInfo = {
 const X_CONNECT_STEPS = [
   "Click Connect X and sign in with the account that should publish posts.",
   "Approve Kerygma Social when X asks for read and write permissions.",
-  "Approved text and image posts publish automatically when they are due.",
+  "Approved text posts publish automatically when they are due (images need media.write + reconnect).",
 ];
 
 const X_ADMIN_CHECKLIST = [
-  "Create an app at developer.x.com with a Free or paid API tier.",
-  "User authentication settings → Enable OAuth 2.0 → Type: Web App → Read and write permissions.",
-  "Add the exact OAuth redirect URI below under Callback URI / Redirect URL.",
+  "Create an app at developer.x.com with a Free or paid API tier, and keep it inside a Project (not standalone).",
+  "User authentication settings → Enable OAuth 2.0 → Type: Web App → App permissions: Read and write.",
+  "Add the exact OAuth redirect URI below under Callback URI / Redirect URL (no trailing slash).",
   "Set Website URL to your production domain (e.g. https://kerygmasocial.com).",
-  "Copy OAuth 2.0 Client ID and Client Secret into X_CLIENT_ID and X_CLIENT_SECRET in Vercel.",
-  "Redeploy, then verify GET /api/health/x shows ok: true.",
+  "If the app is in Development mode, add the approving X account as a team member before Connect.",
+  "Copy OAuth 2.0 Client ID and Client Secret into X_CLIENT_ID and X_CLIENT_SECRET.",
+  "Optional images: set X_OAUTH_INCLUDE_MEDIA_WRITE=1, redeploy, disconnect X, then Connect again.",
+  "Redeploy, then verify GET /api/health/x shows ok: true and the redirect URI matches the portal.",
 ];
 
 export function XSetupGuide({

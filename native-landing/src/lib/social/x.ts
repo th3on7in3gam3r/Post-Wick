@@ -1,13 +1,12 @@
 import { createHash, randomBytes } from "node:crypto";
 import { normalizeBaseUrl } from "@/lib/brand";
 
-const X_OAUTH_SCOPES = [
+const X_OAUTH_BASE_SCOPES = [
   "tweet.read",
   "tweet.write",
   "users.read",
   "offline.access",
-  "media.write",
-].join(" ");
+] as const;
 
 export type XConnectionMetadata = {
   refreshToken?: string;
@@ -15,6 +14,28 @@ export type XConnectionMetadata = {
   username?: string;
   userId?: string;
 };
+
+function truthyEnv(value: string | undefined) {
+  const normalized = value?.trim().toLowerCase();
+  return normalized === "1" || normalized === "true" || normalized === "yes";
+}
+
+/** Opt in with X_OAUTH_INCLUDE_MEDIA_WRITE=1 once the X app can grant media.write. */
+export function xOAuthIncludeMediaWrite() {
+  return truthyEnv(process.env.X_OAUTH_INCLUDE_MEDIA_WRITE);
+}
+
+export function xOAuthScopes() {
+  const scopes: string[] = [...X_OAUTH_BASE_SCOPES];
+  if (xOAuthIncludeMediaWrite()) {
+    scopes.push("media.write");
+  }
+  return scopes;
+}
+
+function xOAuthScopeParam() {
+  return xOAuthScopes().join(" ");
+}
 
 function appBaseUrl() {
   return normalizeBaseUrl(process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000");
@@ -70,7 +91,7 @@ export function getXAuthUrl(brandId: string, codeChallenge: string) {
     response_type: "code",
     client_id: clientId,
     redirect_uri: xRedirectUri(),
-    scope: X_OAUTH_SCOPES,
+    scope: xOAuthScopeParam(),
     state: brandId,
     code_challenge: codeChallenge,
     code_challenge_method: "S256",
@@ -255,10 +276,21 @@ async function fetchImageBinary(imageUrl: string) {
   return { buffer, contentType };
 }
 
+function mediaScopeHelpMessage() {
+  return (
+    "X image publishing needs the media.write scope. Set X_OAUTH_INCLUDE_MEDIA_WRITE=1, " +
+    "confirm Read and write in the X Developer Portal, disconnect X, then Connect again."
+  );
+}
+
 async function uploadXMedia(accessToken: string, imageUrl: string) {
   const { buffer, contentType } = await fetchImageBinary(imageUrl);
   if (!contentType.startsWith("image/")) {
     throw new Error("X posts only support image attachments");
+  }
+
+  if (!xOAuthIncludeMediaWrite()) {
+    throw new Error(mediaScopeHelpMessage());
   }
 
   const form = new FormData();
@@ -272,7 +304,15 @@ async function uploadXMedia(accessToken: string, imageUrl: string) {
   });
 
   if (!response.ok) {
-    throw new Error(`X media upload failed: ${await readXError(response)}`);
+    const detail = await readXError(response);
+    if (
+      response.status === 401 ||
+      response.status === 403 ||
+      /scope|permission|forbidden|unauthorized/i.test(detail)
+    ) {
+      throw new Error(mediaScopeHelpMessage());
+    }
+    throw new Error(`X media upload failed: ${detail}`);
   }
 
   const payload = (await response.json()) as { media_id_string?: string };
@@ -312,7 +352,17 @@ export async function publishToX(
   });
 
   if (!response.ok) {
-    throw new Error(`X publish request failed: ${await readXError(response)}`);
+    const detail = await readXError(response);
+    if (
+      response.status === 401 ||
+      response.status === 403 ||
+      /scope|permission|forbidden|unauthorized/i.test(detail)
+    ) {
+      throw new Error(
+        `X publish failed (permissions). Confirm Read and write in the Developer Portal, then disconnect and Connect X again. ${detail}`,
+      );
+    }
+    throw new Error(`X publish request failed: ${detail}`);
   }
 
   const payload = (await response.json()) as { data?: { id: string } };
