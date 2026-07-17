@@ -106,7 +106,17 @@ export function DirectoryClient({ listings }: { listings: PublicBrandListing[] }
               )}
               <div className="mt-6 flex flex-col gap-2 sm:flex-row">
                 <TextureButton asChild variant="primary" size="sm" className="flex-1">
-                  <Link href={publicFeedHref(listing)}>View feed</Link>
+                  {publicFeedHref(listing).startsWith("http") ? (
+                    <a
+                      href={publicFeedHref(listing)}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      View feed
+                    </a>
+                  ) : (
+                    <Link href={publicFeedHref(listing)}>View feed</Link>
+                  )}
                 </TextureButton>
                 <TextureButton asChild variant="secondary" size="sm" className="flex-1">
                   <a href={listing.websiteUrl} target="_blank" rel="noopener noreferrer">

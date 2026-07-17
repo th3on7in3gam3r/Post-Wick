@@ -5,7 +5,10 @@ import { MarketingShell } from "@/components/marketing-shell";
 import { TextureButton } from "@/components/ui/texture-button";
 import { siteUrl } from "@/lib/brand";
 import { getPublicBrandBySlug } from "@/lib/db";
-import { toPublicBrandListing } from "@/lib/directory/public-brands";
+import {
+  postwickBaseUrl,
+  toPublicBrandListing,
+} from "@/lib/directory/public-brands";
 import { directorySignUpHref } from "@/lib/directory/signup-href";
 import { createPageMetadata } from "@/lib/metadata";
 
@@ -35,6 +38,8 @@ export default async function PublicBrandDirectoryPage({ params }: PageProps) {
 
   const listing = toPublicBrandListing(brand);
   const profileUrl = `${siteUrl()}/directory/${params.slug}`;
+  const postwick = postwickBaseUrl();
+  const postwickUrl = postwick ? `${postwick}/b/${params.slug}` : null;
 
   const jsonLd = {
     "@context": "https://schema.org",
@@ -68,6 +73,13 @@ export default async function PublicBrandDirectoryPage({ params }: PageProps) {
               Visit website
             </a>
           </TextureButton>
+          {postwickUrl ? (
+            <TextureButton asChild variant="secondary" size="lg">
+              <a href={postwickUrl} target="_blank" rel="noopener noreferrer">
+                View on Postwick
+              </a>
+            </TextureButton>
+          ) : null}
           <TextureButton asChild variant="primary" size="lg">
             <Link href={directorySignUpHref()}>Start with Kerygma Social</Link>
           </TextureButton>

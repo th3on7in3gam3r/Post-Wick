@@ -74,6 +74,7 @@ export default async function HistoryPage({
               publishedAt: post.publishedAt,
               publishError: post.publishError,
               externalPostId: post.externalPostId,
+              isPublic: post.isPublic,
             }))}
           />
         )}

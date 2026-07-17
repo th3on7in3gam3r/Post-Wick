@@ -19,6 +19,7 @@ export const brands = pgTable("brands", {
   isPublic: boolean("is_public").notNull().default(false),
   publicSlug: text("public_slug"),
   publicNiche: text("public_niche"),
+  postwickAutoShare: boolean("postwick_auto_share").notNull().default(false),
   createdAt: timestamp("created_at", { withTimezone: true, mode: "string" })
     .notNull()
     .defaultNow(),
@@ -40,6 +41,7 @@ export const posts = pgTable("posts", {
   publishedAt: timestamp("published_at", { withTimezone: true, mode: "string" }),
   externalPostId: text("external_post_id"),
   publishError: text("publish_error"),
+  isPublic: boolean("is_public").notNull().default(false),
   createdAt: timestamp("created_at", { withTimezone: true, mode: "string" })
     .notNull()
     .defaultNow(),

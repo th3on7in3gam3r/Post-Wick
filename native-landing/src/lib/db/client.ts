@@ -159,6 +159,8 @@ async function ensureSchema() {
   await sql`ALTER TABLE brands ADD COLUMN IF NOT EXISTS is_public BOOLEAN NOT NULL DEFAULT FALSE`;
   await sql`ALTER TABLE brands ADD COLUMN IF NOT EXISTS public_slug TEXT`;
   await sql`ALTER TABLE brands ADD COLUMN IF NOT EXISTS public_niche TEXT`;
+  await sql`ALTER TABLE brands ADD COLUMN IF NOT EXISTS postwick_auto_share BOOLEAN NOT NULL DEFAULT FALSE`;
+  await sql`ALTER TABLE posts ADD COLUMN IF NOT EXISTS is_public BOOLEAN NOT NULL DEFAULT FALSE`;
   await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS agency_id TEXT`;
   await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS referred_by_agency_id TEXT`;
   await sql`
@@ -188,6 +190,7 @@ async function ensureSchema() {
   await sql`CREATE INDEX IF NOT EXISTS idx_posts_brand_id ON posts(brand_id)`;
   await sql`CREATE INDEX IF NOT EXISTS idx_posts_status ON posts(status)`;
   await sql`CREATE INDEX IF NOT EXISTS idx_posts_scheduled_at ON posts(scheduled_at)`;
+  await sql`CREATE INDEX IF NOT EXISTS idx_posts_is_public_published_at ON posts(is_public, published_at DESC)`;
   await sql`CREATE INDEX IF NOT EXISTS idx_connections_user_id ON connections(user_id)`;
   await sql`
     CREATE TABLE IF NOT EXISTS meta_oauth_pending (

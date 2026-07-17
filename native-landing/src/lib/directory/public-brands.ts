@@ -94,11 +94,19 @@ export function filterPublicBrandListings(
   });
 }
 
+export function postwickBaseUrl() {
+  const raw = process.env.NEXT_PUBLIC_POSTWICK_URL?.trim();
+  if (!raw) return null;
+  return raw.replace(/\/$/, "");
+}
+
 export function publicFeedHref(listing: PublicBrandListing) {
-  if (listing.publicSlug) {
-    return `/directory/${listing.publicSlug}`;
+  if (!listing.publicSlug) return "#";
+  const postwick = postwickBaseUrl();
+  if (postwick) {
+    return `${postwick}/b/${listing.publicSlug}`;
   }
-  return "#";
+  return `/directory/${listing.publicSlug}`;
 }
 
 export function slugifyBrandName(name: string) {

@@ -47,6 +47,7 @@ export type BrandRecord = {
   isPublic: boolean;
   publicSlug: string | null;
   publicNiche: string | null;
+  postwickAutoShare: boolean;
   createdAt: string;
   updatedAt: string;
 };
@@ -62,6 +63,7 @@ export type PostRecord = {
   publishedAt: string | null;
   externalPostId: string | null;
   publishError: string | null;
+  isPublic: boolean;
   createdAt: string;
   updatedAt: string;
 };
@@ -157,6 +159,7 @@ function parseBrand(row: typeof brands.$inferSelect): BrandRecord {
     isPublic: row.isPublic ?? false,
     publicSlug: row.publicSlug ?? null,
     publicNiche: row.publicNiche ?? null,
+    postwickAutoShare: row.postwickAutoShare ?? false,
     createdAt: row.createdAt,
     updatedAt: row.updatedAt,
   };
@@ -174,6 +177,7 @@ function parsePost(row: typeof posts.$inferSelect): PostRecord {
     publishedAt: row.publishedAt,
     externalPostId: row.externalPostId,
     publishError: row.publishError,
+    isPublic: row.isPublic ?? false,
     createdAt: row.createdAt,
     updatedAt: row.updatedAt,
   };
@@ -290,11 +294,102 @@ export async function updateBrandDirectoryListing(
       isPublic: data.isPublic,
       publicSlug: data.isPublic ? publicSlug : existing.publicSlug,
       publicNiche: data.isPublic ? publicNiche : existing.publicNiche,
+      // Turning off directory listing also disconnects Postwick auto-share.
+      postwickAutoShare: data.isPublic ? existing.postwickAutoShare : false,
       updatedAt: now,
     })
     .where(and(eq(brands.id, id), eq(brands.userId, userId)));
 
   return (await getBrandById(id, userId))!;
+}
+
+export async function updateBrandPostwickConnection(
+  id: string,
+  userId: string,
+  data: { connected: boolean; publicNiche?: string | null },
+) {
+  const existing = await getBrandById(id, userId);
+  if (!existing) return null;
+
+  if (data.connected) {
+    // Connecting requires a public directory listing + slug.
+    await updateBrandDirectoryListing(id, userId, {
+      isPublic: true,
+      publicNiche: data.publicNiche ?? existing.publicNiche,
+    });
+  }
+
+  const db = await getDb();
+  await db
+    .update(brands)
+    .set({
+      postwickAutoShare: data.connected,
+      updatedAt: nowIso(),
+    })
+    .where(and(eq(brands.id, id), eq(brands.userId, userId)));
+
+  return (await getBrandById(id, userId))!;
+}
+
+/** Share all currently published posts for a brand onto Postwick. */
+export async function shareAllPublishedPostsToPostwick(
+  brandId: string,
+  userId: string,
+) {
+  const brand = await getBrandById(brandId, userId);
+  if (!brand) return { updated: 0, error: "Brand not found" as string | undefined };
+  if (!brand.isPublic || !brand.publicSlug) {
+    return {
+      updated: 0,
+      error: "Connect / list this brand publicly before sharing posts on Postwick",
+    };
+  }
+
+  const db = await getDb();
+  const now = nowIso();
+  const rows = await db
+    .update(posts)
+    .set({ isPublic: true, updatedAt: now })
+    .where(
+      and(
+        eq(posts.brandId, brandId),
+        eq(posts.status, "published"),
+        eq(posts.isPublic, false),
+      ),
+    )
+    .returning({ id: posts.id });
+
+  return { updated: rows.length, error: undefined as string | undefined };
+}
+
+/** If the brand has Postwick auto-share on, mark this published post public. */
+export async function maybeAutoSharePostToPostwick(postId: string) {
+  const db = await getDb();
+  const rows = await db
+    .select({ post: posts, brand: brands })
+    .from(posts)
+    .innerJoin(brands, eq(brands.id, posts.brandId))
+    .where(eq(posts.id, postId))
+    .limit(1);
+
+  const row = rows[0];
+  if (!row) return;
+
+  if (
+    !row.brand.postwickAutoShare ||
+    !row.brand.isPublic ||
+    !row.brand.publicSlug ||
+    row.post.status !== "published"
+  ) {
+    return;
+  }
+
+  if (row.post.isPublic) return;
+
+  await db
+    .update(posts)
+    .set({ isPublic: true, updatedAt: nowIso() })
+    .where(eq(posts.id, postId));
 }
 
 export async function getPublicBrandBySlug(slug: string) {
@@ -601,6 +696,49 @@ export async function updatePostStatus(
   return row ? parsePost(row) : null;
 }
 
+export async function setPostPublic(
+  postId: string,
+  userId: string,
+  isPublic: boolean,
+): Promise<{ post: PostRecord; error?: string } | null> {
+  const db = await getDb();
+  const rows = await db
+    .select({ post: posts, brand: brands })
+    .from(posts)
+    .innerJoin(brands, eq(brands.id, posts.brandId))
+    .where(and(eq(posts.id, postId), eq(brands.userId, userId)))
+    .limit(1);
+
+  if (rows.length === 0) return null;
+
+  const { post, brand } = rows[0]!;
+
+  if (isPublic) {
+    if (post.status !== "published") {
+      return {
+        post: parsePost(post),
+        error: "Only published posts can be shared on Postwick",
+      };
+    }
+    if (!brand.isPublic || !brand.publicSlug) {
+      return {
+        post: parsePost(post),
+        error:
+          "Connect this brand to Postwick (or list it in the public directory) first, then share posts",
+      };
+    }
+  }
+
+  const now = nowIso();
+  await db
+    .update(posts)
+    .set({ isPublic, updatedAt: now })
+    .where(eq(posts.id, postId));
+
+  const updated = await db.query.posts.findFirst({ where: eq(posts.id, postId) });
+  return updated ? { post: parsePost(updated) } : null;
+}
+
 export async function getPendingPostForUser(postId: string, userId: string) {
   const db = await getDb();
   const rows = await db
@@ -894,6 +1032,8 @@ export async function finalizePublishedPost(
         )`,
       ),
     );
+
+  await maybeAutoSharePostToPostwick(postId);
 }
 
 /** @deprecated Use claimDuePostForPublishing + finalizePublishedPost for cron idempotency. */
@@ -916,12 +1056,13 @@ export async function markPostPublished(
     .where(
       and(
         eq(posts.id, postId),
-        eq(posts.status, "approved"),
         sql`${posts.brandId} IN (
           SELECT id FROM brands WHERE user_id = ${userId}
         )`,
       ),
     );
+
+  await maybeAutoSharePostToPostwick(postId);
 }
 
 export async function markPostFailed(postId: string, userId: string, message: string) {
