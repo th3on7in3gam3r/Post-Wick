@@ -3,7 +3,6 @@
 import {
   BookmarkIcon,
   CommentIcon,
-  FacebookIcon,
   HeartIcon,
   InstagramIcon,
   LinkedInIcon,
@@ -51,7 +50,6 @@ function PostCard({ card }: { card: SamplePost }) {
         <div className="flex items-center gap-2">
           {card.type === "instagram" && <InstagramIcon />}
           {card.type === "linkedin" && <LinkedInIcon />}
-          {card.type === "facebook" && <FacebookIcon />}
           <span className="text-[0.95rem] font-semibold text-near-black">{card.brand}</span>
           {card.timestamp ? (
             <span className="text-[0.8rem] text-gray-label">· {card.timestamp}</span>

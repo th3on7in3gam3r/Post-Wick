@@ -1,4 +1,4 @@
-export type SamplePostPlatform = "instagram" | "linkedin" | "facebook";
+export type SamplePostPlatform = "instagram" | "linkedin";
 
 export type SamplePost = {
   id: string;
@@ -10,7 +10,7 @@ export type SamplePost = {
   showActions?: boolean;
   share?: boolean;
   status?: boolean;
-  /** When true, caption renders above the image (LinkedIn / Facebook style). */
+  /** When true, caption renders above the image (LinkedIn style). */
   copyAbove?: boolean;
 };
 
@@ -52,8 +52,9 @@ export const samplePosts: SamplePost[] = [
   },
   {
     id: "chapter-verse",
-    type: "facebook",
+    type: "linkedin",
     brand: "Chapter & Verse Books",
+    timestamp: "3h",
     copyAbove: true,
     image: unsplash("1481627834876-b7833e8f5570"),
     caption:
@@ -81,8 +82,9 @@ export const samplePosts: SamplePost[] = [
   },
   {
     id: "paws-polish",
-    type: "facebook",
+    type: "linkedin",
     brand: "Paws & Polish Grooming",
+    timestamp: "5h",
     copyAbove: true,
     image: "/images/sample-posts/paws-polish.jpg",
     caption:
@@ -150,8 +152,9 @@ export const samplePosts: SamplePost[] = [
   },
   {
     id: "harbor-pizza",
-    type: "facebook",
+    type: "linkedin",
     brand: "Harbor View Pizza Co.",
+    timestamp: "4h",
     copyAbove: true,
     image: unsplash("1513104890138-7c749659a591"),
     caption:

@@ -106,7 +106,7 @@ const steps = [
             sub: "The dream home is finally complete. Natural materials, warm tones.",
           },
           {
-            platform: "Facebook",
+            platform: "Pinterest",
             title: "After a long day in the sauna",
             sub: "Nothing beats the fresh sea air. Experiences you'll never forget.",
           },
