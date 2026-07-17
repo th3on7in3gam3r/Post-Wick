@@ -148,8 +148,8 @@ export default function TermsPage() {
           <p>
             When you connect social media accounts and approve posts, you authorize Kerygma Social to
             transmit content to those platforms on your behalf. Your use of third-party platforms
-            (such as Facebook, Instagram, LinkedIn, X, TikTok, Pinterest, Reddit, or Bluesky) is
-            also subject to each platform&apos;s own terms and policies.
+            (such as Facebook, Instagram, LinkedIn, Pinterest, or Bluesky, with additional platforms
+            added over time) is also subject to each platform&apos;s own terms and policies.
           </p>
           <p>
             We are not responsible for platform outages, API changes, account restrictions,

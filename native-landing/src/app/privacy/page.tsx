@@ -69,9 +69,10 @@ export default function PrivacyPage() {
           </p>
           <p>
             <strong className="font-medium text-near-black">Connected platform data.</strong> If you
-            connect social accounts (such as Facebook, Instagram, LinkedIn, X, TikTok, Pinterest,
-            Reddit, or Bluesky), we receive tokens and profile information needed to publish on your
-            behalf. We only access what you authorize and what is required to operate the Service.
+            connect social accounts (such as Facebook, Instagram, LinkedIn, Pinterest, or Bluesky, with
+            additional platforms added over time), we receive tokens and profile information needed to
+            publish on your behalf. We only access what you authorize and what is required to operate
+            the Service.
           </p>
           <p>
             <strong className="font-medium text-near-black">Payment information.</strong> Paid
