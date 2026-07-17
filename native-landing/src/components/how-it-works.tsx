@@ -4,10 +4,11 @@ import { TextureButton } from "@/components/ui/texture-button";
 
 const steps = [
   {
-    number: "1",
+    number: "01",
     label: "Add your website",
     title: "Add your website.",
     body: "You add your website. Kerygma Social does the research on your business, your industry, and your competitors. The rest runs on autopilot.",
+    reverse: false,
     panel: (
       <div className="space-y-4 rounded-2xl bg-panel-bg p-6">
         <div className="rounded-full border border-[#ddd] bg-white px-4 py-3 text-sm text-gray-label">
@@ -43,10 +44,11 @@ const steps = [
     ),
   },
   {
-    number: "2",
+    number: "02",
     label: "Analysis and content",
     title: "We do the work.",
     body: "While you wait, Kerygma Social does the research on your business, your industry, and your competitors. We set up a tailored content plan and generate posts for each of your channels.",
+    reverse: true,
     panel: (
       <div className="space-y-3 rounded-2xl bg-panel-bg p-6">
         <div className="flex flex-wrap gap-2">
@@ -85,12 +87,13 @@ const steps = [
     ),
   },
   {
-    number: "3",
+    number: "03",
     label: "Approve and publish",
     title: "You approve. We publish.",
     body: "Kerygma Social drafts the posts. You swipe right to approve, left to skip. The rest runs on autopilot.",
+    reverse: false,
     panel: (
-      <div className="grid gap-3 sm:grid-cols-3">
+      <div className="grid gap-3 rounded-2xl bg-panel-bg p-6 sm:grid-cols-3">
         {[
           {
             platform: "LinkedIn",
@@ -127,10 +130,11 @@ const steps = [
     ),
   },
   {
-    number: "4",
+    number: "04",
     label: "Refine",
     title: "Tell Kerygma Social what to change. It does it.",
     body: "Almost love the post, but not quite? Describe it in plain words. Kerygma Social rewrites the caption, generates new image variations, and lets you pick your favorite.",
+    reverse: true,
     panel: (
       <div className="rounded-2xl bg-panel-bg p-6">
         <div className="mb-4 flex items-center gap-2 text-sm text-gray-label">
@@ -162,33 +166,40 @@ export function HowItWorks() {
       <div className="mx-auto max-w-[1200px]">
         <HowItWorksHeading />
 
-        <div className="mt-16 space-y-24">
+        <div className="mt-16 space-y-8">
           {steps.map((step) => (
-            <div
+            <article
               key={step.number}
-              className="grid items-center gap-12 lg:grid-cols-2 lg:gap-16"
+              className="relative overflow-hidden rounded-2xl border border-black/[0.06] bg-white p-8 shadow-card sm:p-10 lg:p-12"
             >
-              <div className={step.number === "2" || step.number === "4" ? "lg:order-2" : ""}>
-                <p className="step-label">
-                  {step.number}. {step.label}
-                </p>
-                <h3 className="mt-3 font-playfair text-[clamp(1.75rem,3vw,2.5rem)] italic text-near-black">
-                  {step.title}
-                </h3>
-                <p className="body-copy mt-4 max-w-lg">{step.body}</p>
-                <div className="mt-6 flex gap-3">
-                  <TextureButton asChild variant="secondary" size="default">
-                    <Link href="/sign-in">Log in</Link>
-                  </TextureButton>
-                  <TextureButton asChild variant="primary" size="default">
-                    <Link href="/sign-up">Get started</Link>
-                  </TextureButton>
+              <span
+                aria-hidden
+                className="pointer-events-none absolute -right-2 -top-4 select-none font-playfair text-[clamp(7rem,18vw,12rem)] leading-none text-[#E8E4DC] sm:-right-1 sm:-top-6"
+              >
+                {step.number}
+              </span>
+
+              <div className="relative z-10 grid items-center gap-10 lg:grid-cols-2 lg:gap-14">
+                <div className={step.reverse ? "lg:order-2" : undefined}>
+                  <p className="step-label">{step.label}</p>
+                  <h3 className="mt-3 font-playfair text-[clamp(1.75rem,3vw,2.5rem)] italic text-near-black">
+                    {step.title}
+                  </h3>
+                  <p className="body-copy mt-4 max-w-lg">{step.body}</p>
+                  <div className="mt-6 flex gap-3">
+                    <TextureButton asChild variant="secondary" size="default">
+                      <Link href="/sign-in">Log in</Link>
+                    </TextureButton>
+                    <TextureButton asChild variant="primary" size="default">
+                      <Link href="/sign-up">Get started</Link>
+                    </TextureButton>
+                  </div>
+                </div>
+                <div className={step.reverse ? "lg:order-1" : undefined}>
+                  {step.panel}
                 </div>
               </div>
-              <div className={step.number === "2" || step.number === "4" ? "lg:order-1" : ""}>
-                {step.panel}
-              </div>
-            </div>
+            </article>
           ))}
         </div>
       </div>
