@@ -7,7 +7,47 @@ import { useActiveClient } from "@/components/app/client-context";
 import { cn } from "@/lib/utils";
 
 function isLikelyIconAsset(url: string) {
-  return /favicon|apple-touch-icon|s2\/favicons|icon\.(?:png|ico|svg)/i.test(url);
+  return /favicon|apple-touch-icon|s2\/favicons|faviconV2|gstatic\.com\/favicon|icon\.(?:png|ico|svg)/i.test(
+    url,
+  );
+}
+
+function isBrokenFaviconProxy(url: string) {
+  return /s2\/favicons|faviconV2|gstatic\.com\/favicon/i.test(url);
+}
+
+function BrandLogo({
+  name,
+  logoUrl,
+  className,
+  fallbackClassName,
+}: {
+  name: string;
+  logoUrl: string | null;
+  className: string;
+  fallbackClassName: string;
+}) {
+  const [failed, setFailed] = useState(false);
+  const usable = Boolean(logoUrl && !isBrokenFaviconProxy(logoUrl) && !failed);
+
+  if (usable && logoUrl) {
+    return (
+      // eslint-disable-next-line @next/next/no-img-element
+      <img
+        src={logoUrl}
+        alt={`${name} logo`}
+        className={className}
+        referrerPolicy="no-referrer"
+        onError={() => setFailed(true)}
+      />
+    );
+  }
+
+  return (
+    <div className={fallbackClassName}>
+      <Globe className="h-5 w-5 text-gold sm:h-6 sm:w-6" />
+    </div>
+  );
 }
 
 export function BrandSitePreview({
@@ -62,19 +102,12 @@ export function BrandSitePreview({
 
         <div className="relative flex flex-col gap-4 p-5 sm:flex-row sm:items-center">
           <div className="flex min-w-0 flex-1 items-center gap-4">
-            {logoUrl ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
-                src={logoUrl}
-                alt={`${name} logo`}
-                className="h-14 w-14 shrink-0 rounded-xl border border-black/[0.06] bg-white object-contain p-1.5 shadow-sm"
-                referrerPolicy="no-referrer"
-              />
-            ) : (
-              <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl border border-black/[0.06] bg-white shadow-sm">
-                <Globe className="h-6 w-6 text-gold" />
-              </div>
-            )}
+            <BrandLogo
+              name={name}
+              logoUrl={logoUrl}
+              className="h-14 w-14 shrink-0 rounded-xl border border-black/[0.06] bg-white object-contain p-1.5 shadow-sm"
+              fallbackClassName="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl border border-black/[0.06] bg-white shadow-sm"
+            />
             <div className="min-w-0">
               <div className="flex flex-wrap items-center gap-2">
                 <p className="truncate font-playfair text-xl italic text-near-black">{name}</p>
@@ -140,19 +173,12 @@ export function BrandSitePreview({
       )}
 
       <div className="relative flex h-full items-center justify-center px-4">
-        {logoUrl ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
-            src={logoUrl}
-            alt={`${name} logo`}
-            className="h-12 w-12 rounded-xl border border-black/[0.06] bg-white object-contain p-1 shadow-sm"
-            referrerPolicy="no-referrer"
-          />
-        ) : (
-          <div className="rounded-full bg-white p-3 shadow-sm">
-            <Globe className="h-5 w-5 text-gold" />
-          </div>
-        )}
+        <BrandLogo
+          name={name}
+          logoUrl={logoUrl}
+          className="h-12 w-12 rounded-xl border border-black/[0.06] bg-white object-contain p-1 shadow-sm"
+          fallbackClassName="rounded-full bg-white p-3 shadow-sm"
+        />
       </div>
     </div>
   );

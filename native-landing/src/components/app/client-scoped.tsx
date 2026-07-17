@@ -45,8 +45,11 @@ function ActiveClientLogo({
   logoUrl: string | null;
 }) {
   const [failed, setFailed] = useState(false);
+  const isBrokenProxy =
+    Boolean(logoUrl) &&
+    /s2\/favicons|faviconV2|gstatic\.com\/favicon/i.test(logoUrl ?? "");
 
-  if (logoUrl && !failed) {
+  if (logoUrl && !failed && !isBrokenProxy) {
     return (
       // eslint-disable-next-line @next/next/no-img-element
       <img

@@ -18,8 +18,11 @@ function ClientAvatar({
 }) {
   const [failed, setFailed] = useState(false);
   const sizeClass = size === "sm" ? "h-7 w-7 text-[0.6rem]" : "h-8 w-8 text-xs";
+  const isBrokenProxy =
+    Boolean(logoUrl) &&
+    /s2\/favicons|faviconV2|gstatic\.com\/favicon/i.test(logoUrl ?? "");
 
-  if (logoUrl && !failed) {
+  if (logoUrl && !failed && !isBrokenProxy) {
     return (
       // eslint-disable-next-line @next/next/no-img-element
       <img

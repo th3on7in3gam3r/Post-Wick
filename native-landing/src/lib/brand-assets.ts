@@ -21,17 +21,10 @@ function absoluteUrl(value: string | undefined, baseUrl: string) {
   }
 }
 
-function faviconFallback(websiteUrl: string) {
-  try {
-    const hostname = new URL(websiteUrl).hostname;
-    return `https://www.google.com/s2/favicons?domain=${hostname}&sz=128`;
-  } catch {
-    return null;
-  }
-}
-
 function isIconAssetUrl(url: string) {
-  return /favicon|apple-touch-icon|s2\/favicons|\/icon(?:-\d+)?\.(?:png|ico|svg)/i.test(url);
+  return /favicon|apple-touch-icon|s2\/favicons|faviconV2|gstatic\.com\/favicon|\/icon(?:-\d+)?\.(?:png|ico|svg)/i.test(
+    url,
+  );
 }
 
 function heroDiscoveryCandidates(websiteUrl: string, pageUrl: string) {
@@ -127,8 +120,7 @@ export function extractAssetsFromHtml(html: string, pageUrl: string) {
 
   const logoUrl =
     absoluteUrl(iconHref, pageUrl) ??
-    absoluteUrl($('meta[property="og:logo"]').attr("content"), pageUrl) ??
-    faviconFallback(pageUrl);
+    absoluteUrl($('meta[property="og:logo"]').attr("content"), pageUrl);
 
   return { logoUrl, siteImageUrl };
 }
@@ -157,13 +149,10 @@ export async function fetchBrandAssetsFromWebsite(
       (await pickFirstValidImage(
         [
           assets.logoUrl,
-          faviconFallback(normalized),
           ...logoDiscoveryCandidates(normalized, normalized),
         ],
         { allowIcons: true },
       )) ??
-      assets.logoUrl ??
-      faviconFallback(normalized) ??
       "";
 
     const siteImageUrl = await pickFirstValidImage(
@@ -180,13 +169,19 @@ export async function fetchBrandAssetsFromWebsite(
   }
 }
 
+function sanitizedResearchLogo(logoUrl?: string | null) {
+  if (!logoUrl?.trim()) return "";
+  // Google favicon proxies often 404 for sites without icons — don't store/serve them.
+  if (/s2\/favicons|faviconV2|gstatic\.com\/favicon/i.test(logoUrl)) return "";
+  return logoUrl.trim();
+}
+
 export function getBrandAssetsFromResearch(
   websiteUrl: string,
   research?: BrandResearchAssets | null,
 ): BrandVisualAssets {
-  const fallbackLogo = faviconFallback(websiteUrl) ?? "";
   return {
-    logoUrl: research?.logoUrl ?? fallbackLogo,
+    logoUrl: sanitizedResearchLogo(research?.logoUrl),
     siteImageUrl: research?.siteImageUrl ?? null,
   };
 }
@@ -197,9 +192,8 @@ export async function resolveBrandAssets(
 ): Promise<BrandVisualAssets> {
   const cached = getBrandAssetsFromResearch(websiteUrl, research);
   const logoUrl =
-    cached.logoUrl ||
-    (await pickFirstValidImage([faviconFallback(websiteUrl)])) ||
-    faviconFallback(websiteUrl) ||
+    (cached.logoUrl &&
+      (await pickFirstValidImage([cached.logoUrl], { allowIcons: true }))) ||
     "";
 
   const cachedSiteImage = await pickFirstValidImage([cached.siteImageUrl], {

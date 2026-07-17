@@ -8,8 +8,10 @@ import {
 } from "@/lib/cookie-consent";
 
 const PULSE_SCRIPT_ID = "kerygma-pulse-script";
-const PULSE_SRC = "https://pulse-5o1m.onrender.com/pulse.js?v=2026-07-17";
+/** Cache-bust + load remote tracker; collect via same-origin proxy to avoid CORS. */
+const PULSE_SRC = "https://pulse-5o1m.onrender.com/pulse.js?v=2026-07-17b";
 const PULSE_SITE = "kerygmasocial-com";
+const PULSE_ENDPOINT = "/api/analytics/collect";
 
 function loadPulse() {
   if (typeof window === "undefined") return;
@@ -21,6 +23,8 @@ function loadPulse() {
   script.async = true;
   script.defer = true;
   script.dataset.site = PULSE_SITE;
+  // Same-origin proxy — no cross-origin CORS / credentials issues.
+  script.dataset.endpoint = PULSE_ENDPOINT;
   document.body.appendChild(script);
 }
 
