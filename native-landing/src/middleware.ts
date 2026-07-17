@@ -1,4 +1,5 @@
 import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
+import { NextResponse, type NextFetchEvent, type NextRequest } from "next/server";
 
 const isPublicRoute = createRouteMatcher([
   "/",
@@ -54,11 +55,41 @@ const isPublicRoute = createRouteMatcher([
   "/api/social/bluesky/callback",
 ]);
 
-export default clerkMiddleware(async (auth, req) => {
+function isClerkConfigured() {
+  return Boolean(
+    process.env.CLERK_SECRET_KEY?.trim() &&
+      process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY?.trim(),
+  );
+}
+
+const clerkHandler = clerkMiddleware(async (auth, req) => {
   if (!isPublicRoute(req)) {
-    auth().protect();
+    await auth().protect();
   }
 });
+
+export default async function middleware(req: NextRequest, event: NextFetchEvent) {
+  if (!isClerkConfigured()) {
+    if (!isPublicRoute(req)) {
+      const signIn = new URL("/sign-in", req.url);
+      signIn.searchParams.set("redirect_url", `${req.nextUrl.pathname}${req.nextUrl.search}`);
+      return NextResponse.redirect(signIn);
+    }
+    return NextResponse.next();
+  }
+
+  try {
+    return await clerkHandler(req, event);
+  } catch (error) {
+    console.error("[middleware] Clerk invocation failed:", error);
+    if (isPublicRoute(req)) {
+      return NextResponse.next();
+    }
+    const signIn = new URL("/sign-in", req.url);
+    signIn.searchParams.set("redirect_url", `${req.nextUrl.pathname}${req.nextUrl.search}`);
+    return NextResponse.redirect(signIn);
+  }
+}
 
 export const config = {
   matcher: [
