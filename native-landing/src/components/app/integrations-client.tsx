@@ -646,6 +646,12 @@ export function IntegrationsClient({
                 (item) => item.platform === platform.id,
               );
               const runtime = configById.get(platform.id);
+              const hasHealthError =
+                Boolean(connection) &&
+                !connection?.isDemo &&
+                (verifyFeedback[connection!.id]?.kind === "error" ||
+                  (!verifyFeedback[connection!.id] &&
+                    connection?.healthStatus === "error"));
               const isLoading =
                 loadingKey === `demo:${platform.id}` ||
                 loadingKey === `oauth:${platform.id}` ||
@@ -741,6 +747,10 @@ export function IntegrationsClient({
                         {connection.isDemo ? (
                           <span className="ml-2 rounded-full bg-cream px-2 py-0.5 text-[0.65rem] uppercase tracking-wide text-gray-label">
                             Demo
+                          </span>
+                        ) : hasHealthError ? (
+                          <span className="ml-2 rounded-full bg-red-50 px-2 py-0.5 text-[0.65rem] uppercase tracking-wide text-red-700">
+                            Needs attention
                           </span>
                         ) : (
                           <span className="ml-2 rounded-full bg-emerald-50 px-2 py-0.5 text-[0.65rem] uppercase tracking-wide text-emerald-700">
