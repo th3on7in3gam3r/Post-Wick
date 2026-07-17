@@ -6,7 +6,8 @@ export type IntegrationPlatformId =
   | "tiktok"
   | "pinterest"
   | "bluesky"
-  | "google_business";
+  | "google_business"
+  | "postwick";
 
 export type IntegrationOAuthProvider =
   | "linkedin"
@@ -15,7 +16,9 @@ export type IntegrationOAuthProvider =
   | "pinterest"
   | "bluesky";
 
-export type IntegrationCategory = "professional" | "social" | "local";
+export type IntegrationCategory = "professional" | "social" | "local" | "network";
+
+export type IntegrationConnectionKind = "oauth" | "demo" | "brand";
 
 export type IntegrationDefinition = {
   id: IntegrationPlatformId;
@@ -26,6 +29,7 @@ export type IntegrationDefinition = {
   supportsImages: boolean;
   demoAvailable: boolean;
   oauthProvider?: IntegrationOAuthProvider;
+  connectionKind?: IntegrationConnectionKind;
 };
 
 export const INTEGRATION_CATEGORIES: Record<
@@ -43,6 +47,10 @@ export const INTEGRATION_CATEGORIES: Record<
   local: {
     label: "Local",
     description: "Show up in local search and maps.",
+  },
+  network: {
+    label: "Network",
+    description: "Share your brand on the Postwick public posts network.",
   },
 };
 
@@ -125,6 +133,16 @@ export const INTEGRATION_PLATFORMS: IntegrationDefinition[] = [
     charLimit: 1500,
     supportsImages: true,
     demoAvailable: true,
+  },
+  {
+    id: "postwick",
+    name: "Postwick",
+    tagline: "Show your brand on the Postwick public posts network.",
+    category: "network",
+    charLimit: 2200,
+    supportsImages: true,
+    demoAvailable: false,
+    connectionKind: "brand",
   },
 ];
 

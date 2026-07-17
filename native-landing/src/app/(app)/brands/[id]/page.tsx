@@ -11,7 +11,6 @@ import {
 } from "lucide-react";
 import { AppHeader } from "@/components/app/app-header";
 import { BrandDirectoryToggle } from "@/components/app/brand-directory-toggle";
-import { BrandPostwickToggle } from "@/components/app/brand-postwick-toggle";
 import { BrandImageStylePicker } from "@/components/app/brand-image-style-picker";
 import { BrandProfileCard } from "@/components/app/brand-profile-card";
 import { BrandSitePreview } from "@/components/app/brand-site-preview";
@@ -163,30 +162,17 @@ export default async function BrandPage({
             </PanelCard>
 
             {brand.crawlStatus === "completed" ? (
-              <>
-                <PanelCard
-                  title="Postwick"
-                  description="Connect this brand to the Postwick public posts network."
-                >
-                  <BrandPostwickToggle
-                    brandId={brand.id}
-                    initialConnected={brand.postwickAutoShare}
-                    publicSlug={brand.publicSlug}
-                    publicNiche={brand.publicNiche}
-                  />
-                </PanelCard>
-                <PanelCard
-                  title="Directory listing"
-                  description="Share your brand on the public Kerygma Social directory."
-                >
-                  <BrandDirectoryToggle
-                    brandId={brand.id}
-                    initialIsPublic={brand.isPublic}
-                    publicSlug={brand.publicSlug}
-                    publicNiche={brand.publicNiche}
-                  />
-                </PanelCard>
-              </>
+              <PanelCard
+                title="Directory listing"
+                description="Share your brand on the public Kerygma Social directory. Connect Postwick from Settings → Integrations."
+              >
+                <BrandDirectoryToggle
+                  brandId={brand.id}
+                  initialIsPublic={brand.isPublic}
+                  publicSlug={brand.publicSlug}
+                  publicNiche={brand.publicNiche}
+                />
+              </PanelCard>
             ) : null}
 
             <PanelCard title="Connections" description="Channels linked to this brand.">

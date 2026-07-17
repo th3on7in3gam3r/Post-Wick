@@ -52,7 +52,15 @@ export default async function IntegrationsPage({
         />
       ) : (
         <IntegrationsClient
-          brands={brands.map((brand) => ({ id: brand.id, name: brand.name }))}
+          brands={brands.map((brand) => ({
+            id: brand.id,
+            name: brand.name,
+            crawlStatus: brand.crawlStatus,
+            isPublic: brand.isPublic,
+            publicSlug: brand.publicSlug,
+            publicNiche: brand.publicNiche,
+            postwickAutoShare: brand.postwickAutoShare,
+          }))}
           initialDemoModeEnabled={dbUser.demoModeEnabled}
           initialConnections={connections.map((connection) => {
             const health = parseConnectionMetadata<{

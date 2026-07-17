@@ -10,7 +10,7 @@ import { isBlueskyConfigured } from "@/lib/social/bluesky";
 import { isPinterestConfigured } from "@/lib/social/pinterest";
 import { isXConfigured } from "@/lib/social/x";
 
-export type PlatformConnectionMode = "oauth" | "demo" | "unavailable";
+export type PlatformConnectionMode = "oauth" | "demo" | "brand" | "unavailable";
 
 export type PlatformRuntimeConfig = {
   id: IntegrationPlatformId;
@@ -78,6 +78,14 @@ export function getPlatformRuntimeConfig(
       id: platformId,
       oauthConfigured,
       connectionMode: oauthConfigured ? "oauth" : platform.demoAvailable ? "demo" : "unavailable",
+    };
+  }
+
+  if (platform.connectionKind === "brand" || platformId === "postwick") {
+    return {
+      id: platformId,
+      oauthConfigured: false,
+      connectionMode: "brand",
     };
   }
 

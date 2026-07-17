@@ -23,6 +23,7 @@ import {
   type IntegrationPlatformId,
 } from "@/lib/integrations/catalog";
 import type { PlatformRuntimeConfig } from "@/lib/integrations/config";
+import { postwickBaseUrl } from "@/lib/directory/public-brands";
 import { cn } from "@/lib/utils";
 
 type OAuthRedirectSetup = {
@@ -33,6 +34,11 @@ type OAuthRedirectSetup = {
 type Brand = {
   id: string;
   name: string;
+  crawlStatus: "pending" | "running" | "review" | "completed" | "failed";
+  isPublic: boolean;
+  publicSlug: string | null;
+  publicNiche: string | null;
+  postwickAutoShare: boolean;
 };
 
 type Connection = {
@@ -54,6 +60,7 @@ const PLATFORM_ACCENTS: Record<IntegrationPlatformId, string> = {
   pinterest: "bg-[#BD081C]/10 text-[#BD081C]",
   bluesky: "bg-[#1185FE]/10 text-[#1185FE]",
   google_business: "bg-[#4285F4]/10 text-[#4285F4]",
+  postwick: "bg-[#C4A35A]/15 text-[#8B6914]",
 };
 
 type FlashResult =
@@ -218,7 +225,7 @@ function DemoModeToggle({
 }
 
 export function IntegrationsClient({
-  brands,
+  brands: initialBrands,
   initialConnections,
   initialDemoModeEnabled,
   runtimeConfig,
@@ -244,13 +251,16 @@ export function IntegrationsClient({
 }) {
   const router = useRouter();
   const { activeClient, setActiveClientId } = useActiveClient();
+  const [brands, setBrands] = useState(initialBrands);
   const [brandId, setBrandId] = useState(
-    () => activeClient.id || brands[0]?.id || "",
+    () => activeClient.id || initialBrands[0]?.id || "",
   );
   const [connections, setConnections] = useState(initialConnections);
   const [loadingKey, setLoadingKey] = useState<string | null>(null);
   const [filter, setFilter] = useState<"all" | "connected">("all");
   const [actionError, setActionError] = useState<string | null>(null);
+  const [postwickMessage, setPostwickMessage] = useState<string | null>(null);
+  const [shareExistingToPostwick, setShareExistingToPostwick] = useState(true);
   const [verifyFeedback, setVerifyFeedback] = useState<
     Record<string, { kind: "success" | "error"; message: string }>
   >({});
@@ -258,10 +268,18 @@ export function IntegrationsClient({
   const [demoModeSaving, setDemoModeSaving] = useState(false);
 
   useEffect(() => {
+    setBrands(initialBrands);
+  }, [initialBrands]);
+
+  useEffect(() => {
     if (activeClient.id && brands.some((brand) => brand.id === activeClient.id)) {
       setBrandId(activeClient.id);
     }
   }, [activeClient.id, brands]);
+
+  useEffect(() => {
+    setPostwickMessage(null);
+  }, [brandId]);
 
   const flash = flashParams ? flashFromParams(flashParams) : null;
   const showOAuthDebug =
@@ -278,8 +296,15 @@ export function IntegrationsClient({
     () => new Map(runtimeConfig.map((item) => [item.id, item])),
     [runtimeConfig],
   );
+  const postwickConnected = Boolean(activeBrand?.postwickAutoShare);
+  const postwickOrigin = postwickBaseUrl();
+  const postwickProfileUrl =
+    activeBrand?.publicSlug && postwickOrigin
+      ? `${postwickOrigin}/b/${activeBrand.publicSlug}`
+      : null;
 
-  const connectedCount = brandConnections.length;
+  const connectedCount =
+    brandConnections.length + (postwickConnected ? 1 : 0);
   const liveOAuthCount = runtimeConfig.filter((item) => item.oauthConfigured).length;
   const demoConnectionCount = brandConnections.filter((item) => item.isDemo).length;
 
@@ -467,6 +492,115 @@ export function IntegrationsClient({
     }
   }
 
+  async function updatePostwickConnection(
+    nextConnected: boolean,
+    options?: { shareExisting?: boolean },
+  ) {
+    if (!brandId) {
+      setActionError("Select a brand before connecting.");
+      return;
+    }
+
+    const brand = brands.find((item) => item.id === brandId);
+    if (!brand) {
+      setActionError("Select a brand before connecting.");
+      return;
+    }
+
+    if (nextConnected && brand.crawlStatus !== "completed") {
+      setActionError("Finish brand setup before connecting to Postwick.");
+      return;
+    }
+
+    setActionError(null);
+    setPostwickMessage(null);
+    setLoadingKey(
+      nextConnected && options?.shareExisting && brand.postwickAutoShare
+        ? "postwick:share"
+        : nextConnected
+          ? "postwick:connect"
+          : "postwick:disconnect",
+    );
+
+    try {
+      const response = await fetch(`/api/brands/${brandId}/postwick`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          connected: nextConnected,
+          publicNiche: brand.publicNiche?.trim() || undefined,
+          shareExisting: nextConnected
+            ? (options?.shareExisting ?? shareExistingToPostwick)
+            : false,
+        }),
+      });
+      const data = (await response.json()) as {
+        error?: string;
+        warning?: string;
+        sharedCount?: number;
+        brand?: {
+          postwickAutoShare: boolean;
+          publicSlug: string | null;
+          publicNiche: string | null;
+          isPublic: boolean;
+        };
+      };
+
+      if (!response.ok) {
+        setActionError(
+          typeof data.error === "string"
+            ? data.error
+            : "Could not update Postwick connection.",
+        );
+        return;
+      }
+
+      setBrands((prev) =>
+        prev.map((item) =>
+          item.id === brandId && data.brand
+            ? {
+                ...item,
+                postwickAutoShare: data.brand.postwickAutoShare,
+                publicSlug: data.brand.publicSlug,
+                publicNiche: data.brand.publicNiche,
+                isPublic: data.brand.isPublic,
+              }
+            : item,
+        ),
+      );
+
+      if (data.warning) {
+        setPostwickMessage(data.warning);
+      } else if (nextConnected && (data.sharedCount ?? 0) > 0) {
+        setPostwickMessage(
+          brand.postwickAutoShare
+            ? `Shared ${data.sharedCount} published post${
+                data.sharedCount === 1 ? "" : "s"
+              } to Postwick.`
+            : `Connected. Shared ${data.sharedCount} published post${
+                data.sharedCount === 1 ? "" : "s"
+              } to Postwick.`,
+        );
+      } else if (nextConnected) {
+        setPostwickMessage(
+          brand.postwickAutoShare
+            ? "No additional published posts to share."
+            : "Connected. New published posts will appear on Postwick automatically.",
+        );
+      } else {
+        setPostwickMessage(
+          "Disconnected. New posts will not auto-share. Existing Postwick posts stay until you unshare them in History.",
+        );
+      }
+
+      router.refresh();
+    } catch {
+      setActionError("Could not update Postwick connection. Try again.");
+    } finally {
+      setLoadingKey(null);
+    }
+  }
+
   function oauthReady(platform: IntegrationPlatformId) {
     return configById.get(platform)?.connectionMode === "oauth";
   }
@@ -477,6 +611,7 @@ export function IntegrationsClient({
       platforms: INTEGRATION_PLATFORMS.filter((platform) => {
         if (platform.category !== category) return false;
         if (filter === "connected") {
+          if (platform.id === "postwick") return postwickConnected;
           return brandConnections.some((item) => item.platform === platform.id);
         }
         return true;
@@ -646,17 +781,184 @@ export function IntegrationsClient({
                 (item) => item.platform === platform.id,
               );
               const runtime = configById.get(platform.id);
+              const isPostwick = platform.id === "postwick";
               const hasHealthError =
                 Boolean(connection) &&
                 !connection?.isDemo &&
                 (verifyFeedback[connection!.id]?.kind === "error" ||
                   (!verifyFeedback[connection!.id] &&
                     connection?.healthStatus === "error"));
-              const isLoading =
-                loadingKey === `demo:${platform.id}` ||
-                loadingKey === `oauth:${platform.id}` ||
-                loadingKey === `disconnect:${connection?.id}` ||
-                loadingKey === `verify:${connection?.id}`;
+              const isLoading = isPostwick
+                ? loadingKey === "postwick:connect" ||
+                  loadingKey === "postwick:disconnect" ||
+                  loadingKey === "postwick:share"
+                : loadingKey === `demo:${platform.id}` ||
+                  loadingKey === `oauth:${platform.id}` ||
+                  loadingKey === `disconnect:${connection?.id}` ||
+                  loadingKey === `verify:${connection?.id}`;
+              const brandReadyForPostwick =
+                activeBrand?.crawlStatus === "completed";
+
+              if (isPostwick) {
+                return (
+                  <article
+                    key={platform.id}
+                    className="flex h-full flex-col rounded-2xl border border-black/[0.06] bg-white p-5 shadow-card"
+                  >
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="flex items-start gap-3">
+                        <div
+                          className={cn(
+                            "rounded-full px-3 py-2 text-xs font-semibold uppercase tracking-wide",
+                            PLATFORM_ACCENTS[platform.id],
+                          )}
+                        >
+                          {platform.name.slice(0, 2)}
+                        </div>
+                        <div>
+                          <h3 className="font-playfair text-lg italic text-near-black">
+                            {platform.name}
+                          </h3>
+                          <p className="mt-1 text-xs text-gray-body">
+                            {platform.tagline}
+                          </p>
+                        </div>
+                      </div>
+                      {postwickConnected ? (
+                        <CheckCircle2 className="h-5 w-5 shrink-0 text-gold" />
+                      ) : (
+                        <Plug className="h-5 w-5 shrink-0 text-gray-label" />
+                      )}
+                    </div>
+
+                    <div className="mt-4 flex flex-wrap gap-2 text-[0.65rem] font-medium uppercase tracking-wide text-gray-label">
+                      <span>Public network</span>
+                      <span>·</span>
+                      <span>Auto-share</span>
+                      <span>·</span>
+                      <span>
+                        {runtime?.connectionMode === "brand"
+                          ? "Ready"
+                          : "Unavailable"}
+                      </span>
+                    </div>
+
+                    <p className="mt-3 text-xs text-gray-body">
+                      Connecting also enables your public directory listing. New
+                      published posts auto-share to Postwick.
+                    </p>
+
+                    {!brandReadyForPostwick ? (
+                      <p className="mt-3 text-xs text-amber-800">
+                        Finish brand setup before connecting to Postwick.
+                      </p>
+                    ) : null}
+
+                    {postwickMessage ? (
+                      <p className="mt-3 text-xs text-emerald-700" role="status">
+                        {postwickMessage}
+                      </p>
+                    ) : null}
+
+                    {postwickConnected ? (
+                      <div className="mt-5 flex flex-1 flex-col justify-end space-y-3">
+                        <p className="text-sm text-near-black">
+                          {activeBrand?.publicSlug
+                            ? `/b/${activeBrand.publicSlug}`
+                            : "Postwick network"}
+                          <span className="ml-2 rounded-full bg-emerald-50 px-2 py-0.5 text-[0.65rem] uppercase tracking-wide text-emerald-700">
+                            Live
+                          </span>
+                        </p>
+                        {postwickProfileUrl ? (
+                          <p className="text-xs text-gray-body">
+                            Public page:{" "}
+                            <a
+                              href={postwickProfileUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="font-medium text-gold hover:underline"
+                            >
+                              {postwickProfileUrl}
+                            </a>
+                          </p>
+                        ) : activeBrand?.publicSlug ? (
+                          <p className="text-xs text-gray-body">
+                            Profile slug ready:{" "}
+                            <span className="font-medium">
+                              /b/{activeBrand.publicSlug}
+                            </span>
+                            {postwickOrigin
+                              ? null
+                              : " (set NEXT_PUBLIC_POSTWICK_URL to show the full link)"}
+                          </p>
+                        ) : null}
+                        <div className="flex flex-wrap gap-2">
+                          <TextureButton
+                            type="button"
+                            variant="secondary"
+                            size="sm"
+                            disabled={isLoading}
+                            onClick={() =>
+                              void updatePostwickConnection(true, {
+                                shareExisting: true,
+                              })
+                            }
+                          >
+                            {loadingKey === "postwick:share" ? (
+                              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            ) : null}
+                            Share all published posts
+                          </TextureButton>
+                          <TextureButton
+                            type="button"
+                            variant="secondary"
+                            size="sm"
+                            disabled={isLoading}
+                            onClick={() => void updatePostwickConnection(false)}
+                          >
+                            {loadingKey === "postwick:disconnect" ? (
+                              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            ) : null}
+                            Disconnect
+                          </TextureButton>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="mt-5 flex flex-1 flex-col justify-end gap-3">
+                        <label className="flex items-start gap-2 text-xs text-gray-body">
+                          <input
+                            type="checkbox"
+                            checked={shareExistingToPostwick}
+                            onChange={(event) =>
+                              setShareExistingToPostwick(event.target.checked)
+                            }
+                            className="mt-0.5"
+                          />
+                          <span>
+                            When connecting, also share all currently published
+                            posts to Postwick.
+                          </span>
+                        </label>
+                        <TextureButton
+                          type="button"
+                          variant="primary"
+                          size="sm"
+                          disabled={isLoading || !brandReadyForPostwick}
+                          onClick={() => void updatePostwickConnection(true)}
+                        >
+                          {loadingKey === "postwick:connect" ? (
+                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          ) : (
+                            <Link2 className="mr-2 h-4 w-4" />
+                          )}
+                          Connect Postwick
+                        </TextureButton>
+                      </div>
+                    )}
+                  </article>
+                );
+              }
 
               return (
                 <article
