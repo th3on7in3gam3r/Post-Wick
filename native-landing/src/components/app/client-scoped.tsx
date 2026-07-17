@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, type ReactNode } from "react";
+import { useMemo, useState, type ReactNode } from "react";
 import Link from "next/link";
 import { useActiveClient } from "@/components/app/client-context";
 import { AppHeader } from "@/components/app/app-header";
@@ -37,6 +37,35 @@ export function AppHeaderWithClient({
   );
 }
 
+function ActiveClientLogo({
+  name,
+  logoUrl,
+}: {
+  name: string;
+  logoUrl: string | null;
+}) {
+  const [failed, setFailed] = useState(false);
+
+  if (logoUrl && !failed) {
+    return (
+      // eslint-disable-next-line @next/next/no-img-element
+      <img
+        src={logoUrl}
+        alt=""
+        className="h-10 w-10 shrink-0 rounded-full object-cover"
+        referrerPolicy="no-referrer"
+        onError={() => setFailed(true)}
+      />
+    );
+  }
+
+  return (
+    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-cream text-sm font-semibold text-gold">
+      {clientInitials(name)}
+    </div>
+  );
+}
+
 export function ActiveClientBanner() {
   const { activeClient } = useActiveClient();
 
@@ -44,18 +73,7 @@ export function ActiveClientBanner() {
 
   return (
     <div className="mb-6 flex items-center gap-3 rounded-2xl border border-gold/25 bg-white px-4 py-3 shadow-card">
-      {activeClient.logoUrl ? (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img
-          src={activeClient.logoUrl}
-          alt=""
-          className="h-10 w-10 shrink-0 rounded-full object-cover"
-        />
-      ) : (
-        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-cream text-sm font-semibold text-gold">
-          {clientInitials(activeClient.name)}
-        </div>
-      )}
+      <ActiveClientLogo name={activeClient.name} logoUrl={activeClient.logoUrl} />
       <div className="min-w-0 flex-1">
         <p className="text-sm font-medium text-near-black">{activeClient.name}</p>
         <p className="truncate text-xs text-gray-body">{activeClient.industry}</p>

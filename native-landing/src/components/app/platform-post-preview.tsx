@@ -1,4 +1,7 @@
+"use client";
+
 import { Bookmark, Heart, MessageCircle, Repeat2, Send, Share2, ThumbsUp } from "lucide-react";
+import { useState } from "react";
 import { resolvePostImageUrl } from "@/lib/posts/image-url";
 import { cn } from "@/lib/utils";
 
@@ -23,7 +26,9 @@ function PreviewAvatar({
   initials?: string;
   className?: string;
 }) {
-  if (logoUrl) {
+  const [failed, setFailed] = useState(false);
+
+  if (logoUrl && !failed) {
     return (
       // eslint-disable-next-line @next/next/no-img-element
       <img
@@ -31,6 +36,7 @@ function PreviewAvatar({
         alt=""
         className={cn("shrink-0 rounded-full object-cover", className)}
         referrerPolicy="no-referrer"
+        onError={() => setFailed(true)}
       />
     );
   }

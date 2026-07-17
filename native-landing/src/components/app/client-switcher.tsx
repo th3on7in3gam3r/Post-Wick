@@ -16,15 +16,18 @@ function ClientAvatar({
   logoUrl: string | null;
   size?: "sm" | "md";
 }) {
+  const [failed, setFailed] = useState(false);
   const sizeClass = size === "sm" ? "h-7 w-7 text-[0.6rem]" : "h-8 w-8 text-xs";
 
-  if (logoUrl) {
+  if (logoUrl && !failed) {
     return (
       // eslint-disable-next-line @next/next/no-img-element
       <img
         src={logoUrl}
         alt=""
         className={cn("shrink-0 rounded-full object-cover", sizeClass)}
+        referrerPolicy="no-referrer"
+        onError={() => setFailed(true)}
       />
     );
   }
