@@ -39,7 +39,9 @@ export async function GET() {
       "Facebook Login for Business → Settings → Valid OAuth Redirect URIs:",
       redirectUri,
       "Set META_APP_ID and META_APP_SECRET from App settings → Basic.",
+      "App Review: request Advanced Access for pages_manage_posts (required to publish for non-role users).",
       "Redeploy, then Connect Facebook in Kerygma Social.",
+      "Integrations → Check connection validates token liveness, pages_manage_posts, and Page access — not only that the token exists.",
     ],
   });
 }

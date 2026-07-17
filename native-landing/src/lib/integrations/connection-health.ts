@@ -9,6 +9,12 @@ import {
 import { notifyIntegrationFailureIfNeeded } from "@/lib/integrations/notify-integration-failure";
 import { facebookAppCredentials } from "@/lib/social/meta";
 import {
+  facebookPageCannotCreateContentError,
+  facebookPublishPermissionError,
+  missingFacebookPublishScopes,
+  type MetaDebugTokenData,
+} from "@/lib/social/facebook-permissions";
+import {
   parseBlueskyMetadata,
   resolveBlueskyDid,
   verifyBlueskySession,
@@ -51,7 +57,10 @@ function parseMetaMetadata(metadata: string | null): MetaMetadata {
   return parseConnectionMetadata<MetaMetadata>(metadata);
 }
 
-async function debugMetaAccessToken(accessToken: string, label: string) {
+async function debugMetaAccessToken(
+  accessToken: string,
+  label: string,
+): Promise<MetaDebugTokenData> {
   const { appId, appSecret } = facebookAppCredentials();
   if (!appId || !appSecret) {
     throw new Error("Meta OAuth is not configured");
@@ -67,13 +76,52 @@ async function debugMetaAccessToken(accessToken: string, label: string) {
   }
 
   const payload = (await response.json()) as {
-    data?: { is_valid?: boolean; error?: { message?: string } };
+    data?: MetaDebugTokenData;
   };
 
   if (!payload.data?.is_valid) {
     throw new Error(
       `${label} failed: ${payload.data?.error?.message ?? "Token is invalid or expired"}`,
     );
+  }
+
+  return payload.data;
+}
+
+async function verifyFacebookPageAsset(
+  pageAccessToken: string,
+  pageId: string,
+) {
+  const url = new URL(`https://graph.facebook.com/${GRAPH_VERSION}/${pageId}`);
+  url.searchParams.set("fields", "id,name,tasks");
+  url.searchParams.set("access_token", pageAccessToken);
+
+  const response = await fetch(url);
+  if (!response.ok) {
+    throw new Error(
+      `Facebook Page check failed: ${await readApiError(response)}. Reconnect Facebook and re-select the Page.`,
+    );
+  }
+
+  const page = (await response.json()) as {
+    id?: string;
+    name?: string;
+    tasks?: string[];
+  };
+
+  if (!page.id) {
+    throw new Error(
+      "Facebook Page check failed: Page was not returned for this connection. Reconnect Facebook.",
+    );
+  }
+
+  // When Meta returns tasks, CREATE_CONTENT is required to publish photos/posts.
+  if (
+    Array.isArray(page.tasks) &&
+    page.tasks.length > 0 &&
+    !page.tasks.includes("CREATE_CONTENT")
+  ) {
+    throw new Error(facebookPageCannotCreateContentError());
   }
 }
 
@@ -83,10 +131,17 @@ async function verifyFacebook(connection: ConnectionRecord) {
     throw new Error("Facebook Page metadata is missing for this connection");
   }
 
-  await debugMetaAccessToken(
+  const debug = await debugMetaAccessToken(
     connection.accessToken,
     "Facebook connection check",
   );
+
+  const missingScopes = missingFacebookPublishScopes(debug, meta.pageId);
+  if (missingScopes.length > 0) {
+    throw new Error(facebookPublishPermissionError(missingScopes));
+  }
+
+  await verifyFacebookPageAsset(connection.accessToken, meta.pageId);
 }
 
 async function verifyInstagram(connection: ConnectionRecord) {

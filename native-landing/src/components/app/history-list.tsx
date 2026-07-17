@@ -36,13 +36,17 @@ export function HistoryList({
   const router = useRouter();
   const [retryingId, setRetryingId] = useState<string | null>(null);
   const [retryingAll, setRetryingAll] = useState(false);
-  const [actionError, setActionError] = useState<string | null>(null);
+  const [actionError, setActionError] = useState<{
+    message: string;
+    platform?: string;
+  } | null>(null);
 
   const failedCount = posts.filter((post) => post.status === "failed").length;
 
   async function retryPost(postId: string) {
     setRetryingId(postId);
     setActionError(null);
+    const post = posts.find((item) => item.id === postId);
 
     try {
       const response = await fetch(`/api/posts/${postId}/retry`, {
@@ -61,14 +65,15 @@ export function HistoryList({
       }
 
       if (data.status === "failed" && data.error) {
-        setActionError(data.error);
+        setActionError({ message: data.error, platform: post?.platform });
       }
 
       router.refresh();
     } catch (error) {
-      setActionError(
-        error instanceof Error ? error.message : "Could not retry this post",
-      );
+      setActionError({
+        message: error instanceof Error ? error.message : "Could not retry this post",
+        platform: post?.platform,
+      });
     } finally {
       setRetryingId(null);
     }
@@ -95,20 +100,26 @@ export function HistoryList({
       }
 
       if (data.failed && data.failed > 0) {
-        setActionError(
-          `${data.failed} post${data.failed === 1 ? "" : "s"} still failed. Check the error on each card and try again.`,
-        );
+        setActionError({
+          message: `${data.failed} post${data.failed === 1 ? "" : "s"} still failed. Check the error on each card and try again.`,
+        });
       }
 
       router.refresh();
     } catch (error) {
-      setActionError(
-        error instanceof Error ? error.message : "Could not retry failed posts",
-      );
+      setActionError({
+        message:
+          error instanceof Error ? error.message : "Could not retry failed posts",
+      });
     } finally {
       setRetryingAll(false);
     }
   }
+
+  const actionHint =
+    actionError?.platform != null
+      ? publishErrorHint(actionError.platform, actionError.message)
+      : null;
 
   return (
     <div className="space-y-4">
@@ -146,7 +157,10 @@ export function HistoryList({
 
       {actionError ? (
         <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-900">
-          {actionError}
+          <p>{actionError.message}</p>
+          {actionHint ? (
+            <p className="mt-2 text-xs leading-relaxed text-red-900/80">{actionHint}</p>
+          ) : null}
         </div>
       ) : null}
 
