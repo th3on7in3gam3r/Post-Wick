@@ -174,7 +174,11 @@ export function HowItWorks() {
             >
               <span
                 aria-hidden
-                className="pointer-events-none absolute -right-2 -top-4 select-none font-playfair text-[clamp(7rem,18vw,12rem)] leading-none text-[#E8E4DC] sm:-right-1 sm:-top-6"
+                className={
+                  step.reverse
+                    ? "pointer-events-none absolute -right-2 -top-4 select-none font-playfair text-[clamp(7rem,18vw,12rem)] leading-none text-[#E8E4DC] sm:-right-1 sm:-top-6"
+                    : "pointer-events-none absolute -left-2 -top-4 select-none font-playfair text-[clamp(7rem,18vw,12rem)] leading-none text-[#E8E4DC] sm:-left-1 sm:-top-6"
+                }
               >
                 {step.number}
               </span>
