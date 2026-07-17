@@ -19,7 +19,7 @@ const contactFaqs = [
   },
   {
     q: "What kind of content does Kerygma Social create?",
-    a: "Posts for Facebook, Instagram, and LinkedIn today, with more channels on the way. We create a tailored content plan based on your business and generate posts optimized for each platform.",
+    a: "Posts for Instagram, LinkedIn, Pinterest, and Bluesky today, with Facebook and more channels on the way. We create a tailored content plan based on your business and generate posts optimized for each platform.",
   },
   {
     q: "Is my data secure?",

@@ -9,13 +9,12 @@ import { formatAnnualCharge, plans, YEARLY_SAVE_LABEL } from "@/lib/pricing";
 import { cn } from "@/lib/utils";
 
 const ACTIVE_CHANNELS = [
-  "Facebook",
   "Instagram",
   "LinkedIn",
   "Pinterest",
   "Bluesky",
 ] as const;
-const COMING_SOON_CHANNELS = ["X", "TikTok", "Reddit"] as const;
+const COMING_SOON_CHANNELS = ["Facebook", "X", "TikTok", "Reddit"] as const;
 
 type BillingCycle = "monthly" | "yearly";
 
@@ -107,7 +106,7 @@ export function Pricing({
                   </li>
                   <li>Up to {PLAN_LIMITS.pro.postsPerWeek} posts/week on autopilot</li>
                   <li>Tailored to your tone and industry</li>
-                  <li>Live publishing: Facebook, Instagram, LinkedIn, Pinterest, Bluesky</li>
+                  <li>Live publishing: Instagram, LinkedIn, Pinterest, Bluesky</li>
                   <li>Auto-publishing once you approve</li>
                   <li>Post history and publishing status</li>
                 </ul>

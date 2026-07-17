@@ -25,7 +25,7 @@ const useCases = [
 ] as const;
 
 const facts = [
-  { value: "5", label: "channels supported" },
+  { value: "4", label: "channels supported" },
   { value: "$0", label: "to start — no credit card" },
   { value: "3 min", label: "setup" },
 ] as const;

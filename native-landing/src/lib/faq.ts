@@ -14,7 +14,7 @@ export const SITE_FAQS: FaqItem[] = [
   },
   {
     q: "Can I start with 1 connected social account?",
-    a: "Yes. Connect one Facebook, Instagram, LinkedIn, or Pinterest account per brand on the free plan. See kerygmasocial.com/guides/1-connected-social-account.",
+    a: "Yes. Connect one Instagram, LinkedIn, Pinterest, or Bluesky account per brand on the free plan. See kerygmasocial.com/guides/1-connected-social-account.",
   },
   {
     q: "Does Kerygma Social include basic scheduling?",
@@ -30,7 +30,7 @@ export const SITE_FAQS: FaqItem[] = [
   },
   {
     q: "Can I connect 5 social accounts?",
-    a: "Yes. Connect up to 4 platforms per brand (Facebook, Instagram, LinkedIn, Pinterest), then add a second brand for a fifth account. See kerygmasocial.com/guides/5-social-accounts.",
+    a: "Yes. Connect up to 4 platforms per brand (Instagram, LinkedIn, Pinterest, Bluesky), then add a second brand for a fifth account. See kerygmasocial.com/guides/5-social-accounts.",
   },
   {
     q: "Do I need to be good at creating content to use this?",
@@ -46,7 +46,7 @@ export const SITE_FAQS: FaqItem[] = [
   },
   {
     q: "What kind of content does Kerygma Social create?",
-    a: "Posts for Facebook, Instagram, LinkedIn, and Pinterest today, with more channels on the way. We create a tailored content plan based on your business and generate posts optimized for each platform. Everything runs on autopilot.",
+    a: "Posts for Instagram, LinkedIn, Pinterest, and Bluesky today, with Facebook and more channels on the way. We create a tailored content plan based on your business and generate posts optimized for each platform. Everything runs on autopilot.",
   },
   {
     q: "Is my data secure?",

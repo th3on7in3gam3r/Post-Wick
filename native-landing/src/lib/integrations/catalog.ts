@@ -74,8 +74,8 @@ export const INTEGRATION_PLATFORMS: IntegrationDefinition[] = [
     category: "social",
     charLimit: 63206,
     supportsImages: true,
-    demoAvailable: true,
-    oauthProvider: "meta",
+    // Meta App Review / business verification — Coming soon until Advanced Access.
+    demoAvailable: false,
   },
   {
     id: "twitter",

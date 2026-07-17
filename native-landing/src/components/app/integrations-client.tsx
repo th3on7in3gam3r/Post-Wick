@@ -703,8 +703,8 @@ export function IntegrationsClient({
 
                   {platform.id === "facebook" && !connection ? (
                     <p className="mt-3 text-xs text-gray-body">
-                      Requires a Facebook Page you administer. Image posts need Fix images on
-                      the brand page first.
+                      Facebook Page publishing is Coming soon (Meta App Review / business
+                      verification). Backend stays ready for a later re-enable.
                     </p>
                   ) : null}
 
@@ -828,7 +828,7 @@ export function IntegrationsClient({
                           </TextureButton>
                           {!oauthReady(platform.id) ? (
                             <p className="text-xs text-gray-body">
-                              {platform.id === "instagram" || platform.id === "facebook"
+                              {platform.id === "instagram"
                                 ? "Live connect isn't enabled yet. Use demo mode below to preview."
                                 : "Live connect isn't enabled yet. Use demo mode below to preview."}
                             </p>

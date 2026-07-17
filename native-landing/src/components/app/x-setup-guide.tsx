@@ -42,7 +42,7 @@ export function XSetupGuide({
       <div className="rounded-xl border border-black/[0.06] bg-white px-4 py-4">
         <p className="text-sm font-medium text-near-black">X</p>
         <p className="mt-2 text-sm text-gray-body">
-          Live Connect for X is Coming soon. You can still use Facebook, Instagram, LinkedIn,
+          Live Connect for X is Coming soon. You can still use Instagram, LinkedIn,
           Pinterest, and Bluesky today.
         </p>
       </div>
