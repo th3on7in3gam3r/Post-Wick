@@ -1000,8 +1000,9 @@ export function IntegrationsClient({
                             Owner claim code
                           </p>
                           <p className="mt-1 text-xs text-gray-body">
-                            Generate a one-time code, then redeem it in Postwick
-                            Studio to edit captions and set a display username.
+                            One-time link for Postwick Studio (not a consumer
+                            signup). Steps: generate → copy → open Studio →
+                            redeem → set @username → edit a shared caption.
                             Regenerating invalidates unused codes.
                           </p>
                           {claimCode ? (
