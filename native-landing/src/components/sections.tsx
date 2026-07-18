@@ -200,6 +200,14 @@ export function Footer() {
             >
               Aegis Loop
             </Link>
+            <Link
+              href={GROWTH_STACK.postwick.href}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-gray-body hover:text-near-black"
+            >
+              Postwick
+            </Link>
           </nav>
           <nav className="flex flex-col items-center gap-3 text-sm sm:items-start">
             <p className="text-[0.65rem] font-semibold uppercase tracking-[0.18em] text-gray-label">

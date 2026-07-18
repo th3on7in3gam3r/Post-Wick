@@ -6,6 +6,7 @@ const SISTERS = [
   { key: "citePilot" as const, accent: "text-gold" },
   { key: "aiCmo" as const, accent: "text-[#5B4FCF]" },
   { key: "aegis" as const, accent: "text-[#2D6A4F]" },
+  { key: "postwick" as const, accent: "text-[#8B6914]" },
 ];
 
 export function GrowthStackPromo() {
@@ -14,7 +15,7 @@ export function GrowthStackPromo() {
       <div className="mx-auto max-w-[1200px]">
         <p className="step-label">Growth stack</p>
         <h2 className="mt-2 max-w-2xl font-playfair text-[clamp(1.75rem,3vw,2.5rem)] italic text-near-black">
-          Social is one piece — citations, strategy, and security too
+          Social is one piece — citations, strategy, security, and discovery too
         </h2>
         <p className="body-copy mt-3 max-w-2xl">
           Kerygma Social publishes for you. Sister products from{" "}
@@ -26,10 +27,11 @@ export function GrowthStackPromo() {
           >
             Bible Funland Studios
           </Link>{" "}
-          cover AI visibility, marketing war room, and dev security — use what fits.
+          cover AI visibility, marketing war room, dev security, and the Postwick
+          public network — use what fits.
         </p>
 
-        <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
           <div className="rounded-2xl border-2 border-gold/40 bg-white p-6 shadow-card">
             <p className="text-[0.65rem] font-semibold uppercase tracking-[0.18em] text-gold">
               You are here

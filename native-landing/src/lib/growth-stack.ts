@@ -35,6 +35,13 @@ export const GROWTH_STACK = {
     tagline: "Find vulnerabilities before you ship",
     href: "https://aegis-loop.com",
   },
+  postwick: {
+    name: "Postwick",
+    tagline: "Public posts network for brands",
+    href:
+      process.env.NEXT_PUBLIC_POSTWICK_URL?.trim().replace(/\/$/, "") ||
+      "https://postwick.com",
+  },
   kerygma: {
     name: "Kerygma Social",
     tagline: "Social posts on autopilot from your URL",

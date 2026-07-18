@@ -15,6 +15,7 @@ import { ActiveClientBanner, useClientFilteredPosts } from "@/components/app/cli
 import { ActivityFeed, ActivityFeedFooter } from "@/components/app/activity-feed";
 import { EmptyState } from "@/components/app/empty-state";
 import { GettingStartedCard } from "@/components/app/getting-started-card";
+import { PostwickPromoCard } from "@/components/app/postwick-promo-card";
 import { PanelCard } from "@/components/app/panel-card";
 import { StatCard } from "@/components/app/stat-card";
 import { TextureButton } from "@/components/ui/texture-button";
@@ -337,6 +338,7 @@ export function DashboardClientView({
 
         <div className="flex flex-col gap-6">
           <GettingStartedCard steps={setupSteps} />
+          <PostwickPromoCard />
           <PanelCard
             title="Platform breakdown"
             description="Scheduled posts by channel."
