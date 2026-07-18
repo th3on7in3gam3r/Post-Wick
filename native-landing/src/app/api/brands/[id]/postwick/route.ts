@@ -10,8 +10,27 @@ import {
 const bodySchema = z.object({
   connected: z.boolean(),
   publicNiche: z.string().trim().max(120).optional(),
+  publicCity: z.string().trim().max(80).optional(),
   shareExisting: z.boolean().optional(),
 });
+
+function brandPayload(updated: {
+  id: string;
+  isPublic: boolean;
+  publicSlug: string | null;
+  publicNiche: string | null;
+  publicCity: string | null;
+  postwickAutoShare: boolean;
+}) {
+  return {
+    id: updated.id,
+    isPublic: updated.isPublic,
+    publicSlug: updated.publicSlug,
+    publicNiche: updated.publicNiche,
+    publicCity: updated.publicCity,
+    postwickAutoShare: updated.postwickAutoShare,
+  };
+}
 
 export async function PATCH(
   req: Request,
@@ -39,6 +58,7 @@ export async function PATCH(
     const updated = await updateBrandPostwickConnection(params.id, userId, {
       connected: body.connected,
       publicNiche: body.publicNiche,
+      publicCity: body.publicCity,
     });
 
     let sharedCount = 0;
@@ -47,13 +67,7 @@ export async function PATCH(
       if (shared.error) {
         return NextResponse.json(
           {
-            brand: {
-              id: updated!.id,
-              isPublic: updated!.isPublic,
-              publicSlug: updated!.publicSlug,
-              publicNiche: updated!.publicNiche,
-              postwickAutoShare: updated!.postwickAutoShare,
-            },
+            brand: brandPayload(updated!),
             sharedCount: 0,
             warning: shared.error,
           },
@@ -64,13 +78,7 @@ export async function PATCH(
     }
 
     return NextResponse.json({
-      brand: {
-        id: updated!.id,
-        isPublic: updated!.isPublic,
-        publicSlug: updated!.publicSlug,
-        publicNiche: updated!.publicNiche,
-        postwickAutoShare: updated!.postwickAutoShare,
-      },
+      brand: brandPayload(updated!),
       sharedCount,
     });
   } catch (error) {

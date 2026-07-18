@@ -19,6 +19,7 @@ export const brands = pgTable("brands", {
   isPublic: boolean("is_public").notNull().default(false),
   publicSlug: text("public_slug"),
   publicNiche: text("public_niche"),
+  publicCity: text("public_city"),
   postwickAutoShare: boolean("postwick_auto_share").notNull().default(false),
   createdAt: timestamp("created_at", { withTimezone: true, mode: "string" })
     .notNull()

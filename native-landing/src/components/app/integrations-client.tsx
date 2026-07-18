@@ -40,6 +40,7 @@ type Brand = {
   isPublic: boolean;
   publicSlug: string | null;
   publicNiche: string | null;
+  publicCity: string | null;
   postwickAutoShare: boolean;
 };
 
@@ -268,6 +269,8 @@ export function IntegrationsClient({
     null,
   );
   const [claimCodeCopied, setClaimCodeCopied] = useState(false);
+  const [showPostwickOnboarding, setShowPostwickOnboarding] = useState(false);
+  const [postwickCity, setPostwickCity] = useState("");
   const [shareExistingToPostwick, setShareExistingToPostwick] = useState(true);
   const [verifyFeedback, setVerifyFeedback] = useState<
     Record<string, { kind: "success" | "error"; message: string }>
@@ -291,7 +294,10 @@ export function IntegrationsClient({
     setClaimCode(null);
     setClaimCodeExpiresAt(null);
     setClaimCodeCopied(false);
-  }, [brandId]);
+    setShowPostwickOnboarding(false);
+    const brand = brands.find((item) => item.id === brandId);
+    setPostwickCity(brand?.publicCity ?? "");
+  }, [brandId, brands]);
 
   const flash = flashParams ? flashFromParams(flashParams) : null;
   const showOAuthDebug =
@@ -549,6 +555,7 @@ export function IntegrationsClient({
         body: JSON.stringify({
           connected: nextConnected,
           publicNiche: brand.publicNiche?.trim() || undefined,
+          publicCity: postwickCity.trim() || undefined,
           shareExisting: nextConnected
             ? (options?.shareExisting ?? shareExistingToPostwick)
             : false,
@@ -562,6 +569,7 @@ export function IntegrationsClient({
           postwickAutoShare: boolean;
           publicSlug: string | null;
           publicNiche: string | null;
+          publicCity: string | null;
           isPublic: boolean;
         };
       };
@@ -584,6 +592,7 @@ export function IntegrationsClient({
                 postwickAutoShare: data.brand.postwickAutoShare,
                 publicSlug: data.brand.publicSlug,
                 publicNiche: data.brand.publicNiche,
+                publicCity: data.brand.publicCity,
                 isPublic: data.brand.isPublic,
               }
             : item,
@@ -614,6 +623,17 @@ export function IntegrationsClient({
         );
       }
 
+      // First-time connect: walk owner through claim → Studio.
+      if (nextConnected && !brand.postwickAutoShare) {
+        setShowPostwickOnboarding(true);
+        void generatePostwickClaimCode({ quiet: true });
+      }
+      if (!nextConnected) {
+        setShowPostwickOnboarding(false);
+        setClaimCode(null);
+        setClaimCodeExpiresAt(null);
+      }
+
       router.refresh();
     } catch {
       const message = "Could not update Postwick connection. Try again.";
@@ -624,14 +644,75 @@ export function IntegrationsClient({
     }
   }
 
-  async function generatePostwickClaimCode() {
+  async function savePostwickListingFields() {
+    if (!brandId) return;
+    const brand = brands.find((item) => item.id === brandId);
+    if (!brand?.postwickAutoShare) return;
+
+    setPostwickError(null);
+    setPostwickMessage(null);
+    setLoadingKey("postwick:listing");
+
+    try {
+      const response = await fetch(`/api/brands/${brandId}/postwick`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          connected: true,
+          publicNiche: brand.publicNiche?.trim() || undefined,
+          publicCity: postwickCity.trim() || undefined,
+          shareExisting: false,
+        }),
+      });
+      const data = (await response.json()) as {
+        error?: string;
+        brand?: {
+          publicCity: string | null;
+          publicNiche: string | null;
+          publicSlug: string | null;
+          isPublic: boolean;
+          postwickAutoShare: boolean;
+        };
+      };
+      if (!response.ok) {
+        setPostwickError(
+          typeof data.error === "string" ? data.error : "Could not save city.",
+        );
+        return;
+      }
+      if (data.brand) {
+        setBrands((prev) =>
+          prev.map((item) =>
+            item.id === brandId
+              ? {
+                  ...item,
+                  publicCity: data.brand!.publicCity,
+                  publicNiche: data.brand!.publicNiche,
+                  publicSlug: data.brand!.publicSlug,
+                  isPublic: data.brand!.isPublic,
+                  postwickAutoShare: data.brand!.postwickAutoShare,
+                }
+              : item,
+          ),
+        );
+        setPostwickCity(data.brand.publicCity ?? "");
+      }
+      setPostwickMessage("Public city saved for Postwick.");
+    } catch {
+      setPostwickError("Could not save city. Try again.");
+    } finally {
+      setLoadingKey(null);
+    }
+  }
+
+  async function generatePostwickClaimCode(options?: { quiet?: boolean }) {
     if (!brandId) {
       setPostwickError("Select a brand before generating a claim code.");
       return;
     }
 
     setPostwickError(null);
-    setPostwickMessage(null);
+    if (!options?.quiet) setPostwickMessage(null);
     setClaimCodeCopied(false);
     setLoadingKey("postwick:claim");
 
@@ -657,9 +738,11 @@ export function IntegrationsClient({
 
       setClaimCode(data.code);
       setClaimCodeExpiresAt(data.expiresAt ?? null);
-      setPostwickMessage(
-        "Claim code ready. Sign in on Postwick Studio and enter it once to link your account.",
-      );
+      if (!options?.quiet) {
+        setPostwickMessage(
+          "Claim code ready. Sign in on Postwick Studio and enter it once to link your account.",
+        );
+      }
     } catch {
       setPostwickError("Could not generate claim code. Try again.");
     } finally {
@@ -869,7 +952,8 @@ export function IntegrationsClient({
                 ? loadingKey === "postwick:connect" ||
                   loadingKey === "postwick:disconnect" ||
                   loadingKey === "postwick:share" ||
-                  loadingKey === "postwick:claim"
+                  loadingKey === "postwick:claim" ||
+                  loadingKey === "postwick:listing"
                 : loadingKey === `demo:${platform.id}` ||
                   loadingKey === `oauth:${platform.id}` ||
                   loadingKey === `disconnect:${connection?.id}` ||
@@ -995,16 +1079,81 @@ export function IntegrationsClient({
                           </p>
                         ) : null}
 
+                        <div className="rounded-xl border border-black/[0.06] bg-white px-3 py-3">
+                          <label className="block text-xs font-medium text-near-black">
+                            Public city (optional)
+                            <input
+                              value={postwickCity}
+                              onChange={(event) =>
+                                setPostwickCity(event.target.value)
+                              }
+                              placeholder="Austin, TX"
+                              maxLength={80}
+                              className="mt-1.5 w-full rounded-lg border border-black/10 bg-[#FAF8F4] px-3 py-2 text-sm text-near-black"
+                            />
+                          </label>
+                          <p className="mt-1 text-[0.65rem] text-gray-label">
+                            Shown on Postwick so local browsing can filter by city.
+                          </p>
+                          <TextureButton
+                            type="button"
+                            variant="secondary"
+                            size="sm"
+                            className="mt-2"
+                            disabled={isLoading}
+                            onClick={() => void savePostwickListingFields()}
+                          >
+                            {loadingKey === "postwick:listing" ? (
+                              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            ) : null}
+                            Save city
+                          </TextureButton>
+                        </div>
+
                         <div className="rounded-xl border border-black/[0.06] bg-[#FAF8F4] px-3 py-3">
-                          <p className="text-xs font-medium text-near-black">
-                            Owner claim code
-                          </p>
-                          <p className="mt-1 text-xs text-gray-body">
-                            One-time link for Postwick Studio (not a consumer
-                            signup). Steps: generate → copy → open Studio →
-                            redeem → set @username → edit a shared caption.
-                            Regenerating invalidates unused codes.
-                          </p>
+                          {showPostwickOnboarding || !claimCode ? (
+                            <>
+                              <p className="text-xs font-medium text-near-black">
+                                Next: link Postwick Studio
+                              </p>
+                              <p className="mt-1 text-xs text-gray-body">
+                                Studio is where you set @username and edit shared
+                                captions. Generate a code per brand to add more
+                                brands later.
+                              </p>
+                              <ol className="mt-3 space-y-1.5 text-xs text-gray-body">
+                                <li>
+                                  <span className="font-medium text-near-black">
+                                    1.
+                                  </span>{" "}
+                                  Generate a claim code
+                                </li>
+                                <li>
+                                  <span className="font-medium text-near-black">
+                                    2.
+                                  </span>{" "}
+                                  Copy it
+                                </li>
+                                <li>
+                                  <span className="font-medium text-near-black">
+                                    3.
+                                  </span>{" "}
+                                  Open Studio and redeem
+                                </li>
+                              </ol>
+                            </>
+                          ) : (
+                            <>
+                              <p className="text-xs font-medium text-near-black">
+                                Owner claim code
+                              </p>
+                              <p className="mt-1 text-xs text-gray-body">
+                                One-time link for Postwick Studio. Regenerating
+                                invalidates unused codes. Generate another code
+                                for each additional brand.
+                              </p>
+                            </>
+                          )}
                           {claimCode ? (
                             <div className="mt-3 flex flex-wrap items-center gap-2">
                               <code className="rounded-lg bg-white px-3 py-1.5 font-mono text-sm tracking-widest text-near-black">
@@ -1030,7 +1179,7 @@ export function IntegrationsClient({
                           <div className="mt-3 flex flex-wrap gap-2">
                             <TextureButton
                               type="button"
-                              variant="secondary"
+                              variant={claimCode ? "secondary" : "primary"}
                               size="sm"
                               disabled={isLoading}
                               onClick={() => void generatePostwickClaimCode()}
@@ -1090,6 +1239,20 @@ export function IntegrationsClient({
                       <div className="mt-5 flex flex-1 flex-col justify-end gap-3">
                         {brandReadyForPostwick ? (
                           <>
+                            <label className="block text-xs text-gray-body">
+                              <span className="font-medium text-near-black">
+                                Public city (optional)
+                              </span>
+                              <input
+                                value={postwickCity}
+                                onChange={(event) =>
+                                  setPostwickCity(event.target.value)
+                                }
+                                placeholder="Austin, TX"
+                                maxLength={80}
+                                className="mt-1.5 w-full rounded-lg border border-black/10 bg-white px-3 py-2 text-sm text-near-black"
+                              />
+                            </label>
                             <label className="flex items-start gap-2 text-xs text-gray-body">
                               <input
                                 type="checkbox"

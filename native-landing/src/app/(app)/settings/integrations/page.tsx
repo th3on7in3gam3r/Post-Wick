@@ -59,6 +59,7 @@ export default async function IntegrationsPage({
             isPublic: brand.isPublic,
             publicSlug: brand.publicSlug,
             publicNiche: brand.publicNiche,
+            publicCity: brand.publicCity,
             postwickAutoShare: brand.postwickAutoShare,
           }))}
           initialDemoModeEnabled={dbUser.demoModeEnabled}

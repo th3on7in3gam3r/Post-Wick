@@ -48,6 +48,7 @@ export type BrandRecord = {
   isPublic: boolean;
   publicSlug: string | null;
   publicNiche: string | null;
+  publicCity: string | null;
   postwickAutoShare: boolean;
   createdAt: string;
   updatedAt: string;
@@ -160,6 +161,7 @@ function parseBrand(row: typeof brands.$inferSelect): BrandRecord {
     isPublic: row.isPublic ?? false,
     publicSlug: row.publicSlug ?? null,
     publicNiche: row.publicNiche ?? null,
+    publicCity: row.publicCity ?? null,
     postwickAutoShare: row.postwickAutoShare ?? false,
     createdAt: row.createdAt,
     updatedAt: row.updatedAt,
@@ -259,7 +261,11 @@ export async function getPublicDirectoryBrands() {
 export async function updateBrandDirectoryListing(
   id: string,
   userId: string,
-  data: { isPublic: boolean; publicNiche?: string | null },
+  data: {
+    isPublic: boolean;
+    publicNiche?: string | null;
+    publicCity?: string | null;
+  },
 ) {
   const existing = await getBrandById(id, userId);
   if (!existing) return null;
@@ -268,6 +274,10 @@ export async function updateBrandDirectoryListing(
   const now = nowIso();
   let publicSlug = existing.publicSlug;
   let publicNiche = data.publicNiche ?? existing.publicNiche;
+  const publicCity =
+    data.publicCity !== undefined
+      ? data.publicCity?.trim().slice(0, 80) || null
+      : existing.publicCity;
 
   if (data.isPublic) {
     if (!publicSlug) {
@@ -295,6 +305,7 @@ export async function updateBrandDirectoryListing(
       isPublic: data.isPublic,
       publicSlug: data.isPublic ? publicSlug : existing.publicSlug,
       publicNiche: data.isPublic ? publicNiche : existing.publicNiche,
+      publicCity: data.isPublic ? publicCity : existing.publicCity,
       // Turning off directory listing also disconnects Postwick auto-share.
       postwickAutoShare: data.isPublic ? existing.postwickAutoShare : false,
       updatedAt: now,
@@ -307,7 +318,11 @@ export async function updateBrandDirectoryListing(
 export async function updateBrandPostwickConnection(
   id: string,
   userId: string,
-  data: { connected: boolean; publicNiche?: string | null },
+  data: {
+    connected: boolean;
+    publicNiche?: string | null;
+    publicCity?: string | null;
+  },
 ) {
   const existing = await getBrandById(id, userId);
   if (!existing) return null;
@@ -317,6 +332,14 @@ export async function updateBrandPostwickConnection(
     await updateBrandDirectoryListing(id, userId, {
       isPublic: true,
       publicNiche: data.publicNiche ?? existing.publicNiche,
+      publicCity: data.publicCity ?? existing.publicCity,
+    });
+  } else if (data.publicCity !== undefined || data.publicNiche !== undefined) {
+    // Allow updating listing fields while connected.
+    await updateBrandDirectoryListing(id, userId, {
+      isPublic: existing.isPublic,
+      publicNiche: data.publicNiche ?? existing.publicNiche,
+      publicCity: data.publicCity ?? existing.publicCity,
     });
   }
 
