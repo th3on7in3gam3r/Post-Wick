@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
   CheckCircle2,
+  Copy,
   Link2,
   Loader2,
   Plug,
@@ -262,6 +263,11 @@ export function IntegrationsClient({
   const [actionError, setActionError] = useState<string | null>(null);
   const [postwickMessage, setPostwickMessage] = useState<string | null>(null);
   const [postwickError, setPostwickError] = useState<string | null>(null);
+  const [claimCode, setClaimCode] = useState<string | null>(null);
+  const [claimCodeExpiresAt, setClaimCodeExpiresAt] = useState<string | null>(
+    null,
+  );
+  const [claimCodeCopied, setClaimCodeCopied] = useState(false);
   const [shareExistingToPostwick, setShareExistingToPostwick] = useState(true);
   const [verifyFeedback, setVerifyFeedback] = useState<
     Record<string, { kind: "success" | "error"; message: string }>
@@ -282,6 +288,9 @@ export function IntegrationsClient({
   useEffect(() => {
     setPostwickMessage(null);
     setPostwickError(null);
+    setClaimCode(null);
+    setClaimCodeExpiresAt(null);
+    setClaimCodeCopied(false);
   }, [brandId]);
 
   const flash = flashParams ? flashFromParams(flashParams) : null;
@@ -615,6 +624,60 @@ export function IntegrationsClient({
     }
   }
 
+  async function generatePostwickClaimCode() {
+    if (!brandId) {
+      setPostwickError("Select a brand before generating a claim code.");
+      return;
+    }
+
+    setPostwickError(null);
+    setPostwickMessage(null);
+    setClaimCodeCopied(false);
+    setLoadingKey("postwick:claim");
+
+    try {
+      const response = await fetch(
+        `/api/brands/${brandId}/postwick/claim-code`,
+        { method: "POST" },
+      );
+      const data = (await response.json()) as {
+        error?: string;
+        code?: string;
+        expiresAt?: string;
+      };
+
+      if (!response.ok || !data.code) {
+        setPostwickError(
+          typeof data.error === "string"
+            ? data.error
+            : "Could not generate claim code.",
+        );
+        return;
+      }
+
+      setClaimCode(data.code);
+      setClaimCodeExpiresAt(data.expiresAt ?? null);
+      setPostwickMessage(
+        "Claim code ready. Sign in on Postwick Studio and enter it once to link your account.",
+      );
+    } catch {
+      setPostwickError("Could not generate claim code. Try again.");
+    } finally {
+      setLoadingKey(null);
+    }
+  }
+
+  async function copyClaimCode() {
+    if (!claimCode) return;
+    try {
+      await navigator.clipboard.writeText(claimCode);
+      setClaimCodeCopied(true);
+      window.setTimeout(() => setClaimCodeCopied(false), 2000);
+    } catch {
+      setPostwickError("Could not copy code. Select and copy it manually.");
+    }
+  }
+
   function oauthReady(platform: IntegrationPlatformId) {
     return configById.get(platform)?.connectionMode === "oauth";
   }
@@ -805,7 +868,8 @@ export function IntegrationsClient({
               const isLoading = isPostwick
                 ? loadingKey === "postwick:connect" ||
                   loadingKey === "postwick:disconnect" ||
-                  loadingKey === "postwick:share"
+                  loadingKey === "postwick:share" ||
+                  loadingKey === "postwick:claim"
                 : loadingKey === `demo:${platform.id}` ||
                   loadingKey === `oauth:${platform.id}` ||
                   loadingKey === `disconnect:${connection?.id}` ||
@@ -930,6 +994,66 @@ export function IntegrationsClient({
                               : " (set NEXT_PUBLIC_POSTWICK_URL to show the full link)"}
                           </p>
                         ) : null}
+
+                        <div className="rounded-xl border border-black/[0.06] bg-[#FAF8F4] px-3 py-3">
+                          <p className="text-xs font-medium text-near-black">
+                            Owner claim code
+                          </p>
+                          <p className="mt-1 text-xs text-gray-body">
+                            Generate a one-time code, then redeem it in Postwick
+                            Studio to edit captions and set a display username.
+                            Regenerating invalidates unused codes.
+                          </p>
+                          {claimCode ? (
+                            <div className="mt-3 flex flex-wrap items-center gap-2">
+                              <code className="rounded-lg bg-white px-3 py-1.5 font-mono text-sm tracking-widest text-near-black">
+                                {claimCode}
+                              </code>
+                              <TextureButton
+                                type="button"
+                                variant="secondary"
+                                size="sm"
+                                onClick={() => void copyClaimCode()}
+                              >
+                                <Copy className="mr-1.5 h-3.5 w-3.5" />
+                                {claimCodeCopied ? "Copied" : "Copy"}
+                              </TextureButton>
+                            </div>
+                          ) : null}
+                          {claimCodeExpiresAt ? (
+                            <p className="mt-2 text-[0.65rem] text-gray-label">
+                              Expires{" "}
+                              {new Date(claimCodeExpiresAt).toLocaleString()}
+                            </p>
+                          ) : null}
+                          <div className="mt-3 flex flex-wrap gap-2">
+                            <TextureButton
+                              type="button"
+                              variant="secondary"
+                              size="sm"
+                              disabled={isLoading}
+                              onClick={() => void generatePostwickClaimCode()}
+                            >
+                              {loadingKey === "postwick:claim" ? (
+                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                              ) : null}
+                              {claimCode
+                                ? "Regenerate claim code"
+                                : "Generate Postwick claim code"}
+                            </TextureButton>
+                            {postwickOrigin ? (
+                              <a
+                                href={`${postwickOrigin}/studio`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="inline-flex items-center rounded-full border border-black/10 px-3 py-1.5 text-xs font-medium text-near-black hover:bg-white"
+                              >
+                                Open Postwick Studio
+                              </a>
+                            ) : null}
+                          </div>
+                        </div>
+
                         <div className="flex flex-wrap gap-2">
                           <TextureButton
                             type="button"

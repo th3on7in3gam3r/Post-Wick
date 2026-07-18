@@ -213,3 +213,49 @@ export const apiKeys = pgTable(
     keyHashIdx: uniqueIndex("api_keys_key_hash_idx").on(table.keyHash),
   }),
 );
+
+/** One-time codes for linking a Kerygma owner to a Postwick studio account. */
+export const postwickClaimCodes = pgTable(
+  "postwick_claim_codes",
+  {
+    id: text("id").primaryKey(),
+    code: text("code").notNull(),
+    userId: text("user_id").notNull(),
+    brandId: text("brand_id").references(() => brands.id, { onDelete: "cascade" }),
+    expiresAt: timestamp("expires_at", { withTimezone: true, mode: "string" }).notNull(),
+    usedAt: timestamp("used_at", { withTimezone: true, mode: "string" }),
+    createdAt: timestamp("created_at", { withTimezone: true, mode: "string" })
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => ({
+    codeIdx: uniqueIndex("postwick_claim_codes_code_idx").on(table.code),
+  }),
+);
+
+/** Postwick studio accounts linked via claim code (shared Neon). */
+export const postwickAccounts = pgTable(
+  "postwick_accounts",
+  {
+    id: text("id").primaryKey(),
+    clerkUserId: text("clerk_user_id").notNull(),
+    kerygmaUserId: text("kerygma_user_id").notNull(),
+    username: text("username"),
+    brandIds: text("brand_ids").notNull().default("[]"),
+    createdAt: timestamp("created_at", { withTimezone: true, mode: "string" })
+      .notNull()
+      .defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true, mode: "string" })
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => ({
+    clerkUserIdx: uniqueIndex("postwick_accounts_clerk_user_id_idx").on(
+      table.clerkUserId,
+    ),
+    kerygmaUserIdx: uniqueIndex("postwick_accounts_kerygma_user_id_idx").on(
+      table.kerygmaUserId,
+    ),
+    usernameIdx: uniqueIndex("postwick_accounts_username_idx").on(table.username),
+  }),
+);

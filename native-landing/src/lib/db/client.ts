@@ -227,6 +227,27 @@ async function ensureSchema() {
       value TEXT NOT NULL,
       updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
     )`;
+  await sql`
+    CREATE TABLE IF NOT EXISTS postwick_claim_codes (
+      id TEXT PRIMARY KEY,
+      code TEXT NOT NULL UNIQUE,
+      user_id TEXT NOT NULL,
+      brand_id TEXT REFERENCES brands(id) ON DELETE CASCADE,
+      expires_at TIMESTAMPTZ NOT NULL,
+      used_at TIMESTAMPTZ,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    )`;
+  await sql`CREATE INDEX IF NOT EXISTS idx_postwick_claim_codes_user_id ON postwick_claim_codes(user_id)`;
+  await sql`
+    CREATE TABLE IF NOT EXISTS postwick_accounts (
+      id TEXT PRIMARY KEY,
+      clerk_user_id TEXT NOT NULL UNIQUE,
+      kerygma_user_id TEXT NOT NULL UNIQUE,
+      username TEXT UNIQUE,
+      brand_ids TEXT NOT NULL DEFAULT '[]',
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+      updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    )`;
 }
 
 async function ensureTokenMigration() {

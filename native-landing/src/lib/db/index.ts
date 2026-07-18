@@ -30,6 +30,7 @@ import {
   apiKeys,
   blueskyOauthSession,
   blueskyOauthState,
+  postwickClaimCodes,
 } from "./schema";
 import { emitStudioOpsEvent } from "@/lib/studio-ops";
 import { generateApiKey, hashApiKey } from "@/lib/api-keys";
@@ -360,6 +361,61 @@ export async function shareAllPublishedPostsToPostwick(
     .returning({ id: posts.id });
 
   return { updated: rows.length, error: undefined as string | undefined };
+}
+
+const CLAIM_CODE_TTL_MS = 1000 * 60 * 60 * 24 * 7; // 7 days
+const CLAIM_CODE_ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+
+function generateClaimCodeValue(length = 8) {
+  const bytes = randomBytes(length);
+  let out = "";
+  for (let i = 0; i < length; i += 1) {
+    out += CLAIM_CODE_ALPHABET[bytes[i]! % CLAIM_CODE_ALPHABET.length];
+  }
+  return out;
+}
+
+/**
+ * Issue a single-use Postwick claim code for a brand owner.
+ * Regenerating invalidates unused prior codes for the same user + brand scope.
+ */
+export async function createPostwickClaimCode(
+  userId: string,
+  brandId: string,
+) {
+  const brand = await getBrandById(brandId, userId);
+  if (!brand) return null;
+
+  const db = await getDb();
+  const now = nowIso();
+
+  // Invalidate unused codes for this user + brand (brand-scoped codes only).
+  await db
+    .update(postwickClaimCodes)
+    .set({ usedAt: now })
+    .where(
+      and(
+        eq(postwickClaimCodes.userId, userId),
+        eq(postwickClaimCodes.brandId, brandId),
+        sql`${postwickClaimCodes.usedAt} IS NULL`,
+      ),
+    );
+
+  const code = generateClaimCodeValue(8);
+  const expiresAt = new Date(Date.now() + CLAIM_CODE_TTL_MS).toISOString();
+  const id = `pwc_${randomUUID().replace(/-/g, "").slice(0, 16)}`;
+
+  await db.insert(postwickClaimCodes).values({
+    id,
+    code,
+    userId,
+    brandId,
+    expiresAt,
+    usedAt: null,
+    createdAt: now,
+  });
+
+  return { id, code, brandId, expiresAt };
 }
 
 /** If the brand has Postwick auto-share on, mark this published post public. */
