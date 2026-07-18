@@ -3,12 +3,14 @@ import { MarketingShell } from "@/components/marketing-shell";
 import { createPageMetadata } from "@/lib/metadata";
 
 const description =
-  "Questions about AI social posting for your shop, studio, or church? Contact Kerygma Social — we reply within one business day.";
+  "Need help automating your brand's social presence? Get in touch with the Kerygma Social team today. We reply in under 24 business hours!";
+
+const title = "Contact Us - Let's Put Your Social Media on Autopilot";
 
 export const metadata = createPageMetadata({
-  title: "Contact Kerygma Social | We're Here to Help",
+  title: { absolute: title },
   description,
-  ogTitle: "Contact Kerygma Social — Talk to Our Team",
+  ogTitle: title,
   ogDescription: description,
   path: "/contact",
 });

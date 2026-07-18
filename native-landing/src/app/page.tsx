@@ -10,9 +10,15 @@ import { FAQ, GraderPromoSection, Guides, CTASection, Footer } from "@/component
 import { GrowthStackPromo } from "@/components/growth-stack-promo";
 import { PostwickPromoSection } from "@/components/postwick-promo-section";
 import { createPageMetadata } from "@/lib/metadata";
+import { OG_DEFAULT_DESCRIPTION, OG_DEFAULT_TITLE } from "@/lib/brand";
 import { homepageSoftwareJsonLd } from "@/lib/seo/structured-data";
 
-export const metadata = createPageMetadata({ path: "/" });
+export const metadata = createPageMetadata({
+  description: OG_DEFAULT_DESCRIPTION,
+  ogTitle: OG_DEFAULT_TITLE,
+  ogDescription: OG_DEFAULT_DESCRIPTION,
+  path: "/",
+});
 
 export default function Home() {
   return (

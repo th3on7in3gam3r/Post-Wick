@@ -7,12 +7,12 @@ import { createPageMetadata } from "@/lib/metadata";
 import { pricingProductsJsonLd } from "@/lib/seo/structured-data";
 
 const description =
-  "Simple pricing for AI-generated social content. Start free with no credit card, then upgrade to Pro or Max for higher volume.";
+  "Simple, transparent pricing for automated local business social media management. Save hours weekly with our Pro and Max plans. Get started today!";
 
 export const metadata = createPageMetadata({
-  title: "Pricing",
+  title: "Affordable Social Media Automation Pricing",
   description,
-  ogTitle: "Pricing | Kerygma Social | Social media on autopilot for local businesses",
+  ogTitle: "Affordable Social Media Automation Pricing | Kerygma Social",
   ogDescription: description,
   path: "/pricing",
 });

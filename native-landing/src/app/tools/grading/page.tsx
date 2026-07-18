@@ -4,12 +4,12 @@ import { MarketingShell } from "@/components/marketing-shell";
 import { createPageMetadata } from "@/lib/metadata";
 
 const description =
-  "Run our free social media grader in 60 seconds. Score your local business or church feed, get tips, and fix weak spots fast.";
+  "Analyze your social media presence in 60 seconds. Get actionable tips to scale your local business or church audience instantly. Score your feed free!";
 
 export const metadata = createPageMetadata({
-  title: "Free Social Media Grader | Score Your Feed",
+  title: "Free Social Media Audit Tool & Grader",
   description,
-  ogTitle: "Free Social Media Grader — Analyze Your Local Presence",
+  ogTitle: "Free Social Media Audit Tool & Grader | Kerygma Social",
   ogDescription: description,
   path: "/tools/grading",
 });

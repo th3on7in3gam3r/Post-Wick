@@ -9,8 +9,8 @@ import {
 } from "@/lib/brand";
 
 type PageMetadataOptions = {
-  /** Short title for the browser tab (uses root template → "Pricing | Kerygma Social"). */
-  title?: string;
+  /** Short title for the browser tab (uses root template → "Pricing | Kerygma Social"), or `{ absolute }` to skip the template. */
+  title?: string | { absolute: string };
   description?: string;
   ogTitle?: string;
   ogDescription?: string;
