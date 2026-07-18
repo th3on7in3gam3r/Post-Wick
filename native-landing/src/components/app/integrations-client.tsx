@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
   CheckCircle2,
@@ -260,6 +261,7 @@ export function IntegrationsClient({
   const [filter, setFilter] = useState<"all" | "connected">("all");
   const [actionError, setActionError] = useState<string | null>(null);
   const [postwickMessage, setPostwickMessage] = useState<string | null>(null);
+  const [postwickError, setPostwickError] = useState<string | null>(null);
   const [shareExistingToPostwick, setShareExistingToPostwick] = useState(true);
   const [verifyFeedback, setVerifyFeedback] = useState<
     Record<string, { kind: "success" | "error"; message: string }>
@@ -279,6 +281,7 @@ export function IntegrationsClient({
 
   useEffect(() => {
     setPostwickMessage(null);
+    setPostwickError(null);
   }, [brandId]);
 
   const flash = flashParams ? flashFromParams(flashParams) : null;
@@ -497,22 +500,30 @@ export function IntegrationsClient({
     options?: { shareExisting?: boolean },
   ) {
     if (!brandId) {
+      setPostwickError("Select a brand before connecting.");
       setActionError("Select a brand before connecting.");
       return;
     }
 
     const brand = brands.find((item) => item.id === brandId);
     if (!brand) {
+      setPostwickError("Select a brand before connecting.");
       setActionError("Select a brand before connecting.");
       return;
     }
 
     if (nextConnected && brand.crawlStatus !== "completed") {
-      setActionError("Finish brand setup before connecting to Postwick.");
+      const message =
+        brand.crawlStatus === "review"
+          ? "Finish reviewing your brand voice on the brand page, then connect Postwick."
+          : "Finish brand setup before connecting to Postwick.";
+      setPostwickError(message);
+      setActionError(message);
       return;
     }
 
     setActionError(null);
+    setPostwickError(null);
     setPostwickMessage(null);
     setLoadingKey(
       nextConnected && options?.shareExisting && brand.postwickAutoShare
@@ -547,11 +558,12 @@ export function IntegrationsClient({
       };
 
       if (!response.ok) {
-        setActionError(
+        const message =
           typeof data.error === "string"
             ? data.error
-            : "Could not update Postwick connection.",
-        );
+            : "Could not update Postwick connection.";
+        setPostwickError(message);
+        setActionError(message);
         return;
       }
 
@@ -595,7 +607,9 @@ export function IntegrationsClient({
 
       router.refresh();
     } catch {
-      setActionError("Could not update Postwick connection. Try again.");
+      const message = "Could not update Postwick connection. Try again.";
+      setPostwickError(message);
+      setActionError(message);
     } finally {
       setLoadingKey(null);
     }
@@ -849,13 +863,36 @@ export function IntegrationsClient({
                     </p>
 
                     {!brandReadyForPostwick ? (
-                      <p className="mt-3 text-xs text-amber-800">
-                        Finish brand setup before connecting to Postwick.
+                      <div className="mt-3 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2.5 text-xs text-amber-950">
+                        <p className="font-medium">
+                          {activeBrand?.crawlStatus === "review"
+                            ? "Brand voice review is still open."
+                            : "Brand setup is not finished yet."}
+                        </p>
+                        <p className="mt-1 text-amber-900/80">
+                          {activeBrand?.crawlStatus === "review"
+                            ? "Confirm your brand voice on the brand page, then come back to connect."
+                            : "Complete crawl and voice setup for this brand before connecting Postwick."}
+                        </p>
+                        {activeBrand ? (
+                          <Link
+                            href={`/brands/${activeBrand.id}`}
+                            className="mt-2 inline-block font-medium text-amber-950 underline underline-offset-2"
+                          >
+                            Open {activeBrand.name}
+                          </Link>
+                        ) : null}
+                      </div>
+                    ) : null}
+
+                    {postwickError ? (
+                      <p className="mt-3 text-xs text-red-600" role="alert">
+                        {postwickError}
                       </p>
                     ) : null}
 
                     {postwickMessage ? (
-                      <p className="mt-3 text-xs text-emerald-700" role="status">
+                      <p className="mt-3 text-sm font-medium text-emerald-700" role="status">
                         {postwickMessage}
                       </p>
                     ) : null}
@@ -926,34 +963,47 @@ export function IntegrationsClient({
                       </div>
                     ) : (
                       <div className="mt-5 flex flex-1 flex-col justify-end gap-3">
-                        <label className="flex items-start gap-2 text-xs text-gray-body">
-                          <input
-                            type="checkbox"
-                            checked={shareExistingToPostwick}
-                            onChange={(event) =>
-                              setShareExistingToPostwick(event.target.checked)
-                            }
-                            className="mt-0.5"
-                          />
-                          <span>
-                            When connecting, also share all currently published
-                            posts to Postwick.
-                          </span>
-                        </label>
-                        <TextureButton
-                          type="button"
-                          variant="primary"
-                          size="sm"
-                          disabled={isLoading || !brandReadyForPostwick}
-                          onClick={() => void updatePostwickConnection(true)}
-                        >
-                          {loadingKey === "postwick:connect" ? (
-                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                          ) : (
-                            <Link2 className="mr-2 h-4 w-4" />
-                          )}
-                          Connect Postwick
-                        </TextureButton>
+                        {brandReadyForPostwick ? (
+                          <>
+                            <label className="flex items-start gap-2 text-xs text-gray-body">
+                              <input
+                                type="checkbox"
+                                checked={shareExistingToPostwick}
+                                onChange={(event) =>
+                                  setShareExistingToPostwick(event.target.checked)
+                                }
+                                className="mt-0.5"
+                              />
+                              <span>
+                                When connecting, also share all currently published
+                                posts to Postwick.
+                              </span>
+                            </label>
+                            <TextureButton
+                              type="button"
+                              variant="primary"
+                              size="sm"
+                              disabled={isLoading}
+                              onClick={() => void updatePostwickConnection(true)}
+                            >
+                              {loadingKey === "postwick:connect" ? (
+                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                              ) : (
+                                <Link2 className="mr-2 h-4 w-4" />
+                              )}
+                              Connect Postwick
+                            </TextureButton>
+                          </>
+                        ) : activeBrand ? (
+                          <TextureButton
+                            type="button"
+                            variant="secondary"
+                            size="sm"
+                            onClick={() => router.push(`/brands/${activeBrand.id}`)}
+                          >
+                            Finish brand setup
+                          </TextureButton>
+                        ) : null}
                       </div>
                     )}
                   </article>

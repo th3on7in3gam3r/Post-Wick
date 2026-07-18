@@ -92,11 +92,16 @@ const TextureButton = React.forwardRef<HTMLButtonElement, TextureButtonProps>(
       size = "default",
       asChild = false,
       className,
+      disabled,
       ...props
     },
     ref,
   ) => {
-    const outerClass = cn(buttonVariantsOuter({ variant, shape, size }), className);
+    const outerClass = cn(
+      buttonVariantsOuter({ variant, shape, size }),
+      disabled && "pointer-events-none cursor-not-allowed opacity-50",
+      className,
+    );
     const innerClass = cn(innerDivVariants({ variant, shape, size }));
 
     if (asChild && React.isValidElement(children)) {
@@ -111,7 +116,7 @@ const TextureButton = React.forwardRef<HTMLButtonElement, TextureButtonProps>(
     }
 
     return (
-      <button className={outerClass} ref={ref} {...props}>
+      <button className={outerClass} ref={ref} disabled={disabled} {...props}>
         <div className={innerClass}>{children}</div>
       </button>
     );
