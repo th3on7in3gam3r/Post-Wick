@@ -40,7 +40,7 @@ export const GROWTH_STACK = {
     tagline: "Public posts network for brands",
     href:
       process.env.NEXT_PUBLIC_POSTWICK_URL?.trim().replace(/\/$/, "") ||
-      "https://postwick.com",
+      "https://postwick.kerygmasocial.com",
   },
   kerygma: {
     name: "Kerygma Social",

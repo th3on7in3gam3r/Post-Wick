@@ -4,7 +4,7 @@ import { TextureButton } from "@/components/ui/texture-button";
 import { postwickBaseUrl } from "@/lib/directory/public-brands";
 
 function postwickPromoHref() {
-  return postwickBaseUrl() ?? "https://postwick.com";
+  return postwickBaseUrl() ?? "https://postwick.kerygmasocial.com";
 }
 
 export function PostwickPromoCard() {
