@@ -63,11 +63,11 @@ export function GrowthStackTabs() {
   }
 
   return (
-    <div className="mt-10 overflow-hidden rounded-2xl border border-black/[0.06] bg-white shadow-card">
+    <div className="mx-auto mt-10 max-w-4xl overflow-hidden rounded-2xl border border-black/[0.06] bg-white shadow-card">
       <div
         role="tablist"
         aria-label="Growth stack products"
-        className="hide-scrollbar flex gap-0 overflow-x-auto border-b border-black/[0.06] px-2 sm:px-4"
+        className="hide-scrollbar flex gap-0 overflow-x-auto border-b border-black/[0.06] px-2 sm:px-3"
         onKeyDown={(event) => {
           if (event.key === "ArrowRight") {
             event.preventDefault();
@@ -101,14 +101,14 @@ export function GrowthStackTabs() {
               tabIndex={selected ? 0 : -1}
               onClick={() => setActiveKey(item.key)}
               className={cn(
-                "relative shrink-0 px-3 py-3.5 text-sm font-medium transition-colors sm:px-4",
+                "relative shrink-0 px-2.5 py-2.5 text-xs font-medium transition-colors sm:px-3 sm:text-sm",
                 selected ? "text-near-black" : "text-gray-body hover:text-near-black",
               )}
             >
-              <span className="flex min-h-[2.75rem] flex-col items-start justify-end gap-0.5">
+              <span className="flex min-h-[2.25rem] flex-col items-start justify-end gap-0.5">
                 <span
                   className={cn(
-                    "text-[0.6rem] font-semibold uppercase tracking-[0.16em]",
+                    "text-[0.55rem] font-semibold uppercase tracking-[0.14em]",
                     cue ? "text-gold" : "invisible",
                   )}
                 >
@@ -119,7 +119,7 @@ export function GrowthStackTabs() {
               <span
                 aria-hidden
                 className={cn(
-                  "absolute inset-x-3 bottom-0 h-0.5 origin-left bg-gold transition-transform duration-200 sm:inset-x-4",
+                  "absolute inset-x-2.5 bottom-0 h-0.5 origin-left bg-gold transition-transform duration-200 sm:inset-x-3",
                   selected ? "scale-x-100" : "scale-x-0",
                 )}
               />
@@ -133,7 +133,7 @@ export function GrowthStackTabs() {
         role="tabpanel"
         id={`${baseId}-panel-${active.key}`}
         aria-labelledby={`${baseId}-tab-${active.key}`}
-        className="growth-stack-fade grid gap-8 px-6 py-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.15fr)] lg:items-center sm:px-8"
+        className="growth-stack-fade grid gap-5 px-5 py-5 sm:px-6 sm:py-6 md:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)] md:items-center"
       >
         <div>
           <p
@@ -144,13 +144,13 @@ export function GrowthStackTabs() {
           >
             {active.label}
           </p>
-          <h3 className="mt-2 font-playfair text-[clamp(1.5rem,2.5vw,2rem)] italic text-near-black">
+          <h3 className="mt-1.5 font-playfair text-[clamp(1.25rem,2vw,1.65rem)] italic text-near-black">
             {product.name}
           </h3>
-          <p className="mt-2 max-w-xl text-base text-gray-body">{product.tagline}</p>
-          <p className="mt-3 max-w-xl text-sm leading-relaxed text-gray-label">{active.blurb}</p>
+          <p className="mt-1.5 max-w-md text-sm text-gray-body">{product.tagline}</p>
+          <p className="mt-2 max-w-md text-sm leading-relaxed text-gray-label">{active.blurb}</p>
 
-          <div className="mt-6">
+          <div className="mt-4">
             {isCurrent ? (
               <TextureButton asChild variant="primary" size="sm">
                 <Link href="/sign-up">Get started →</Link>
@@ -168,14 +168,13 @@ export function GrowthStackTabs() {
           </div>
         </div>
 
-        <div className="relative overflow-hidden rounded-xl border border-black/[0.06] bg-cream/40 shadow-sm">
+        <div className="relative aspect-[16/10] overflow-hidden rounded-lg border border-black/[0.06] bg-cream/40 shadow-sm">
           <Image
             src={product.screenshot}
             alt={`${product.name} product preview`}
-            width={1200}
-            height={750}
-            className="h-auto w-full object-cover object-top"
-            sizes="(max-width: 1024px) 100vw, 560px"
+            fill
+            className="object-cover object-top"
+            sizes="(max-width: 768px) 100vw, 420px"
             priority={active.key === "kerygma"}
           />
         </div>
