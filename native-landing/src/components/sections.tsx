@@ -185,6 +185,14 @@ export function Footer() {
               CitePilot
             </Link>
             <Link
+              href={GROWTH_STACK.signalDesk.href}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-gray-body hover:text-near-black"
+            >
+              SignalDesk Blog
+            </Link>
+            <Link
               href={GROWTH_STACK.aiCmo.href}
               target="_blank"
               rel="noopener noreferrer"

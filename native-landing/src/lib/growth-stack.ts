@@ -24,16 +24,25 @@ export const GROWTH_STACK = {
     name: "CitePilot",
     tagline: "Track AI citations on buyer prompts",
     href: "https://getcitepilot.com",
+    screenshot: "/images/growth-stack/citepilot.png",
+  },
+  signalDesk: {
+    name: "SignalDesk Blog",
+    tagline: "Citation studio for AI search",
+    href: "https://signaldeskblog.com",
+    screenshot: "/images/growth-stack/signaldesk.png",
   },
   aiCmo: {
     name: "Cadence",
     tagline: "Strategy, SEO audits, and campaign workspace",
     href: CADENCE_SETTINGS_URL,
+    screenshot: "/images/growth-stack/cadence.png",
   },
   aegis: {
     name: "Aegis Loop",
     tagline: "Find vulnerabilities before you ship",
     href: "https://aegis-loop.com",
+    screenshot: "/images/growth-stack/aegis.png",
   },
   postwick: {
     name: "Postwick",
@@ -41,11 +50,13 @@ export const GROWTH_STACK = {
     href:
       process.env.NEXT_PUBLIC_POSTWICK_URL?.trim().replace(/\/$/, "") ||
       "https://postwick.kerygmasocial.com",
+    screenshot: "/images/growth-stack/postwick.png",
   },
   kerygma: {
     name: "Kerygma Social",
     tagline: "Social posts on autopilot from your URL",
     href: KERYGMA_SITE_URL,
+    screenshot: "/images/growth-stack/kerygma.png",
   },
 } as const;
 

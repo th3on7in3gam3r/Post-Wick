@@ -8,10 +8,10 @@ export function GrowthStackPromo() {
       <div className="mx-auto max-w-[1200px]">
         <p className="step-label">Growth stack</p>
         <h2 className="mt-2 max-w-2xl font-playfair text-[clamp(1.75rem,3vw,2.5rem)] italic text-near-black">
-          One stack — citations, strategy, security, social, discovery
+          One stack — citations, content, strategy, security, social, discovery
         </h2>
         <p className="body-copy mt-3 max-w-2xl">
-          Five sister tools from{" "}
+          Sister tools from{" "}
           <Link
             href={BIBLEFUNLAND_STUDIOS_URL}
             target="_blank"
@@ -20,8 +20,8 @@ export function GrowthStackPromo() {
           >
             Bible Funland Studios
           </Link>
-          . A simple path runs CitePilot → Cadence → Aegis → Kerygma → Postwick — follow it, or open
-          only what you need.
+          . A simple path runs CitePilot → SignalDesk → Cadence → Aegis → Kerygma → Postwick —
+          follow it, or open only what you need.
         </p>
 
         <GrowthStackTabs />

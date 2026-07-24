@@ -1,6 +1,7 @@
 "use client";
 
 import { useId, useState } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { GROWTH_STACK } from "@/lib/growth-stack";
 import { TextureButton } from "@/components/ui/texture-button";
@@ -12,6 +13,11 @@ const PATH = [
     label: "Start here",
     tabCue: "Start",
     blurb: "See how AI answers mention your brand before you plan the campaign.",
+  },
+  {
+    key: "signalDesk" as const,
+    label: "Then",
+    blurb: "Write citation-ready posts with SEO and GEO fields so AI search has something to quote.",
   },
   {
     key: "aiCmo" as const,
@@ -43,7 +49,7 @@ export function GrowthStackTabs() {
   const baseId = useId();
   const [activeKey, setActiveKey] = useState<PathKey>("kerygma");
   const activeIndex = PATH.findIndex((item) => item.key === activeKey);
-  const active = PATH[activeIndex] ?? PATH[3];
+  const active = PATH[activeIndex] ?? PATH.find((item) => item.key === "kerygma")!;
   const product = GROWTH_STACK[active.key];
   const isCurrent = Boolean("current" in active && active.current);
 
@@ -127,37 +133,51 @@ export function GrowthStackTabs() {
         role="tabpanel"
         id={`${baseId}-panel-${active.key}`}
         aria-labelledby={`${baseId}-tab-${active.key}`}
-        className="growth-stack-fade px-6 py-8 sm:px-8"
+        className="growth-stack-fade grid gap-8 px-6 py-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.15fr)] lg:items-center sm:px-8"
       >
-        <p
-          className={cn(
-            "text-[0.65rem] font-semibold uppercase tracking-[0.18em]",
-            isCurrent || active.key === "citePilot" ? "text-gold" : "text-gray-label",
-          )}
-        >
-          {active.label}
-        </p>
-        <h3 className="mt-2 font-playfair text-[clamp(1.5rem,2.5vw,2rem)] italic text-near-black">
-          {product.name}
-        </h3>
-        <p className="mt-2 max-w-xl text-base text-gray-body">{product.tagline}</p>
-        <p className="mt-3 max-w-xl text-sm leading-relaxed text-gray-label">{active.blurb}</p>
+        <div>
+          <p
+            className={cn(
+              "text-[0.65rem] font-semibold uppercase tracking-[0.18em]",
+              isCurrent || active.key === "citePilot" ? "text-gold" : "text-gray-label",
+            )}
+          >
+            {active.label}
+          </p>
+          <h3 className="mt-2 font-playfair text-[clamp(1.5rem,2.5vw,2rem)] italic text-near-black">
+            {product.name}
+          </h3>
+          <p className="mt-2 max-w-xl text-base text-gray-body">{product.tagline}</p>
+          <p className="mt-3 max-w-xl text-sm leading-relaxed text-gray-label">{active.blurb}</p>
 
-        <div className="mt-6">
-          {isCurrent ? (
-            <TextureButton asChild variant="primary" size="sm">
-              <Link href="/sign-up">Get started →</Link>
-            </TextureButton>
-          ) : (
-            <Link
-              href={product.href}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex text-sm font-medium text-gold transition hover:text-near-black"
-            >
-              Learn more →
-            </Link>
-          )}
+          <div className="mt-6">
+            {isCurrent ? (
+              <TextureButton asChild variant="primary" size="sm">
+                <Link href="/sign-up">Get started →</Link>
+              </TextureButton>
+            ) : (
+              <Link
+                href={product.href}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex text-sm font-medium text-gold transition hover:text-near-black"
+              >
+                Learn more →
+              </Link>
+            )}
+          </div>
+        </div>
+
+        <div className="relative overflow-hidden rounded-xl border border-black/[0.06] bg-cream/40 shadow-sm">
+          <Image
+            src={product.screenshot}
+            alt={`${product.name} product preview`}
+            width={1200}
+            height={750}
+            className="h-auto w-full object-cover object-top"
+            sizes="(max-width: 1024px) 100vw, 560px"
+            priority={active.key === "kerygma"}
+          />
         </div>
       </div>
     </div>
