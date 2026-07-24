@@ -72,4 +72,17 @@
   .text-balance {
     text-wrap: balance;
   }
+
+  @keyframes growth-stack-fade {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+
+  .growth-stack-fade {
+    animation: growth-stack-fade 200ms ease-out;
+  }
 }
