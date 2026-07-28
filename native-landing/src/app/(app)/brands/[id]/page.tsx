@@ -59,9 +59,7 @@ export default async function BrandPage({
   const connections = (await getConnectionsByUserId(userId)).filter(
     (connection) => connection.brandId === brand.id,
   );
-  const research = brand.researchData
-    ? (JSON.parse(brand.researchData) as BrandResearchRecord)
-    : null;
+  const research = brand.researchData ? JSON.parse(brand.researchData) : null;
   const crawledPages =
     (research?.crawledPages as Array<{ url: string; title: string }> | undefined) ?? [];
   const pendingCount = posts.filter((post) => post.status === "pending").length;
@@ -123,7 +121,7 @@ export default async function BrandPage({
           <BrandVoiceConfirmCard
             brandId={brand.id}
             websiteUrl={brand.websiteUrl}
-            research={research}
+            research={research as BrandResearchRecord | null}
           />
         ) : null}
 
