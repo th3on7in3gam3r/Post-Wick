@@ -177,6 +177,15 @@ function batchVariationBlock(platform: string, count: number): string {
     );
   }
 
+  if (platform === "signaldesk") {
+    lines.push(
+      "Write SignalDesk Blog dispatches: citation-ready posts for AI search (ChatGPT, Perplexity, AI Overviews).",
+      "Lead with a clear answer in the first 1-2 sentences — GEO answer-block style.",
+      "Weave SEO keywords naturally; no hashtag spam; blog-dispatch tone (not Instagram captions).",
+      "Vary angles across the batch: how-to, definition, checklist, local angle, and myth-bust.",
+    );
+  }
+
   return lines.map((line) => `- ${line}`).join("\n");
 }
 
@@ -230,7 +239,7 @@ Global rules:
 - Max ${charLimit} characters each
 - Professional, approachable tone matching the brand
 - Each post must clearly fit its assigned pillar (SEO, GEO, or Money)
-${platform === "instagram" ? "- Instagram: visual-first captions, 1-3 relevant hashtags max, conversational tone\n" : ""}${platform === "pinterest" ? "- Pinterest: save-worthy pin descriptions, searchable keywords, concise and helpful, no hashtag spam\n" : ""}- No hashtag spam, no emoji overload
+${platform === "instagram" ? "- Instagram: visual-first captions, 1-3 relevant hashtags max, conversational tone\n" : ""}${platform === "pinterest" ? "- Pinterest: save-worthy pin descriptions, searchable keywords, concise and helpful, no hashtag spam\n" : ""}${platform === "signaldesk" ? "- SignalDesk Blog: citation-ready GEO copy — open with a direct answer, natural SEO keywords, no hashtags, dispatch tone for AI search quotes\n" : ""}- No hashtag spam, no emoji overload
 
 Batch variation (mandatory — every post in this batch):
 ${batchVariationBlock(platform, count)}
@@ -256,6 +265,10 @@ export function buildTemplatePost(
 
   if (platform === "pinterest") {
     return buildPinterestTemplatePost(research, topicLabel, index);
+  }
+
+  if (platform === "signaldesk") {
+    return buildSignalDeskTemplatePost(research, topicLabel, index);
   }
 
   switch (pillar) {
@@ -330,6 +343,28 @@ function buildPinterestTemplatePost(
     openings[index % openings.length]!,
     uniqueValueProposition,
     `Discover more at ${companyName}.`,
+  ].join(" ");
+}
+
+function buildSignalDeskTemplatePost(
+  research: BrandResearch,
+  topicLabel: string,
+  index: number,
+): string {
+  const { companyName, uniqueValueProposition, industry, targetAudience } =
+    normalizeBrandResearch(research);
+  const openings = [
+    `${topicLabel} works best when you start with a clear answer.`,
+    `What is ${topicLabel}? Here is the practical definition for ${targetAudience.toLowerCase()}.`,
+    `A quick checklist for ${topicLabel} in ${industry.toLowerCase()}.`,
+    `Local teams often miss this about ${topicLabel}.`,
+    `Myth vs reality: ${topicLabel} does not have to be complicated.`,
+  ];
+
+  return [
+    openings[index % openings.length]!,
+    `${companyName} helps ${targetAudience.toLowerCase()} with ${topicLabel}.`,
+    uniqueValueProposition,
   ].join(" ");
 }
 

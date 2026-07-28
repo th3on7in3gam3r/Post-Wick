@@ -339,6 +339,34 @@ export function PlatformPostPreview({
     );
   }
 
+  if (normalized === "signaldesk") {
+    const title =
+      content.split(/[.!?\n]/)[0]?.trim().slice(0, 80) ||
+      "Citation-ready dispatch";
+    return (
+      <article
+        className={cn(
+          "overflow-hidden rounded-2xl border border-black/[0.08] bg-white shadow-card",
+          className,
+        )}
+      >
+        <div className="border-b border-black/[0.06] bg-[#0B1220] px-4 py-3">
+          <p className="text-[0.65rem] font-semibold uppercase tracking-[0.16em] text-[#7DD3FC]">
+            SignalDesk Blog · Studio
+          </p>
+          <p className="mt-1 font-medium text-white">{title}</p>
+        </div>
+        <div className="px-4 py-4">
+          <p className="text-[0.65rem] font-semibold uppercase tracking-[0.12em] text-gray-label">
+            Body
+          </p>
+          <p className="mt-2 text-sm leading-relaxed text-near-black">{content}</p>
+          <p className="mt-3 truncate text-xs text-gray-label">{accountName}</p>
+        </div>
+      </article>
+    );
+  }
+
   return (
     <article
       className={cn(

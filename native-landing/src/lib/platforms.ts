@@ -5,11 +5,17 @@ export const GENERATE_PLATFORMS = [
   "instagram",
   "pinterest",
   "bluesky",
+  "signaldesk",
 ] as const;
 
 export type GeneratePlatform = (typeof GENERATE_PLATFORMS)[number];
 
+const SIGNALDESK_CHAR_LIMIT = 2500;
+
 export function charLimitForPlatform(platform: string) {
+  if (platform.toLowerCase() === "signaldesk") {
+    return SIGNALDESK_CHAR_LIMIT;
+  }
   return getIntegrationPlatform(platform)?.charLimit ?? 280;
 }
 
@@ -25,6 +31,9 @@ export function isSupportedGeneratePlatform(
 }
 
 export function generatePlatformLabel(platform: string) {
+  if (platform.toLowerCase() === "signaldesk") {
+    return "SignalDesk Blog";
+  }
   return getIntegrationPlatform(platform)?.name ?? platform;
 }
 
