@@ -9,9 +9,15 @@ type BrandVoiceEditorProps = {
   value: BrandVoiceForm;
   onChange: (value: BrandVoiceForm) => void;
   onConfirm: () => void;
-  onBack: () => void;
+  onBack?: () => void;
   confirming?: boolean;
   websiteUrl?: string | null;
+  /** Override primary CTA label. */
+  confirmLabel?: string;
+  /** Override back link label. Omit or pass null to hide the back control. */
+  backLabel?: string | null;
+  /** Optional supporting copy under the heading. */
+  description?: string;
 };
 
 const fieldClassName =
@@ -24,6 +30,9 @@ export function BrandVoiceEditor({
   onBack,
   confirming = false,
   websiteUrl,
+  confirmLabel = "Looks right, generate my posts →",
+  backLabel = "← Change my URL",
+  description,
 }: BrandVoiceEditorProps) {
   function update<K extends keyof BrandVoiceForm>(key: K, next: BrandVoiceForm[K]) {
     onChange({ ...value, [key]: next });
@@ -43,8 +52,8 @@ export function BrandVoiceEditor({
           Does this sound like you?
         </h3>
         <p className="body-copy mt-2 text-sm">
-          We pulled this from your website{websiteUrl ? ` (${websiteUrl})` : ""}. Edit anything
-          before we draft your first posts.
+          {description ??
+            `We pulled this from your website${websiteUrl ? ` (${websiteUrl})` : ""}. Edit anything before we draft your first posts.`}
         </p>
       </div>
 
@@ -149,17 +158,19 @@ export function BrandVoiceEditor({
               Generating your posts…
             </>
           ) : (
-            "Looks right, generate my posts →"
+            confirmLabel
           )}
         </TextureButton>
-        <button
-          type="button"
-          onClick={onBack}
-          disabled={confirming}
-          className="text-sm font-medium text-gray-body transition hover:text-near-black disabled:opacity-60"
-        >
-          ← Change my URL
-        </button>
+        {onBack && backLabel ? (
+          <button
+            type="button"
+            onClick={onBack}
+            disabled={confirming}
+            className="text-sm font-medium text-gray-body transition hover:text-near-black disabled:opacity-60"
+          >
+            {backLabel}
+          </button>
+        ) : null}
       </div>
     </div>
   );

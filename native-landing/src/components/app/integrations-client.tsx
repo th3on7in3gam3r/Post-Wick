@@ -1019,7 +1019,7 @@ export function IntegrationsClient({
                         </p>
                         <p className="mt-1 text-amber-900/80">
                           {activeBrand?.crawlStatus === "review"
-                            ? "Confirm your brand voice on the brand page, then come back to connect."
+                            ? "Confirm your brand voice on the brand page (approving queue drafts is not enough), then come back to connect."
                             : "Complete crawl and voice setup for this brand before connecting Postwick."}
                         </p>
                         {activeBrand ? (

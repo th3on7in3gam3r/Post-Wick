@@ -14,6 +14,7 @@ import { BrandDirectoryToggle } from "@/components/app/brand-directory-toggle";
 import { BrandImageStylePicker } from "@/components/app/brand-image-style-picker";
 import { BrandProfileCard } from "@/components/app/brand-profile-card";
 import { BrandSitePreview } from "@/components/app/brand-site-preview";
+import { BrandVoiceConfirmCard } from "@/components/app/brand-voice-confirm-card";
 import { GenerateImagesButton } from "@/components/app/generate-images-button";
 import { PanelCard } from "@/components/app/panel-card";
 import { PostPreviewRow } from "@/components/app/post-preview-row";
@@ -29,6 +30,7 @@ import {
 import { getPlanLimits } from "@/lib/plans";
 import { postNeedsImageGeneration } from "@/lib/posts/image-url";
 import { parseImageStylePreset } from "@/lib/ai/image-style-presets";
+import type { BrandResearchRecord } from "@/lib/brand-voice";
 import { requireUserId } from "@/lib/server/app-data";
 import { websiteHostname } from "@/lib/website-url";
 
@@ -57,7 +59,9 @@ export default async function BrandPage({
   const connections = (await getConnectionsByUserId(userId)).filter(
     (connection) => connection.brandId === brand.id,
   );
-  const research = brand.researchData ? JSON.parse(brand.researchData) : null;
+  const research = brand.researchData
+    ? (JSON.parse(brand.researchData) as BrandResearchRecord)
+    : null;
   const crawledPages =
     (research?.crawledPages as Array<{ url: string; title: string }> | undefined) ?? [];
   const pendingCount = posts.filter((post) => post.status === "pending").length;
@@ -76,6 +80,7 @@ export default async function BrandPage({
   const assets = await resolveBrandAssets(brand.websiteUrl, research);
   const industry = research?.industry?.trim() || "Business";
   const imageStylePreset = parseImageStylePreset(research?.imageStylePreset);
+  const needsVoiceConfirm = brand.crawlStatus === "review";
 
   return (
     <>
@@ -113,6 +118,14 @@ export default async function BrandPage({
             </Link>
           </TextureButton>
         </BrandSitePreview>
+
+        {needsVoiceConfirm ? (
+          <BrandVoiceConfirmCard
+            brandId={brand.id}
+            websiteUrl={brand.websiteUrl}
+            research={research}
+          />
+        ) : null}
 
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
           <StatCard
