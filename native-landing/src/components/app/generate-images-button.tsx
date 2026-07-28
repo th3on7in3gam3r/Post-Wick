@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { ImagePlus, Loader2, RefreshCw } from "lucide-react";
+import { ImageWaitGame } from "@/components/app/image-wait-game";
 import { TextureButton } from "@/components/ui/texture-button";
 
 export function GenerateImagesButton({
@@ -65,7 +66,7 @@ export function GenerateImagesButton({
     : `${label ?? "Add images"} (${count})`;
 
   return (
-    <div className="flex flex-col items-start gap-2">
+    <div className="flex flex-col items-start gap-3">
       <TextureButton
         type="button"
         variant={variant}
@@ -82,6 +83,7 @@ export function GenerateImagesButton({
         )}
         {loading ? (regenerate ? "Regenerating…" : "Creating images…") : defaultLabel}
       </TextureButton>
+      <ImageWaitGame active={loading} />
       {message ? <p className="text-xs text-gray-body">{message}</p> : null}
     </div>
   );
