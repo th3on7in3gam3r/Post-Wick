@@ -356,6 +356,7 @@ export function PlatformPostPreview({
           </p>
           <p className="mt-1 font-medium text-white">{title}</p>
         </div>
+        {imageSrc ? <PreviewImage src={imageSrc} aspectClass="aspect-video" /> : null}
         <div className="px-4 py-4">
           <p className="text-[0.65rem] font-semibold uppercase tracking-[0.12em] text-gray-label">
             Body
