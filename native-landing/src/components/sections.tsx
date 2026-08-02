@@ -209,6 +209,14 @@ export function Footer() {
               Aegis Loop
             </Link>
             <Link
+              href={GROWTH_STACK.moneyGap.href}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-gray-body hover:text-near-black"
+            >
+              MoneyGap AI
+            </Link>
+            <Link
               href={GROWTH_STACK.postwick.href}
               target="_blank"
               rel="noopener noreferrer"

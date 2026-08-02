@@ -44,6 +44,14 @@ export const GROWTH_STACK = {
     href: "https://aegis-loop.com",
     screenshot: "/images/growth-stack/aegis.png",
   },
+  moneyGap: {
+    name: "MoneyGap AI",
+    tagline: "Find and close revenue leaks on your site",
+    href:
+      process.env.NEXT_PUBLIC_MONEYGAP_URL?.trim().replace(/\/$/, "") ||
+      "https://www.moneygap-ai.com",
+    screenshot: "/images/growth-stack/cadence.png",
+  },
   postwick: {
     name: "Postwick",
     tagline: "Public posts network for brands",

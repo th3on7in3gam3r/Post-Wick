@@ -20,7 +20,7 @@ export function GrowthStackPromo() {
           >
             Bible Funland Studios
           </Link>
-          . A simple path runs CitePilot → SignalDesk → Cadence → Aegis → Kerygma → Postwick —
+          . A simple path runs CitePilot → SignalDesk → Cadence → Aegis → MoneyGap AI → Kerygma → Postwick —
           follow it, or open only what you need.
         </p>
 

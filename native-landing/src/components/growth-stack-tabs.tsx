@@ -30,6 +30,11 @@ const PATH = [
     blurb: "Check the site for vulnerabilities before you put the brand in front of more people.",
   },
   {
+    key: "moneyGap" as const,
+    label: "Then",
+    blurb: "Find and close revenue leaks so campaigns convert after you ship.",
+  },
+  {
     key: "kerygma" as const,
     label: "You are here",
     tabCue: "You are here",
