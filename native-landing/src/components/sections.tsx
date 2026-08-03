@@ -161,14 +161,17 @@ export function Footer() {
             href="https://app.moneygap.ai/report/report_oo97vuzs"
             rel="noopener noreferrer"
             target="_blank"
-            className="mt-3 inline-block"
+            className="mt-3"
+            style={{ display: "inline-block", lineHeight: 0, textDecoration: "none" }}
+            title="MoneyGap Score™ 77"
           >
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
-              src="https://app.moneygap.ai/badge/mgb_report_oo97vuzs.svg"
-              alt="MoneyGap Score 77"
-              width={160}
-              height={54}
+              src="data:image/svg+xml;charset=utf-8,%3C%3Fxml%20version%3D%221.0%22%20encoding%3D%22UTF-8%22%3F%3E%0A%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22200%22%20height%3D%2256%22%20viewBox%3D%220%200%20200%2056%22%20role%3D%22img%22%20aria-label%3D%22MoneyGap%20Score%2077%22%3E%0A%20%20%3Cdefs%3E%0A%20%20%20%20%3ClinearGradient%20id%3D%22mgBg%22%20x1%3D%220%22%20y1%3D%220%22%20x2%3D%221%22%20y2%3D%221%22%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%220%25%22%20stop-color%3D%22%230f1c2e%22%2F%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%22100%25%22%20stop-color%3D%22%2316324f%22%2F%3E%0A%20%20%20%20%3C%2FlinearGradient%3E%0A%20%20%20%20%3ClinearGradient%20id%3D%22mgMark%22%20x1%3D%220%22%20y1%3D%220%22%20x2%3D%220%22%20y2%3D%221%22%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%220%25%22%20stop-color%3D%22%232dd4bf%22%2F%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%22100%25%22%20stop-color%3D%22%230d9488%22%2F%3E%0A%20%20%20%20%3C%2FlinearGradient%3E%0A%20%20%3C%2Fdefs%3E%0A%20%20%3Crect%20x%3D%220.5%22%20y%3D%220.5%22%20width%3D%22199%22%20height%3D%2255%22%20rx%3D%2212%22%20fill%3D%22url(%23mgBg)%22%20stroke%3D%22%232a3f55%22%2F%3E%0A%20%20%3Crect%20x%3D%228%22%20y%3D%228%22%20width%3D%2240%22%20height%3D%2240%22%20rx%3D%2210%22%20fill%3D%22url(%23mgMark)%22%2F%3E%0A%20%20%3Cpath%20d%3D%22M18%2034%20L28%2016%20L38%2034%22%20fill%3D%22none%22%20stroke%3D%22%230f1c2e%22%20stroke-width%3D%222.4%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%2F%3E%0A%20%20%3Cpath%20d%3D%22M22%2034%20H34%22%20fill%3D%22none%22%20stroke%3D%22%230f1c2e%22%20stroke-width%3D%222.4%22%20stroke-linecap%3D%22round%22%2F%3E%0A%20%20%3Ctext%20x%3D%2260%22%20y%3D%2222%22%20fill%3D%22%2394a3b8%22%20font-family%3D%22ui-sans-serif%2Csystem-ui%2C-apple-system%2CSegoe%20UI%2Csans-serif%22%20font-size%3D%229%22%20font-weight%3D%22700%22%20letter-spacing%3D%220.12em%22%3EMONEYGAP%20AI%3C%2Ftext%3E%0A%20%20%3Ctext%20x%3D%2260%22%20y%3D%2240%22%20fill%3D%22%23f8fafc%22%20font-family%3D%22ui-sans-serif%2Csystem-ui%2C-apple-system%2CSegoe%20UI%2Csans-serif%22%20font-size%3D%2213%22%20font-weight%3D%22700%22%3EScore%E2%84%A2%3C%2Ftext%3E%0A%20%20%3Ctext%20x%3D%22188%22%20y%3D%2236%22%20text-anchor%3D%22end%22%20fill%3D%22%230d9488%22%20font-family%3D%22ui-sans-serif%2Csystem-ui%2C-apple-system%2CSegoe%20UI%2Csans-serif%22%20font-size%3D%2222%22%20font-weight%3D%22800%22%3E77%3C%2Ftext%3E%0A%3C%2Fsvg%3E"
+              alt="MoneyGap Score™ 77"
+              width={200}
+              height={56}
+              style={{ display: "block", border: 0, borderRadius: 12 }}
             />
           </a>
         </div>
