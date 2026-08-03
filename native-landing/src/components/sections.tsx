@@ -158,7 +158,7 @@ export function Footer() {
           </p>
           {/* MoneyGap AI Growth Badge */}
           <a
-            href="chrome-extension://jkiobeigkpeniaejapgghbpipobjpnld/report.html?id=report_oo97vuzs"
+            href="https://www.moneygap-ai.com/report/ext/report_j5pdutms"
             rel="noopener noreferrer"
             target="_blank"
             className="mt-3"
