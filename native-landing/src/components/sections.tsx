@@ -156,6 +156,21 @@ export function Footer() {
               BibleFunLand Studios
             </Link>
           </p>
+          {/* MoneyGap AI Growth Badge */}
+          <a
+            href="https://app.moneygap.ai/report/report_oo97vuzs"
+            rel="noopener noreferrer"
+            target="_blank"
+            className="mt-3 inline-block"
+          >
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="https://app.moneygap.ai/badge/mgb_report_oo97vuzs.svg"
+              alt="MoneyGap Score 77"
+              width={160}
+              height={54}
+            />
+          </a>
         </div>
         <div className="flex flex-col gap-8 sm:flex-row sm:gap-10">
           <nav className="flex flex-col items-center gap-3 text-sm sm:items-start">
