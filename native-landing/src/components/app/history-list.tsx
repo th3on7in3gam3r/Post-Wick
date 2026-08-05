@@ -81,6 +81,40 @@ export function HistoryList({
     }
   }
 
+  async function publishToPostwick(postId: string) {
+    setSharingId(postId);
+    setActionError(null);
+
+    try {
+      const response = await fetch(`/api/posts/${postId}/publish-to-postwick`, {
+        method: "POST",
+        credentials: "same-origin",
+      });
+      const data = (await response.json().catch(() => ({}))) as {
+        error?: string;
+      };
+
+      if (!response.ok) {
+        throw new Error(
+          typeof data.error === "string"
+            ? data.error
+            : "Could not publish to Postwick",
+        );
+      }
+
+      router.refresh();
+    } catch (error) {
+      setActionError({
+        message:
+          error instanceof Error
+            ? error.message
+            : "Could not publish to Postwick",
+      });
+    } finally {
+      setSharingId(null);
+    }
+  }
+
   async function retryPost(postId: string) {
     setRetryingId(postId);
     setActionError(null);
@@ -268,25 +302,51 @@ export function HistoryList({
                   ) : null}
 
                   {post.status === "failed" ? (
-                    <TextureButton
-                      type="button"
-                      variant="secondary"
-                      size="sm"
-                      disabled={isRetrying || retryingAll}
-                      onClick={() => void retryPost(post.id)}
-                    >
-                      {isRetrying ? (
-                        <>
-                          <Loader2 className="mr-2 h-3.5 w-3.5 animate-spin" />
-                          Retrying…
-                        </>
-                      ) : (
-                        <>
-                          <RotateCcw className="mr-2 h-3.5 w-3.5" />
-                          Retry publish
-                        </>
-                      )}
-                    </TextureButton>
+                    <>
+                      <TextureButton
+                        type="button"
+                        variant="secondary"
+                        size="sm"
+                        disabled={
+                          isRetrying ||
+                          retryingAll ||
+                          sharingId === post.id
+                        }
+                        onClick={() => void retryPost(post.id)}
+                      >
+                        {isRetrying ? (
+                          <>
+                            <Loader2 className="mr-2 h-3.5 w-3.5 animate-spin" />
+                            Retrying…
+                          </>
+                        ) : (
+                          <>
+                            <RotateCcw className="mr-2 h-3.5 w-3.5" />
+                            Retry publish
+                          </>
+                        )}
+                      </TextureButton>
+                      <TextureButton
+                        type="button"
+                        variant="primary"
+                        size="sm"
+                        disabled={
+                          isRetrying ||
+                          retryingAll ||
+                          sharingId === post.id
+                        }
+                        onClick={() => void publishToPostwick(post.id)}
+                      >
+                        {sharingId === post.id ? (
+                          <>
+                            <Loader2 className="mr-2 h-3.5 w-3.5 animate-spin" />
+                            Publishing…
+                          </>
+                        ) : (
+                          "Publish to Postwick"
+                        )}
+                      </TextureButton>
+                    </>
                   ) : null}
                 </div>
               </div>

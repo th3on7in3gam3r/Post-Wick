@@ -818,6 +818,55 @@ export async function setPostPublic(
   return updated ? { post: parsePost(updated) } : null;
 }
 
+/** Rescue a failed social publish by marking it published and sharing on Postwick. */
+export async function publishFailedPostToPostwick(
+  postId: string,
+  userId: string,
+): Promise<{ post: PostRecord; error?: string } | null> {
+  const db = await getDb();
+  const rows = await db
+    .select({ post: posts, brand: brands })
+    .from(posts)
+    .innerJoin(brands, eq(brands.id, posts.brandId))
+    .where(and(eq(posts.id, postId), eq(brands.userId, userId)))
+    .limit(1);
+
+  if (rows.length === 0) return null;
+
+  const { post, brand } = rows[0]!;
+
+  if (post.status !== "failed") {
+    return {
+      post: parsePost(post),
+      error: "Only failed posts can be published to Postwick this way",
+    };
+  }
+
+  if (!brand.isPublic || !brand.publicSlug) {
+    return {
+      post: parsePost(post),
+      error:
+        "Connect this brand to Postwick (or list it in the public directory) first, then share posts",
+    };
+  }
+
+  const now = nowIso();
+  await db
+    .update(posts)
+    .set({
+      status: "published",
+      publishedAt: now,
+      publishError: null,
+      isPublic: true,
+      externalPostId: null,
+      updatedAt: now,
+    })
+    .where(eq(posts.id, postId));
+
+  const updated = await db.query.posts.findFirst({ where: eq(posts.id, postId) });
+  return updated ? { post: parsePost(updated) } : null;
+}
+
 export async function getPendingPostForUser(postId: string, userId: string) {
   const db = await getDb();
   const rows = await db
