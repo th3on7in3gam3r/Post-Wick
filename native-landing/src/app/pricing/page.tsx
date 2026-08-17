@@ -1,5 +1,6 @@
 import { Comparison, ComparisonTable } from "@/components/comparison";
 import { Pricing } from "@/components/pricing";
+import { PulseViewEvent } from "@/components/pulse-analytics";
 import { StudioBundleCta } from "@/components/studio-bundle-cta";
 import { Navbar } from "@/components/navbar";
 import { FAQ, Footer } from "@/components/sections";
@@ -24,6 +25,7 @@ export default function PricingPage() {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(pricingProductsJsonLd()) }}
       />
+      <PulseViewEvent event="pricing_viewed" properties={{ path: "/pricing" }} />
       <Navbar />
       <main>
         <Pricing

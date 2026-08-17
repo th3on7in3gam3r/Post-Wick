@@ -138,6 +138,15 @@ export default function CookiesPage() {
                   <td className="px-4 py-3">Up to 1 year</td>
                 </tr>
                 <tr>
+                  <td className="px-4 py-3 font-mono text-xs">Pulse (pulse.js)</td>
+                  <td className="px-4 py-3">Essential</td>
+                  <td className="px-4 py-3">
+                    Cookieless, GDPR-oriented growth analytics (pageviews and conversion events). No
+                    tracking cookies are set by this script.
+                  </td>
+                  <td className="px-4 py-3">No cookie</td>
+                </tr>
+                <tr>
                   <td className="px-4 py-3 font-mono text-xs">_ga, _gid</td>
                   <td className="px-4 py-3">Analytics</td>
                   <td className="px-4 py-3">
@@ -164,6 +173,10 @@ export default function CookiesPage() {
             <li>
               <strong className="font-medium text-near-black">Stripe</strong> — subscription billing
               and payment security.
+            </li>
+            <li>
+              <strong className="font-medium text-near-black">Pulse Growth Intelligence</strong> —
+              cookieless website and conversion analytics used to improve the Service.
             </li>
             <li>
               <strong className="font-medium text-near-black">Google Analytics</strong> — optional

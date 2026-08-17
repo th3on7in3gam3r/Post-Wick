@@ -4,6 +4,7 @@ import { BrandLogo } from "@/components/brand-logo";
 import { CookieSettingsTrigger } from "@/components/cookie-settings-trigger";
 import { FaqJsonLd } from "@/components/faq-json-ld";
 import { TextureButton } from "@/components/ui/texture-button";
+import { PulseTrackedLink } from "@/components/pulse-tracked-link";
 import { BIBLEFUNLAND_STUDIOS_URL, SITE_TAGLINE } from "@/lib/brand";
 import { GROWTH_STACK } from "@/lib/growth-stack";
 import { GUIDE_ARTICLES } from "@/lib/guides";
@@ -126,7 +127,13 @@ export function CTASection() {
                 <Link href="/sign-in">Log in</Link>
               </TextureButton>
               <TextureButton asChild variant="primary" size="lg">
-                <Link href="/sign-up">Get started →</Link>
+                <PulseTrackedLink
+                  href="/sign-up"
+                  pulseEvent="signup"
+                  pulseProperties={{ location: "homepage-cta" }}
+                >
+                  Get started →
+                </PulseTrackedLink>
               </TextureButton>
             </div>
           </div>

@@ -1,11 +1,12 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Check, CreditCard, Loader2 } from "lucide-react";
 import { PanelCard } from "@/components/app/panel-card";
 import { TextureButton } from "@/components/ui/texture-button";
-import { formatAnnualCharge, YEARLY_SAVE_LABEL, type PaidPlanKey } from "@/lib/pricing";
 import { getPlanLimits, PLAN_LIMITS, type SubscriptionTier } from "@/lib/plans";
+import { formatAnnualCharge, YEARLY_SAVE_LABEL, type PaidPlanKey } from "@/lib/pricing";
+import { trackPulseEvent } from "@/lib/pulse";
 import { STRIPE_PLANS, type BillingInterval } from "@/lib/stripe";
 import { cn } from "@/lib/utils";
 
@@ -14,11 +15,13 @@ export function BillingClient({
   stripeConfigured,
   billingIntervals,
   flash,
+  checkoutCompleted = false,
 }: {
   currentTier: SubscriptionTier;
   stripeConfigured: boolean;
   billingIntervals: BillingInterval[];
   flash?: string | null;
+  checkoutCompleted?: boolean;
 }) {
   const defaultInterval = useMemo(
     () => billingIntervals[0] ?? "yearly",
@@ -27,6 +30,11 @@ export function BillingClient({
   const [billing, setBilling] = useState<BillingInterval>(defaultInterval);
   const [loadingPlan, setLoadingPlan] = useState<string | null>(null);
   const current = getPlanLimits(currentTier);
+
+  useEffect(() => {
+    if (!checkoutCompleted) return;
+    trackPulseEvent("checkout_completed", { plan: currentTier });
+  }, [checkoutCompleted, currentTier]);
 
   const billingNote =
     billing === "yearly"
@@ -47,6 +55,11 @@ export function BillingClient({
           typeof data.error === "string" ? data.error : "Checkout failed",
         );
       }
+      trackPulseEvent("checkout_started", {
+        plan,
+        billing,
+        location: "billing",
+      });
       window.location.href = data.url;
     } catch (error) {
       alert(error instanceof Error ? error.message : "Checkout failed");

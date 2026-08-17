@@ -1,62 +1,66 @@
 "use client";
 
-import { useEffect } from "react";
-import {
-  COOKIE_CONSENT_EVENT,
-  readCookiePreferences,
-  type CookiePreferences,
-} from "@/lib/cookie-consent";
+import { useEffect, useRef } from "react";
+import { usePathname, useSearchParams } from "next/navigation";
+import { trackPulseEvent, trackPulsePageview, type PulseGrowthEvent, type PulseProperties } from "@/lib/pulse";
 
-const PULSE_SCRIPT_ID = "kerygma-pulse-script";
-/** Cache-bust + load remote tracker; collect via same-origin proxy to avoid CORS. */
-const PULSE_SRC = "https://pulse-5o1m.onrender.com/pulse.js?v=2026-07-17b";
-const PULSE_SITE = "kerygmasocial-com";
-const PULSE_ENDPOINT = "/api/analytics/collect";
-
-function loadPulse() {
-  if (typeof window === "undefined") return;
-  if (document.getElementById(PULSE_SCRIPT_ID)) return;
-
-  const script = document.createElement("script");
-  script.id = PULSE_SCRIPT_ID;
-  script.src = PULSE_SRC;
-  script.async = true;
-  script.defer = true;
-  script.dataset.site = PULSE_SITE;
-  // Same-origin proxy — no cross-origin CORS / credentials issues.
-  script.dataset.endpoint = PULSE_ENDPOINT;
-  document.body.appendChild(script);
-}
-
-function unloadPulse() {
-  document.getElementById(PULSE_SCRIPT_ID)?.remove();
-  try {
-    delete (window as Window & { Pulse?: unknown }).Pulse;
-  } catch {
-    // ignore
-  }
-}
-
-function applyPulseConsent(preferences: CookiePreferences | null) {
-  if (preferences?.analytics) {
-    loadPulse();
-  } else {
-    unloadPulse();
-  }
-}
-
+/**
+ * SPA route changes. Initial pageview is sent by the server-rendered Pulse snippet.
+ */
 export function PulseAnalytics() {
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const isFirstLoad = useRef(true);
+
   useEffect(() => {
-    applyPulseConsent(readCookiePreferences());
+    if (isFirstLoad.current) {
+      isFirstLoad.current = false;
+      return;
+    }
 
-    const onConsentChange = (event: Event) => {
-      const custom = event as CustomEvent<CookiePreferences>;
-      applyPulseConsent(custom.detail);
-    };
+    trackPulsePageview();
+  }, [pathname, searchParams]);
 
-    window.addEventListener(COOKIE_CONSENT_EVENT, onConsentChange);
-    return () => window.removeEventListener(COOKIE_CONSENT_EVENT, onConsentChange);
-  }, []);
+  return null;
+}
+
+/** Fire a Pulse event once when this tree mounts (e.g. /pricing viewed). */
+export function PulseViewEvent({
+  event,
+  properties,
+}: {
+  event: PulseGrowthEvent;
+  properties?: PulseProperties;
+}) {
+  useEffect(() => {
+    trackPulseEvent(event, properties);
+    // Intentionally once per mount; properties are snapshot at first render.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [event]);
+
+  return null;
+}
+
+/** Fire a Pulse event at most once per browser tab (e.g. trial started after sign-up). */
+export function PulseOnceEvent({
+  event,
+  storageKey,
+  properties,
+}: {
+  event: PulseGrowthEvent;
+  storageKey: string;
+  properties?: PulseProperties;
+}) {
+  useEffect(() => {
+    try {
+      if (sessionStorage.getItem(storageKey)) return;
+      sessionStorage.setItem(storageKey, "1");
+    } catch {
+      // Private mode / blocked storage — still send once this session in memory.
+    }
+    trackPulseEvent(event, properties);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [event, storageKey]);
 
   return null;
 }

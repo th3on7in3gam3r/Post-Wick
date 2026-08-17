@@ -95,7 +95,8 @@ export default function PrivacyPage() {
           <p>
             <strong className="font-medium text-near-black">Cookies and similar technologies.</strong>{" "}
             We use cookies, local storage, and similar tools for authentication, preferences, and
-            optional analytics. You can accept, reject, or customize optional cookies through our
+            optional analytics. We also load a cookieless Pulse analytics script for pageviews and
+            conversion events. You can accept, reject, or customize optional cookies through our
             consent banner and cookie preference center. See our{" "}
             <a href="/cookies" className="font-medium text-gold underline decoration-gold/40 underline-offset-2 hover:decoration-gold">
               Cookie Policy
@@ -175,6 +176,7 @@ export default function PrivacyPage() {
             <li>Neon / cloud database hosting (data storage)</li>
             <li>Anthropic and OpenAI (AI content generation)</li>
             <li>Resend (transactional email)</li>
+            <li>Pulse Growth Intelligence (cookieless analytics)</li>
             <li>Social media platforms you choose to connect</li>
           </ul>
           <p>

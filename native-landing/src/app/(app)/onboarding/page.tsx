@@ -4,6 +4,7 @@ import { currentUser } from "@clerk/nextjs/server";
 import { AppHeader } from "@/components/app/app-header";
 import { OnboardingHeroBootstrap } from "@/components/app/onboarding-hero-bootstrap";
 import { OnboardingFlow } from "@/components/app/onboarding-flow";
+import { PulseOnceEvent } from "@/components/pulse-analytics";
 import { getOrCreateUser } from "@/lib/db";
 import { getAppContext } from "@/lib/server/app-data";
 import { websiteHostname } from "@/lib/website-url";
@@ -35,6 +36,13 @@ export default async function OnboardingPage({
 
   return (
     <>
+      {skipWelcome ? null : (
+        <PulseOnceEvent
+          event="trial_started"
+          storageKey="pulse_trial_started"
+          properties={{ source: "onboarding" }}
+        />
+      )}
       <Suspense fallback={null}>
         <OnboardingHeroBootstrap />
       </Suspense>

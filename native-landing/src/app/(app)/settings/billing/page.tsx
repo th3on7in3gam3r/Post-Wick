@@ -29,6 +29,7 @@ export default async function BillingPage({
         stripeConfigured={isStripeConfigured()}
         billingIntervals={getAvailableBillingIntervals()}
         flash={flashMessage(searchParams)}
+        checkoutCompleted={Boolean(searchParams.success)}
       />
     </SettingsShell>
   );

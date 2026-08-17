@@ -9,6 +9,7 @@ import { cn } from "@/lib/utils";
 import { savePendingWebsiteUrl, markHeroOnboardingIntent, onboardingRedirectFromHeroUrl, HERO_LAUNCH_PATHS } from "@/lib/pending-website-url";
 import { KerygmaWelcome } from "@/components/kerygma-welcome";
 import { SITE_TAGLINE } from "@/lib/brand";
+import { trackPulseEvent } from "@/lib/pulse";
 import {
   type ImagePlacement,
   type Industry,
@@ -152,6 +153,7 @@ export function HeroContent() {
     setUrlError("");
     savePendingWebsiteUrl(normalized);
     markHeroOnboardingIntent();
+    trackPulseEvent("trial_started", { source: "hero" });
     setLaunchPhase("preparing");
     window.history.replaceState(null, "", HERO_LAUNCH_PATHS.preparing);
 

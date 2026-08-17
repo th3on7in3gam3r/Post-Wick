@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
+import { PulseTrackedLink } from "@/components/pulse-tracked-link";
 import { TextureButton } from "@/components/ui/texture-button";
 import { PRICING_SIGN_UP_HREF } from "@/lib/auth-routes";
 import { PLAN_LIMITS } from "@/lib/plans";
@@ -111,9 +112,14 @@ export function Pricing({
                   <li>Post history and publishing status</li>
                 </ul>
                 <TextureButton asChild variant="primary" size="lg" className="mt-8 flex w-full">
-                  <Link href={PRICING_SIGN_UP_HREF} className="w-full">
+                  <PulseTrackedLink
+                    href={PRICING_SIGN_UP_HREF}
+                    className="w-full"
+                    pulseEvent="trial_started"
+                    pulseProperties={{ plan: "pro", billing, location: "pricing" }}
+                  >
                     See your own posts
-                  </Link>
+                  </PulseTrackedLink>
                 </TextureButton>
               </div>
 
@@ -144,9 +150,14 @@ export function Pricing({
                   <li>Early access to new features</li>
                 </ul>
                 <TextureButton asChild variant="secondary" size="lg" className="mt-8 flex w-full">
-                  <Link href={PRICING_SIGN_UP_HREF} className="w-full">
+                  <PulseTrackedLink
+                    href={PRICING_SIGN_UP_HREF}
+                    className="w-full"
+                    pulseEvent="trial_started"
+                    pulseProperties={{ plan: "max", billing, location: "pricing" }}
+                  >
                     Get started with Max
-                  </Link>
+                  </PulseTrackedLink>
                 </TextureButton>
               </div>
             </div>

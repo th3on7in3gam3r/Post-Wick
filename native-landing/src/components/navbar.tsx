@@ -5,8 +5,10 @@ import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { Menu, X } from "lucide-react";
 import { BrandLogo } from "./brand-logo";
+import { PulseTrackedLink } from "./pulse-tracked-link";
 import { TextureButton } from "./ui/texture-button";
 import { useScrollDirection } from "@/hooks/use-scroll-direction";
+import { trackPulseEvent } from "@/lib/pulse";
 
 const navLinks = [
   { label: "How it works", href: "/#how-it-works" },
@@ -51,6 +53,11 @@ export function Navbar() {
                   <Link
                     href={item.href}
                     className="text-[0.9rem] font-medium text-near-black transition-colors hover:text-near-black/70"
+                    onClick={() => {
+                      if (item.href === "/pricing") {
+                        trackPulseEvent("pricing_viewed", { location: "navbar" });
+                      }
+                    }}
                   >
                     {item.label}
                   </Link>
@@ -63,7 +70,13 @@ export function Navbar() {
                 <Link href="/sign-in">Log in</Link>
               </TextureButton>
               <TextureButton asChild variant="primary" size="default">
-                <Link href="/sign-up">Get started →</Link>
+                <PulseTrackedLink
+                  href="/sign-up"
+                  pulseEvent="signup"
+                  pulseProperties={{ location: "navbar" }}
+                >
+                  Get started →
+                </PulseTrackedLink>
               </TextureButton>
             </div>
 
@@ -111,7 +124,12 @@ export function Navbar() {
                   <Link
                     href={item.href}
                     className="font-playfair text-2xl italic text-near-black"
-                    onClick={closeMenu}
+                    onClick={() => {
+                      if (item.href === "/pricing") {
+                        trackPulseEvent("pricing_viewed", { location: "navbar-mobile" });
+                      }
+                      closeMenu();
+                    }}
                   >
                     {item.label}
                   </Link>
@@ -125,9 +143,14 @@ export function Navbar() {
                 transition={{ delay: 0.35 }}
               >
                 <TextureButton asChild variant="primary" size="lg">
-                  <Link href="/sign-up" onClick={closeMenu}>
+                  <PulseTrackedLink
+                    href="/sign-up"
+                    pulseEvent="signup"
+                    pulseProperties={{ location: "navbar-mobile" }}
+                    onClick={closeMenu}
+                  >
                     Get started →
-                  </Link>
+                  </PulseTrackedLink>
                 </TextureButton>
                 <TextureButton asChild variant="secondary" size="lg">
                   <Link href="/sign-in" onClick={closeMenu}>

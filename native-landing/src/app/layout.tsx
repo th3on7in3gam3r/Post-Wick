@@ -13,6 +13,7 @@ import {
   siteUrl,
 } from "@/lib/brand";
 import { rootMetadata } from "@/lib/metadata";
+import { PULSE_HOST, PULSE_SCRIPT_SRC, PULSE_SITE_ID } from "@/lib/pulse";
 import "./globals.css";
 
 const inter = Inter({
@@ -63,6 +64,15 @@ export default function RootLayout({
       signUpFallbackRedirectUrl="/onboarding"
     >
       <html lang="en">
+        <head>
+          {/* Pulse verifies this snippet in the public HTML — not afterInteractive / useEffect. */}
+          <script
+            defer
+            src={PULSE_SCRIPT_SRC}
+            data-site={PULSE_SITE_ID}
+            data-host={PULSE_HOST}
+          />
+        </head>
         <body className={`${inter.variable} ${playfair.variable} font-inter antialiased`}>
           <script
             type="application/ld+json"
@@ -75,11 +85,11 @@ export default function RootLayout({
           <CookieConsentProvider>
             <Suspense fallback={null}>
               <AppNavigationLoader />
+              <PulseAnalytics />
             </Suspense>
             {children}
             <CookieConsentUI />
             <CookieAnalytics />
-            <PulseAnalytics />
           </CookieConsentProvider>
         </body>
       </html>

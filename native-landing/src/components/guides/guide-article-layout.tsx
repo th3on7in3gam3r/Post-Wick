@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { PulseTrackedLink } from "@/components/pulse-tracked-link";
 import { TextureButton } from "@/components/ui/texture-button";
 import {
   GuideHeroPanel,
@@ -92,10 +93,22 @@ export function GuideArticleLayout({ article }: { article: GuideArticle }) {
 
         <div className="flex flex-col gap-3 border-t border-black/[0.06] pt-6 sm:flex-row">
           <TextureButton asChild variant="accent" size="lg" className="sm:flex-1">
-            <Link href="/sign-up">Start free — no credit card</Link>
+            <PulseTrackedLink
+              href="/sign-up"
+              pulseEvent="signup"
+              pulseProperties={{ location: "guide" }}
+            >
+              Start free — no credit card
+            </PulseTrackedLink>
           </TextureButton>
           <TextureButton asChild variant="secondary" size="lg" className="sm:flex-1">
-            <Link href="/pricing">Compare Pro &amp; Max plans</Link>
+            <PulseTrackedLink
+              href="/pricing"
+              pulseEvent="pricing_viewed"
+              pulseProperties={{ location: "guide" }}
+            >
+              Compare Pro &amp; Max plans
+            </PulseTrackedLink>
           </TextureButton>
         </div>
       </section>

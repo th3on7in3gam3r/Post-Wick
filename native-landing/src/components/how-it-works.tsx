@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { HowItWorksHeading } from "@/components/how-it-works-heading";
+import { PulseTrackedLink } from "@/components/pulse-tracked-link";
 import { TextureButton } from "@/components/ui/texture-button";
 
 const steps = [
@@ -195,7 +196,13 @@ export function HowItWorks() {
                       <Link href="/sign-in">Log in</Link>
                     </TextureButton>
                     <TextureButton asChild variant="primary" size="default">
-                      <Link href="/sign-up">Get started</Link>
+                      <PulseTrackedLink
+                        href="/sign-up"
+                        pulseEvent="signup"
+                        pulseProperties={{ location: "how-it-works" }}
+                      >
+                        Get started
+                      </PulseTrackedLink>
                     </TextureButton>
                   </div>
                 </div>
