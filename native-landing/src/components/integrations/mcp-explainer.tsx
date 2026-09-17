@@ -2,7 +2,6 @@ import Link from "next/link";
 import { TextureButton } from "@/components/ui/texture-button";
 import { McpCopyField } from "@/components/integrations/mcp-copy-field";
 import { McpSayPrompts } from "@/components/integrations/mcp-say-prompts";
-import { mcpServerUrl } from "@/lib/mcp";
 import { SITE_NAME } from "@/lib/brand";
 
 const UNLOCKS = [
