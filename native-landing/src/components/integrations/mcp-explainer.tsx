@@ -3,28 +3,8 @@ import { TextureButton } from "@/components/ui/texture-button";
 import { McpCopyField } from "@/components/integrations/mcp-copy-field";
 import { McpSayPrompts } from "@/components/integrations/mcp-say-prompts";
 import { McpCapabilitySandboxes } from "@/components/integrations/mcp-capability-sandboxes";
+import { McpUnlockSandboxes } from "@/components/integrations/mcp-unlock-sandboxes";
 import { SITE_NAME } from "@/lib/brand";
-
-const UNLOCKS = [
-  {
-    n: "1",
-    title: "It knows your brand before it writes",
-    body: "Your tone, topics, and positioning from the brand crawl — so drafts sound like you, not a generic AI.",
-    art: "brand",
-  },
-  {
-    n: "2",
-    title: "You see the work, not a description of it",
-    body: "Kerygma sends back real pending posts, calendar slots, and schedule times — not vague advice.",
-    art: "calendar",
-  },
-  {
-    n: "3",
-    title: "One address, one key from Settings",
-    body: "Paste the MCP URL into Claude or ChatGPT and authenticate with your ks_live_ API key. No custom app to build.",
-    art: "link",
-  },
-] as const;
 
 const FAQS = [
   {
@@ -61,38 +41,6 @@ const FAQS = [
   },
 ] as const;
 
-function UnlockArt({ kind }: { kind: (typeof UNLOCKS)[number]["art"] }) {
-  if (kind === "brand") {
-    return (
-      <div className="relative h-28 rounded-xl bg-cream px-5 py-6">
-        <div className="h-3 w-16 rounded-full bg-gold/70" />
-        <div className="mt-3 h-2 w-28 rounded-full bg-black/10" />
-        <div className="mt-2 h-2 w-20 rounded-full bg-black/10" />
-        <div className="absolute bottom-5 right-5 h-8 w-8 rounded-full bg-sage/40" />
-      </div>
-    );
-  }
-  if (kind === "calendar") {
-    return (
-      <div className="grid h-28 grid-cols-4 gap-1.5 rounded-xl bg-cream p-4">
-        {Array.from({ length: 8 }).map((_, i) => (
-          <div
-            key={i}
-            className={`rounded-md ${i === 2 || i === 5 ? "bg-gold/50" : "bg-black/[0.06]"}`}
-          />
-        ))}
-      </div>
-    );
-  }
-  return (
-    <div className="flex h-28 items-center justify-center gap-6 rounded-xl bg-cream">
-      <span className="text-2xl text-gold">✦</span>
-      <span className="h-px w-16 bg-gold/50" />
-      <span className="text-2xl text-gold">✦</span>
-    </div>
-  );
-}
-
 export function McpExplainer({ mcpUrl }: { mcpUrl: string }) {
   return (
     <div className="space-y-24 pb-8">
@@ -111,21 +59,7 @@ export function McpExplainer({ mcpUrl }: { mcpUrl: string }) {
         <h2 className="text-center font-playfair text-[clamp(1.75rem,3vw,2.5rem)] italic text-near-black">
           What MCP unlocks in {SITE_NAME}
         </h2>
-        <div className="mt-10 grid gap-5 md:grid-cols-3">
-          {UNLOCKS.map((item) => (
-            <article
-              key={item.n}
-              className="rounded-2xl border border-black/[0.06] bg-white/90 p-5 shadow-card"
-            >
-              <UnlockArt kind={item.art} />
-              <h3 className="mt-5 font-playfair text-xl italic text-near-black">
-                <span className="mr-2 text-gold">{item.n}</span>
-                {item.title}
-              </h3>
-              <p className="body-copy mt-2 text-sm">{item.body}</p>
-            </article>
-          ))}
-        </div>
+        <McpUnlockSandboxes />
       </section>
 
       <section>
