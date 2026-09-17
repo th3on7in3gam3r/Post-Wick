@@ -2,6 +2,7 @@ import Link from "next/link";
 import { TextureButton } from "@/components/ui/texture-button";
 import { McpCopyField } from "@/components/integrations/mcp-copy-field";
 import { McpSayPrompts } from "@/components/integrations/mcp-say-prompts";
+import { McpCapabilitySandboxes } from "@/components/integrations/mcp-capability-sandboxes";
 import { SITE_NAME } from "@/lib/brand";
 
 const UNLOCKS = [
@@ -22,39 +23,6 @@ const UNLOCKS = [
     title: "One address, one key from Settings",
     body: "Paste the MCP URL into Claude or ChatGPT and authenticate with your ks_live_ API key. No custom app to build.",
     art: "link",
-  },
-] as const;
-
-const CAPABILITIES = [
-  {
-    title: "Read your brand voice",
-    body: "Tone, language, and how you write — everything Kerygma learned from your site.",
-    art: "voice",
-  },
-  {
-    title: "Write a post",
-    body: "Generate drafts for LinkedIn, Instagram, Pinterest, Bluesky, and more from a simple ask.",
-    art: "write",
-  },
-  {
-    title: "Rework the words",
-    body: "Ask for shorter, warmer, or less salesy — then approve when it feels right.",
-    art: "rework",
-  },
-  {
-    title: "Put it on the calendar",
-    body: "Approve to auto-schedule into the next open slot, or pick a time yourself.",
-    art: "schedule",
-  },
-  {
-    title: "Check what happened",
-    body: "See what is pending, what is scheduled, and what already went live.",
-    art: "status",
-  },
-  {
-    title: "Stay in your assistant",
-    body: "Keep the chat open in Claude or ChatGPT while Kerygma does the queue work.",
-    art: "chat",
   },
 ] as const;
 
@@ -125,80 +93,6 @@ function UnlockArt({ kind }: { kind: (typeof UNLOCKS)[number]["art"] }) {
   );
 }
 
-function CapabilityArt({ kind }: { kind: (typeof CAPABILITIES)[number]["art"] }) {
-  const base = "flex h-28 items-center justify-center rounded-xl bg-cream";
-  switch (kind) {
-    case "voice":
-      return (
-        <div className={base}>
-          <div className="flex items-end gap-1">
-            {[10, 18, 12, 22, 14, 20, 11].map((h, i) => (
-              <div key={i} className="w-1.5 rounded-full bg-gold/70" style={{ height: h }} />
-            ))}
-          </div>
-        </div>
-      );
-    case "write":
-      return (
-        <div className={`${base} flex-col gap-2 px-8`}>
-          <div className="h-2 w-full rounded-full bg-black/10" />
-          <div className="h-2 w-[80%] rounded-full bg-black/10" />
-          <div className="mt-2 flex gap-2">
-            <span className="rounded-md bg-gold/20 px-2 py-0.5 text-[10px] text-near-black">
-              LinkedIn
-            </span>
-            <span className="rounded-md bg-black/[0.06] px-2 py-0.5 text-[10px] text-gray-body">
-              Instagram
-            </span>
-          </div>
-        </div>
-      );
-    case "rework":
-      return (
-        <div className={`${base} gap-3`}>
-          <div className="h-12 w-28 rounded-2xl bg-white shadow-sm" />
-          <div className="flex h-9 w-9 items-center justify-center rounded-full bg-gold text-sm text-white">
-            ↻
-          </div>
-        </div>
-      );
-    case "schedule":
-      return (
-        <div className="grid h-28 grid-cols-7 gap-1 rounded-xl bg-cream p-3">
-          {Array.from({ length: 14 }).map((_, i) => (
-            <div
-              key={i}
-              className={`rounded ${i === 8 || i === 11 ? "bg-gold/60" : "bg-black/[0.05]"}`}
-            />
-          ))}
-        </div>
-      );
-    case "status":
-      return (
-        <div className={`${base} flex-col gap-2 px-6`}>
-          {["LinkedIn", "Instagram", "Facebook"].map((label) => (
-            <div key={label} className="flex w-full items-center gap-2">
-              <span className="w-16 text-[10px] text-gray-label">{label}</span>
-              <div className="h-1.5 flex-1 rounded-full bg-black/[0.06]">
-                <div className="h-full w-3/4 rounded-full bg-gold/60" />
-              </div>
-              <span className="text-[10px] text-gold">✓</span>
-            </div>
-          ))}
-        </div>
-      );
-    default:
-      return (
-        <div className={`${base}`}>
-          <div className="rounded-2xl border border-black/[0.06] bg-white px-4 py-3 shadow-sm">
-            <div className="h-2 w-24 rounded-full bg-black/10" />
-            <div className="mt-2 h-2 w-16 rounded-full bg-gold/40" />
-          </div>
-        </div>
-      );
-  }
-}
-
 export function McpExplainer({ mcpUrl }: { mcpUrl: string }) {
   return (
     <div className="space-y-24 pb-8">
@@ -243,18 +137,7 @@ export function McpExplainer({ mcpUrl }: { mcpUrl: string }) {
             The same workflow you use in the app — available as tools inside your assistant.
           </p>
         </div>
-        <div className="mt-10 grid gap-5 sm:grid-cols-2">
-          {CAPABILITIES.map((item) => (
-            <article
-              key={item.title}
-              className="rounded-2xl border border-black/[0.06] bg-white/90 p-5 shadow-card"
-            >
-              <CapabilityArt kind={item.art} />
-              <h3 className="mt-5 text-lg font-semibold text-near-black">{item.title}</h3>
-              <p className="body-copy mt-2 text-sm">{item.body}</p>
-            </article>
-          ))}
-        </div>
+        <McpCapabilitySandboxes />
       </section>
 
       <section className="text-center">
