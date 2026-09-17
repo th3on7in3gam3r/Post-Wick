@@ -16,6 +16,7 @@ const PUBLIC_PAGES: Array<{
   { path: "/get-started", changeFrequency: "monthly", priority: 0.8 },
   { path: "/guides", changeFrequency: "weekly", priority: 0.85 },
   { path: "/tools/grading", changeFrequency: "weekly", priority: 0.8 },
+  { path: "/integrations/mcp", changeFrequency: "weekly", priority: 0.85 },
   { path: "/directory", changeFrequency: "weekly", priority: 0.8 },
   { path: "/agency", changeFrequency: "monthly", priority: 0.7 },
   { path: "/agency/register", changeFrequency: "monthly", priority: 0.7 },

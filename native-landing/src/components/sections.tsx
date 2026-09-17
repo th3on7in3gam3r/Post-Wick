@@ -241,6 +241,9 @@ export function Footer() {
             <Link href="/tools/grading" className="text-gray-body hover:text-near-black">
               Social grader
             </Link>
+            <Link href="/integrations/mcp" className="text-gray-body hover:text-near-black">
+              MCP for Claude / ChatGPT
+            </Link>
             <Link href="/guides/free-plan" className="text-gray-body hover:text-near-black">
               Free plan
             </Link>

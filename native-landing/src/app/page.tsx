@@ -9,6 +9,7 @@ import { TestimonialsSection } from "@/components/testimonials-section";
 import { FAQ, GraderPromoSection, Guides, CTASection, Footer } from "@/components/sections";
 import { GrowthStackPromo } from "@/components/growth-stack-promo";
 import { PostwickPromoSection } from "@/components/postwick-promo-section";
+import { McpPromoSection } from "@/components/mcp-promo-section";
 import { createPageMetadata } from "@/lib/metadata";
 import { OG_DEFAULT_DESCRIPTION, OG_DEFAULT_TITLE } from "@/lib/brand";
 import { homepageSoftwareJsonLd } from "@/lib/seo/structured-data";
@@ -31,6 +32,7 @@ export default function Home() {
       <main>
         <Hero />
         <GraderPromoSection />
+        <McpPromoSection />
         <PostCarousel />
         <HowItWorks />
         <SocialProofSection />

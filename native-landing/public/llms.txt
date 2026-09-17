@@ -36,6 +36,7 @@ Kerygma Social is a social media automation platform for small businesses. Drop 
 
 Run Kerygma Social from Claude or ChatGPT by adding one MCP address:
 
+- Explainer: https://kerygmasocial.com/integrations/mcp
 - MCP URL: https://kerygmasocial.com/api/mcp
 - Auth: Authorization: Bearer ks_live_… (create a key in app Settings)
 - Tools: list_brands, get_brand, generate_posts, list_pending_posts, approve_post, reschedule_post, get_calendar

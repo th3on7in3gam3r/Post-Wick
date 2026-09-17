@@ -19,6 +19,8 @@ const isPublicRoute = createRouteMatcher([
   "/guides/(.*)",
   "/industries",
   "/industries/(.*)",
+  "/integrations",
+  "/integrations/(.*)",
   "/opengraph-image(.*)",
   "/sitemap.xml",
   "/robots.txt",
