@@ -20,6 +20,12 @@ npm run dev
 
 App runs at `http://localhost:3000` (or the port Next assigns).
 
+## Remote MCP (Claude / ChatGPT)
+
+Hosted at `/api/mcp` (Streamable HTTP). Create a `ks_live_` key in Settings, add the MCP URL to Claude Custom Connectors (or ChatGPT remote MCP), and authenticate with `Authorization: Bearer ks_live_…`.
+
+Partner REST under `/api/v1/*` uses the same keys for brands, generate, pending, approve/skip, reschedule, and calendar.
+
 ## Production stack (planned)
 
 - **Vercel** — hosting

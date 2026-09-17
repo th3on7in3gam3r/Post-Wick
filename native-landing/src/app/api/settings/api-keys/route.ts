@@ -38,12 +38,15 @@ export async function POST(req: Request) {
       );
     }
 
-    const { key, rawKey } = await createApiKeyForUser(userId, name ?? "Cadence");
+    const keyName = name ?? "Assistant";
+    const { key, rawKey } = await createApiKeyForUser(userId, keyName);
+    const isAssistant = keyName.toLowerCase().includes("assistant");
     return NextResponse.json({
       key,
       rawKey,
-      notice:
-        "Copy this key now — it won’t be shown again. Paste it into Cadence Settings (https://cadence.biblefunland.com/app/settings) → Growth stack API keys → Kerygma Social.",
+      notice: isAssistant
+        ? "Copy this key now — it won’t be shown again. In Claude or ChatGPT, add the MCP URL from Settings and authenticate with Authorization: Bearer <this key>."
+        : "Copy this key now — it won’t be shown again. Paste it into Cadence Settings (https://cadence.biblefunland.com/app/settings) → Growth stack API keys → Kerygma Social.",
     });
   } catch (error) {
     if (error instanceof z.ZodError) {

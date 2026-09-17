@@ -47,6 +47,8 @@ const isPublicRoute = createRouteMatcher([
   "/api/analytics/collect",
   "/api/partner/studio-billing",
   "/api/v1/(.*)",
+  "/api/mcp",
+  "/api/mcp/(.*)",
   "/api/import/(.*)",
   "/api/generated/(.*)",
   "/api/social/linkedin/callback",
